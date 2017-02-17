@@ -20,3 +20,5 @@
   * one-for-one / all-for-one supervision strategy
 3. VM Fehler / "System" Fehler
   * all-for-one
+## ActorHierarchy
+![Bild](pictures/ActorHierarchy.png)
