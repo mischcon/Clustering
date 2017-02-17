@@ -13,10 +13,10 @@
 
 ## Fehler
 1. Cluster Error (z.B. "Node unreachable")
-* Liste von Tasks / ausstehenden Ergebnissen im Master mitführen (not running, pending, done, error)
+  * Liste von Tasks / ausstehenden Ergebnissen im Master mitführen (not running, pending, done, error)
 2. Task Fehler 
-* rerun?
-* logging + done?
-* one-for-one / all-for-one supervision strategy
+  * rerun?
+  * logging + done?
+  * one-for-one / all-for-one supervision strategy
 3. VM Fehler / "System" Fehler
-* all-for-one
+  * all-for-one
