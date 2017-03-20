@@ -1,7 +1,7 @@
-# Projektarbeit 2
+# Testing Cluster
 ## Ziel
 * Scala / Akka basiertes Framework für clustering / remoting / parallelism
-* Ausführen von in Java / Scala geschriebenen Einheiten / Tasks 
+* Ausführen von in Java / Scala geschriebenen Einheiten / Tasks
 * Gruppierung / Single Instance / Depedency-Management
 * Failsafe
 * Scaling up / out (Automatisches Starten / Stoppen von VMs; Automatisches Deployment)
@@ -14,7 +14,7 @@
 ## Fehler
 1. Cluster Error (z.B. "Node unreachable")
   * Liste von Tasks / ausstehenden Ergebnissen im Master mitführen (not running, pending, done, error)
-2. Task Fehler 
+2. Task Fehler
   * rerun?
   * logging + done?
   * one-for-one / all-for-one supervision strategy
