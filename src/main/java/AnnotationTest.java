@@ -13,7 +13,7 @@ public class AnnotationTest {
             expectedDuration=3,
             durationUnit=DurationUnit.SEC,
             expectedTraffic=TrafficLoad.MINOR)
-    @Test private static void testGetNodes() { System.out.println("testGetNodes"); }
+    @Test public static void testGetNodes() { System.out.println("> testGetNodes"); }
 
     @Clustering(
             id="create_file",
@@ -22,7 +22,7 @@ public class AnnotationTest {
             expectedDuration=5,
             durationUnit=DurationUnit.SEC,
             expectedTraffic=TrafficLoad.MINOR)
-    @Test private static void testCreateFile() { System.out.println("testCreateFile"); }
+    @Test public static void testCreateFile() { System.out.println("> testCreateFile"); }
 
     @Clustering(
             id="file_upload",
@@ -31,7 +31,7 @@ public class AnnotationTest {
             expectedDuration=10,
             durationUnit=DurationUnit.MIN,
             expectedTraffic=TrafficLoad.MAJOR)
-    @Test private static void testUploadFile() { System.out.println("testUploadFile"); }
+    @Test public static void testUploadFile() { System.out.println("> testUploadFile"); }
 
     @Clustering(
             id="get_config",
@@ -40,7 +40,7 @@ public class AnnotationTest {
             expectedDuration=1,
             durationUnit=DurationUnit.MIN,
             expectedTraffic=TrafficLoad.MINOR)
-    @Test private static void testGetConfig() { System.out.println("testGetConfig"); }
+    @Test public static void testGetConfig() { System.out.println("> testGetConfig"); }
 
 
     /*
@@ -54,12 +54,12 @@ public class AnnotationTest {
             durationUnit=DurationUnit.MIN,
             expectedTraffic=TrafficLoad.MINOR
     )
-    private static class TestGroups {
-        private static void setup() { System.out.println("setup"); }
-        private static void teardown() { System.out.println("teardown"); }
-        @Test private static void testGetGroup() { System.out.println("testGetGroup"); }
-        @Test private static void testCreateGroup() { System.out.println("testCreateGroup"); }
-        @Test private static void testDeleteGroup() { System.out.println("testDeleteGroup"); }
+    public static class TestGroups {
+        static void setup() { System.out.println("> setup"); }
+        static void teardown() { System.out.println("> teardown"); }
+        @Test public static void testGetGroup() { System.out.println("> testGetGroup"); }
+        @Test public static void testCreateGroup() { System.out.println("> testCreateGroup"); }
+        @Test public static void testDeleteGroup() { System.out.println("> testDeleteGroup"); }
     }
 
     public static void main(String[] args) {
