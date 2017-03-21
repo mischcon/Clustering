@@ -1,0 +1,18 @@
+title task execution - communication
+
+User->Master: task
+Master->Router: forward task
+Router->DB: request suitable VM
+DB->Router: VM id
+Router->Worker: task + target VM
+loop task execution
+    Worker->Proxy: Msg(HTTP request)
+    Proxy->VM: HTTP request + URL + port
+    VM->API: forward request
+    API->VM: HTTP response
+    VM->Proxy: Msg(HTTP response)
+    Proxy->Worker: HTTP response
+end
+Worker->Router: DONE or ERROR
+Router->Master: result
+Master->User: forward task result
