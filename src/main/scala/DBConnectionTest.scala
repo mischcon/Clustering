@@ -1,33 +1,63 @@
-import java.sql.{Connection, DriverManager}
+import java.sql.{Connection, DriverManager, Statement}
 
+import akka.actor.{Actor, ActorSystem, Props}
 import com.typesafe.config.ConfigFactory
 
-object DBConnectionTest extends App {
+trait DBMsg
+case class AddTask(method : String) extends DBMsg
 
-  var connection : Connection = _
+class DBActor extends Actor {
 
-  val config = ConfigFactory.load()
-  println(config.getString("db.url"))
-
-  try {
-    Class.forName(config.getString("db.driver"))
-
-    connection = DriverManager.getConnection(
-      config.getString("db.url"),
-      config.getString("db.username"),
-      config.getString("db.password"))
-
-    val statement = connection.createStatement
-    val rs = statement.executeQuery("SELECT * FROM sds.settings")
-
-    while (rs.next) {
-      val key = rs.getString("settings_key")
-      val value = rs.getString("settings_value")
-      // println("settings_key = %s, settings_value = %s".format(key, value))
+  def connect: Option[Connection] = {
+    try {
+      val config = ConfigFactory.load()
+      Class.forName(config.getString("db.driver"))
+      Some(DriverManager.getConnection(
+        config.getString("db.url"),
+        config.getString("db.username"),
+        config.getString("db.password")))
+    }
+    catch {
+      case e: Exception =>
+        println(e.getMessage)
+        None
     }
   }
-  catch {
-    case e: Exception => e.getMessage
+
+  def addTask(method : String): Unit = {
+    connect match {
+      case Some(connection) =>
+        val statement : Statement = connection.createStatement()
+        val sql : String = s"INSERT INTO `tasks`(`method`) VALUES ('$method');"
+        try {
+          // auto commit is on
+          val result = statement.executeUpdate(sql)
+          assert(result equals 1)
+          println(Console.GREEN + "new task added")
+        }
+        catch {
+          case e: Exception =>
+            println(Console.RED + e.getMessage)
+        }
+        finally {
+          connection.close()
+        }
+      case None =>
+    }
   }
-  connection.close()
+
+  override def receive: Receive = {
+    case AddTask(method) =>
+      addTask(method)
+  }
+}
+
+object DBConnectionTest extends App {
+  def uuid: String = {
+    java.util.UUID.randomUUID.toString
+  }
+
+  val sys = ActorSystem("actor-system")
+  val db = sys.actorOf(Props[DBActor], name="db-actor")
+  db ! AddTask(uuid)
 }
