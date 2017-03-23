@@ -1,13 +1,15 @@
 package worker
 import akka.actor.{Actor, Props}
-import worker.messages.AddTask
+import akka.remote.ContainerFormats.ActorRef
+import worker.messages.{AddTask, GetTask}
 
-object WorkerActor extends Actor{
+class WorkerActor extends Actor{
 
-  print(self.path.name + " was created!")
+  println(self.path.name + " was created!")
 
   override def receive: Receive = {
     case p : AddTask => addTask(p)
+    case p : GetTask => getTask(p)
   }
 
   def addTask(msg : AddTask) = {
@@ -21,5 +23,9 @@ object WorkerActor extends Actor{
         }
       }
     }
+  }
+
+  def getTask(msg : GetTask) = {
+    context.children.head forward msg
   }
 }

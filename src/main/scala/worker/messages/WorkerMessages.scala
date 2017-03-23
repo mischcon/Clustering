@@ -10,9 +10,13 @@ import java.lang.reflect.Method
 trait WorkerMessagesTrait
 
 case class AddTask(group : List[String], task : Task) extends WorkerMessagesTrait
+case class GetTask() extends WorkerMessagesTrait
+
+case class SendTask(task : Task)
+
 case class Task(method : Method, singleInstance: Boolean) extends WorkerMessagesTrait
 
-trait WorkerMessagesRecoveryTrait
+trait WorkerMessagesRecoveryEvent
 
-case class AddTaskRecovery(group : List[String], task : Task) extends WorkerMessagesRecoveryTrait
-case class TaskRecovery(method : Method, singleInstance : Boolean) extends WorkerMessagesRecoveryTrait
+case class AddTaskRecovery(group : List[String], task : Task) extends WorkerMessagesRecoveryEvent
+case class TaskRecovery(method : Method, singleInstance : Boolean) extends WorkerMessagesRecoveryEvent
