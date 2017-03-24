@@ -12,7 +12,7 @@ object DBConnectionTest extends App {
     java.util.UUID.randomUUID.toString
   }
 
-  implicit val timeout = Timeout(2 seconds)
+  implicit val timeout = Timeout(5 seconds)
 
   val sys = ActorSystem("actor-system")
   val db = sys.actorOf(Props[DBActor], name="db-actor")
@@ -20,14 +20,27 @@ object DBConnectionTest extends App {
 
   db ! CreateTask(method)
 
-  val future = db ? ReadTask(method)
-  val result = Await.result(future, timeout.duration).asInstanceOf[Option[RequestedTask]]
-  result match {
+  val future1 = db ? GetTask(method)
+  val result1 = Await.result(future1, timeout.duration).asInstanceOf[Option[RequestedTask]]
+  result1 match {
     case Some(task) =>
       println(s"${task.method} - ${task.status} - ${task.result}")
     case None =>
+      println("no result")
   }
 
-  db ! UpdateTask(method, TaskStatus.RUNNING)
-  db ! DeleteTask(method)
+  db ! UpdateTaskStatus(method, TaskStatus.RUNNING)
+  // db ! DeleteTask(method)
+  db ! CreateTasks(List(uuid, uuid, uuid))
+
+  val future2 = db ? GetTasksWithStatus(TaskStatus.RUNNING)
+  val result2 = Await.result(future2, timeout.duration).asInstanceOf[Option[List[RequestedTask]]]
+  result2 match {
+    case Some(tasks) =>
+      for (task <- tasks) {
+        println(s"${task.method} - ${task.status} - ${task.result}")
+      }
+    case None =>
+      println("no result")
+  }
 }
