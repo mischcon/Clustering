@@ -12,10 +12,10 @@ import vm.vagrant.util.VagrantException
   * Wrapper for a Vagrant SSH connection. The class contains the JRuby object for the connections and forwards the method calls to it.
   * You can execute commands on the VM or upload files to it.
   *
-  * @author hendrikebbers
+  * @author oliver.ziegert
   *
   */
-class VagrantSSHConnection(var vagrantSSH: RubyObject)
+class VagrantSSHConnection(vagrantSSH: RubyObject)
 
 /**
   * Constructor for the SHH connection. Normally you do not need to create a connection on your own. Use {@link VagrantVm.createConnection()} to create a new SSH connection.

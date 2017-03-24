@@ -4,7 +4,7 @@ import java.io.{File, IOException}
 import java.nio.charset.Charset
 import java.util.HashMap
 import scala.io.Source.fromURL
-import sbt.io.IO.{copyFile, write, copyDirectory,}
+import sbt.io.IO.{copyFile, write, copyDirectory}
 import org.jruby.RubyObject
 import org.jruby.embed.{LocalContextScope, ScriptingContainer}
 import vm.vagrant.configuration._
@@ -15,17 +15,10 @@ import vm.vagrant.model.VagrantEnvironment
   */
 class Vagrant(debug: Boolean = false){
 
-  private var scriptingContainer: ScriptingContainer = null
-  private var os: String = null
+  private val scriptingContainer: ScriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETHREAD)
+  if (debug) this.debugVM()
 
-  def this(debug: Boolean) {
-    this()
-    scriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETHREAD)
-    os = if (System.getProperty("os.name").toLowerCase.contains("windows")) "windows" else "java"
-    if (debug) this.debug()
-  }
-
-  private def debug() = {
+  private def debugVM() = {
     val currentEnv = scriptingContainer.getEnvironment
     val newEnv = new HashMap(currentEnv)
     newEnv.put("VAGRANT_LOG", "DEBUG")
@@ -33,6 +26,7 @@ class Vagrant(debug: Boolean = false){
   }
 
   def createEnvironment: VagrantEnvironment = {
+    val os = if (System.getProperty("os.name").toLowerCase.contains("windows")) "windows" else "java"
     val vagrantEnv = scriptingContainer.runScriptlet(s"RUBY_PLATFORM = '$os'\n" +
       "require 'rubygems'\n" +
       "require 'vagrant-wrapper'\n" +

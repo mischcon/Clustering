@@ -145,8 +145,7 @@ class VagrantVm(var vagrantVm: RubyObject)
     // running: VM läuft
     // saved: VM wurde pausiert
     try {
-      val symbol = vagrantVm.callMethod("state").asInstanceOf[RubySymbol]
-      symbol.asJavaString
+      vagrantVm.callMethod("state").asInstanceOf[RubySymbol].toString()
     } catch {
       case exception: RaiseException =>
         throw new VagrantException(exception)

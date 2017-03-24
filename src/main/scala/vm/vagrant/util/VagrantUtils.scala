@@ -9,7 +9,7 @@ import scala.io.Source.fromURL
   * Created by oliver.ziegert on 24.03.2017.
   */
 object wVagrantUtils {
-  private var instance: VagrantUtils = null
+  private var instance: VagrantUtils = _
 
   def getInstance: VagrantUtils = {
     if (instance == null) instance = new VagrantUtils
