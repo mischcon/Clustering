@@ -3,9 +3,15 @@ import akka.actor.{Actor, Props}
 import akka.remote.ContainerFormats.ActorRef
 import worker.messages.{AddTask, GetTask}
 
-class WorkerActor extends Actor{
+class WorkerActor extends WorkerTrait{
 
-  println(self.path.name + " was created!")
+  override def preStart(): Unit = {
+    log.debug("hello from distributor!")
+  }
+
+  override def postStop(): Unit = {
+    log.debug("Goodbye from distributor!")
+  }
 
   override def receive: Receive = {
     case p : AddTask => addTask(p)

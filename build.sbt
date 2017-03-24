@@ -27,5 +27,9 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-jackson" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-http-xml" % akkaHttpVersion
+  "com.typesafe.akka" %% "akka-http-xml" % akkaHttpVersion,
+  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion
 )
+
+// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.2"
