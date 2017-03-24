@@ -32,7 +32,7 @@ class DBActor extends Actor {
           // auto commit is on
           val result = statement.executeUpdate(sql)
           assert(result equals 1)
-          println(Console.GREEN + "new task added")
+          println(Console.GREEN + "task added")
         }
         catch {
           case e: Exception =>
@@ -59,7 +59,7 @@ class DBActor extends Actor {
           // auto commit is on
           val result = statement.executeUpdate(sql)
           assert(result equals methods.size)
-          println(Console.GREEN + "new tasks added")
+          println(Console.GREEN + s"${methods.size} tasks added")
         }
         catch {
           case e: Exception =>
@@ -91,6 +91,45 @@ class DBActor extends Actor {
               sender() ! Some(RequestedTask(method, status, result))
               println(Console.GREEN + s"responsed w/ requested task:\n$method - $status - $result")
             }
+          }
+        }
+        catch {
+          case e: Exception =>
+            println(Console.RED + e.getMessage)
+        }
+        finally {
+          connection.close()
+        }
+      case None =>
+        println(Console.RED + "could not connect")
+    }
+  }
+
+  def getTasks(methods : List[String]): Unit = {
+    connect match {
+      case Some(connection) =>
+        val statement : Statement = connection.createStatement()
+        var sql : String = s"SELECT method, status, result FROM tasks WHERE method IN ("
+        for (method <- methods) {
+          sql += s"'$method', "
+        }
+        sql = sql.dropRight(2) + ");"
+        try {
+          val resultSet = statement.executeQuery(sql)
+          if (!resultSet.isBeforeFirst) {
+            sender() ! None
+            println(Console.RED + s"requested tasks not found")
+          }
+          else {
+            var taskList = List[RequestedTask]()
+            while (resultSet.next()) {
+              val method = resultSet.getString("method")
+              val status = TaskStatus.valueOf(resultSet.getString("status"))
+              val result = resultSet.getString("result")
+              taskList = RequestedTask(method, status, result) :: taskList
+              println(Console.GREEN + s"responsed w/ requested task:\n$method - $status - $result")
+            }
+            sender() ! Some(taskList)
           }
         }
         catch {
@@ -139,7 +178,7 @@ class DBActor extends Actor {
     }
   }
 
-  def updateTask(method : String, status : TaskStatus): Unit = {
+  def updateTaskStatus(method : String, status : TaskStatus): Unit = {
     connect match {
       case Some(connection) =>
         val statement : Statement = connection.createStatement()
@@ -149,6 +188,33 @@ class DBActor extends Actor {
           val result = statement.executeUpdate(sql)
           assert(result equals 1)
           println(Console.GREEN + "task updated")
+        }
+        catch {
+          case e: Exception =>
+            println(Console.RED + e.getMessage)
+        }
+        finally {
+          connection.close()
+        }
+      case None =>
+        println(Console.RED + "could not connect")
+    }
+  }
+
+  def updateTasksStatus(methods : List[String], status : TaskStatus): Unit = {
+    connect match {
+      case Some(connection) =>
+        val statement : Statement = connection.createStatement()
+        var sql : String = s"UPDATE tasks SET status = '$status' WHERE method IN ("
+        for (method <- methods) {
+          sql += s"'$method', "
+        }
+        sql = sql.dropRight(2) + ");"
+        try {
+          // auto commit is on
+          val result = statement.executeUpdate(sql)
+          assert(result equals methods.size)
+          println(Console.GREEN + s"${methods.size} tasks updated")
         }
         catch {
           case e: Exception =>
@@ -185,6 +251,33 @@ class DBActor extends Actor {
     }
   }
 
+  def deleteTasks(methods : List[String]): Unit = {
+    connect match {
+      case Some(connection) =>
+        val statement : Statement = connection.createStatement()
+        var sql : String = s"DELETE FROM tasks WHERE method IN ("
+        for (method <- methods) {
+          sql += s"'$method', "
+        }
+        sql = sql.dropRight(2) + ");"
+        try {
+          // auto commit is on
+          val result = statement.executeUpdate(sql)
+          assert(result equals methods.size)
+          println(Console.GREEN + s"${methods.size} tasks deleted")
+        }
+        catch {
+          case e: Exception =>
+            println(Console.RED + e.getMessage)
+        }
+        finally {
+          connection.close()
+        }
+      case None =>
+        println(Console.RED + "could not connect")
+    }
+  }
+
   override def receive: Receive = {
     case CreateTask(method) =>
       createTask(method)
@@ -192,11 +285,17 @@ class DBActor extends Actor {
       createTasks(methods)
     case GetTask(method) =>
       getTask(method)
+    case GetTasks(methods) =>
+      getTasks(methods)
     case GetTasksWithStatus(status) =>
       getTasksWithStatus(status)
     case UpdateTaskStatus(method, status) =>
-      updateTask(method, status)
+      updateTaskStatus(method, status)
+    case UpdateTasksStatus(methods, status) =>
+      updateTasksStatus(methods, status)
     case DeleteTask(method) =>
       deleteTask(method)
+    case DeleteTasks(methods) =>
+      deleteTasks(methods)
   }
 }
