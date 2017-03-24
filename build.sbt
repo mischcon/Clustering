@@ -6,8 +6,8 @@ scalaVersion := "2.12.1"
 
 val akkaVersion = "2.4.17"
 val akkaHttpVersion = "10.0.5"
-val jrubyVersion = "9.1.8"
-val sbtVersion = "1.0.0"
+val jrubyVersion = "9.1.8.+"
+val sbtIoVersion = "1.0.0-+"
 
 libraryDependencies ++= Seq(
   "org.iq80.leveldb" % "leveldb" % "0.7",
@@ -32,5 +32,5 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-xml" % akkaHttpVersion,
 
   "org.jruby" % "jruby-complete" % jrubyVersion,
-  "org.scala-sbt" %% "io" % sbtVersion
+  "org.scala-sbt" %% "io" % sbtIoVersion
 )

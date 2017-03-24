@@ -1,13 +1,14 @@
 package vm.vagrant
 
-import java.io.{File, IOException, PrintWriter}
-import sbt._
+import java.io.{File, IOException}
+import java.nio.charset.Charset
 import java.util.HashMap
-
+import scala.io.Source.fromURL
+import sbt.io.IO.{copyFile, write, copyDirectory,}
 import org.jruby.RubyObject
 import org.jruby.embed.{LocalContextScope, ScriptingContainer}
-import vm.java.configuration._
-import vm.java.model.VagrantEnvironment
+import vm.vagrant.configuration._
+import vm.vagrant.model.VagrantEnvironment
 
 /**
   * Created by oliver.ziegert on 24.03.2017.
@@ -35,17 +36,16 @@ class Vagrant(debug: Boolean = false){
     val vagrantEnv = scriptingContainer.runScriptlet(s"RUBY_PLATFORM = '$os'\n" +
       "require 'rubygems'\n" +
       "require 'vagrant-wrapper'\n" +
-      "return Vagrant::Environment.new").asInstanceOf[RubyObject]
+      "return VagrantWrapper.require_or_help_install('>= 1.1')").asInstanceOf[RubyObject]
     new VagrantEnvironment(vagrantEnv)
   }
 
   def createEnvironment(path: File): VagrantEnvironment = {
-    val vagrantEnv = scriptingContainer.runScriptlet(s"RUBY_PLATFORM = '$os'\n" +
-      s"Dir.chdir(${path.getAbsolutePath})\n" +
-      "require 'rubygems'\n" +
-      "require 'vagrant-wrapper'\n" +
-      "return Vagrant::Environment.new").asInstanceOf[RubyObject]
-    new VagrantEnvironment(vagrantEnv)
+    val currentEnv = scriptingContainer.getEnvironment
+    val newEnv = new HashMap(currentEnv)
+    newEnv.put("VAGRANT_CWD", path.getAbsolutePath)
+    scriptingContainer.setEnvironment(newEnv)
+    createEnvironment
   }
 
   @throws[IOException]
@@ -65,24 +65,22 @@ class Vagrant(debug: Boolean = false){
     path.mkdirs
     val vagrantFile = new File(path, "Vagrantfile")
     if (!vagrantFile.exists) vagrantFile.createNewFile
-    val out = new PrintWriter(vagrantFile, "UTF-8")
-    try { out.print(vagrantfileContent) } finally {out.close()}
+    write(vagrantFile, vagrantfileContent, Charset.forName("UTF-8"), false)
     if (fileTemplates != null) {
       for (fileTemplate <- fileTemplates) {
         val fileInVagrantFolder = new File(path, fileTemplate.getPathInVagrantFolder)
         if (fileInVagrantFolder.getParentFile != null && !fileInVagrantFolder.getParentFile.exists) fileInVagrantFolder.getParentFile.mkdirs
-        if (fileTemplate.useLocalFile) FileUtils.copyFile(fileTemplate.getLocalFile, fileInVagrantFolder)
-        else FileUtils.copyURLToFile(fileTemplate.getUrlTemplate, fileInVagrantFolder)
+        if (fileTemplate.useLocalFile) copyFile(fileTemplate.getLocalFile, fileInVagrantFolder)
+        else write(fileInVagrantFolder, fromURL(fileTemplate.getUrlTemplate).mkString, Charset.forName("UTF-8"), false)
       }
     }
     if (folderTemplates != null) {
       for (folderTemplate <- folderTemplates) {
         val folderInVagrantFolder = new File(path, folderTemplate.getPathInVagrantFolder)
-        if (folderTemplate.useUriTemplate) FileUtils.copyDirectory(new File(folderTemplate.getUriTemplate), folderInVagrantFolder)
-        else FileUtils.copyDirectory(folderTemplate.getLocalFolder, folderInVagrantFolder)
+        if (folderTemplate.useUriTemplate) copyDirectory(new File(folderTemplate.getUriTemplate), folderInVagrantFolder, true)
+        else copyDirectory(folderTemplate.getLocalFolder, folderInVagrantFolder, true)
       }
     }
     createEnvironment(path)
   }
-
 }
