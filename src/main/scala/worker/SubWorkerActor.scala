@@ -6,6 +6,7 @@ import akka.actor.{ActorRef, OneForOneStrategy, Props, SupervisorStrategy}
 import akka.event.Logging
 import akka.pattern._
 import akka.util.Timeout
+import utils.Status
 import worker.messages._
 
 import scala.concurrent.ExecutionContext
@@ -44,15 +45,19 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
     // or add the task to the list in this worker
     else {
       log.debug(s"task was added to ${self.path.name}")
-      tasks = (msg.task, null, "not running", null) :: tasks
+      tasks = (msg.task, null, Status.NOT_RUNNING, null) :: tasks
     }
+  }
+
+  def updateTask(task : Task, result : Object, status : String, target : ActorRef): Unit ={
+
   }
 
   def getTask(msg : GetTask) = {
     // check if there are still tasks in this node
-    if(tasks.exists(p => p._3 == "not running")){
+    if(tasks.exists(p => p._3 == Status.NOT_RUNNING)){
       // take one task
-      val task_to_run = tasks.filter(p => p._3 == "not running").head
+      val task_to_run = tasks.filter(p => p._3 == Status.NOT_RUNNING).head
       tasks = tasks.filter(p => p != task_to_run)
       log.debug(s"task was taken from ${self.path.name} awaiting actor ref....")
       /* pass the task to the node actor and request the actorRef of the execution actor
@@ -60,15 +65,16 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
       * This is neccessary because now we can supervise the executing actor
       * */
       val actorRef_of_executing_actor = sender() ? SendTask(task_to_run._1)
+
       actorRef_of_executing_actor.onComplete {
         case Success(ref : ActorRef) => {
           log.debug(s"${self.path.name} received an actor ref! now monitoring the actor...")
           context.watch(ref)
-          tasks = (task_to_run._1, null, "pending", ref) :: tasks
+          tasks = (task_to_run._1, null, Status.RUNNING, ref) :: tasks
         }
         case Failure(ex : Throwable) => {
           // put task back in list
-          tasks = (task_to_run._1, null, "not running", null) :: tasks
+          tasks = (task_to_run._1, null, Status.NOT_RUNNING, null) :: tasks
           log.debug(s"NodeActor did not return the ActorRef of the executing actor: ${ex.getMessage}")
         }
       }
