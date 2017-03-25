@@ -4,6 +4,7 @@ import java.io.{File, IOException}
 import java.nio.charset.Charset
 import java.util.HashMap
 import scala.io.Source.fromURL
+import scala.collection.JavaConverters._
 import sbt.io.IO.{copyFile, write, copyDirectory}
 import org.jruby.RubyObject
 import org.jruby.embed.{LocalContextScope, ScriptingContainer}
@@ -19,10 +20,9 @@ class Vagrant(debug: Boolean = false){
   if (debug) this.debugVM()
 
   private def debugVM() = {
-    val currentEnv = scriptingContainer.getEnvironment
-    val newEnv = new HashMap(currentEnv)
-    newEnv.put("VAGRANT_LOG", "DEBUG")
-    scriptingContainer.setEnvironment(newEnv)
+    val currentEnv = scriptingContainer.getEnvironment.asScala.map(d => d._1.toString -> d._2.toString)
+    val newEnv = currentEnv + ("VAGRANT_LOG" -> "DEBUG")
+    scriptingContainer.setEnvironment(newEnv.asJava)
   }
 
   def createEnvironment: VagrantEnvironment = {
@@ -35,10 +35,9 @@ class Vagrant(debug: Boolean = false){
   }
 
   def createEnvironment(path: File): VagrantEnvironment = {
-    val currentEnv = scriptingContainer.getEnvironment
-    val newEnv = new HashMap(currentEnv)
-    newEnv.put("VAGRANT_CWD", path.getAbsolutePath)
-    scriptingContainer.setEnvironment(newEnv)
+    val currentEnv = scriptingContainer.getEnvironment.asScala.map(d => d._1.toString -> d._2.toString)
+    val newEnv = currentEnv + ("VAGRANT_CWD" -> path.getAbsolutePath)
+    scriptingContainer.setEnvironment(newEnv.asJava)
     createEnvironment
   }
 

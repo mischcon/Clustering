@@ -14,7 +14,7 @@ object VagrantVmConfigBuilder {
 }
 
 class VagrantVmConfigBuilder() {
-  private var portForwardings: List[VagrantPortForwarding] = _
+  private var portForwardings = List[VagrantPortForwarding]()
   private var puppetProvisionerConfig: PuppetProvisionerConfig = _
   private var name: String = _
   private var ip: String = _

@@ -26,7 +26,7 @@ class test {
   val vmConfig = VagrantVmConfigBuilder.create.withDevBox.withHostOnlyIp("192.168.3.3").build
   val environmentConfig = VagrantEnvironmentConfigBuilder.create.withVagrantVmConfig(vmConfig).build
   val configuration = VagrantConfigurationBuilder.create.withVagrantEnvironmentConfig(environmentConfig).build
-  val vagrant = new Vagrant(true).createEnvironment(new File("C/Users/oliver.ziegert/Documents/vms/scala.pc-ziegert.local"), configuration)
+  val vagrant = new Vagrant(true).createEnvironment(new File("C:/dev/vm/scala.ssp-nb067.local"), configuration)
 
 }
 
