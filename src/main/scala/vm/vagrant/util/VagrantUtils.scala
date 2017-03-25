@@ -8,7 +8,7 @@ import scala.io.Source.fromURL
 /**
   * Created by oliver.ziegert on 24.03.2017.
   */
-object wVagrantUtils {
+object VagrantUtils {
   private var instance: VagrantUtils = _
 
   def getInstance: VagrantUtils = {

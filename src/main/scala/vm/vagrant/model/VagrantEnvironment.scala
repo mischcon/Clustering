@@ -8,9 +8,7 @@ import org.jruby.RubyNil
 import org.jruby.RubyObject
 import org.jruby.RubyString
 import org.jruby.exceptions.RaiseException
-import vm.vagrant.Vagrant
 import vm.vagrant.util.VagrantException
-import vm.vagrant.model.VagrantVm
 import scala.collection.JavaConversions._
 
 
@@ -20,13 +18,13 @@ import scala.collection.JavaConversions._
   * @author oliver.ziegert
   *
   */
-class VagrantEnvironment(var vagrantEnvironment: RubyObject)
+class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
 
 /**
   * The {@link VagrantEnvironment} is a Wrapper for a Vagrant environment. The class contains the JRuby object for the connections and forwards the method calls to it. This constructor is used by the builder classes or the {@link Vagrant} class. You do not need to call it in your code
   *
   * @param vagrantEnvironment The Vagrant environment connection object
-  */ {
+  */
   /**
     * Start all VMs in this environment
     */

@@ -15,7 +15,7 @@ object VagrantEnvironmentConfigBuilder {
 }
 
 class VagrantEnvironmentConfigBuilder() {
-  private var vmConfigs = new List[VagrantVmConfig]
+  private var vmConfigs: List[VagrantVmConfig] = _
 
   def withVagrantVmConfig(vmConfig: VagrantVmConfig): VagrantEnvironmentConfigBuilder = {
     vmConfigs = vmConfigs :+ vmConfig

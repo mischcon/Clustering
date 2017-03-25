@@ -4,10 +4,8 @@ package vm.vagrant.configuration
   * Created by oliver.ziegert on 24.03.17.
   */
 
-import vm.vagrant.configuration.PuppetProvisionerConfig
-import vm.vagrant.configuration.VagrantPortForwarding
 import java.net.URL
-import scala.collection.immutable.List
+
 
 /**
   * A configuration class that can be used to define and create a VM in Vagrant.

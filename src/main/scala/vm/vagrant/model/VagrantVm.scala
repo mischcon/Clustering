@@ -12,13 +12,13 @@ import vm.vagrant.util.VagrantException
   * @author oliver.ziegert
   *
   */
-class VagrantVm(var vagrantVm: RubyObject)
+class VagrantVm(var vagrantVm: RubyObject) {
 
 /**
   * The {@link VagrantVm} is a wrapper for a Vagrant VM. The class contains the JRuby object for the connections and forwards the method calls to it. This constructor is used by the builder classes or the {@link VagrantEnvironment} class. You do not need to call it in your code
   *
   * @param vagrantVm The Vagrant VM connection object
-  */ {
+  */
   /**
     * Creates & starts the VM
     */

@@ -15,13 +15,13 @@ import vm.vagrant.util.VagrantException
   * @author oliver.ziegert
   *
   */
-class VagrantSSHConnection(vagrantSSH: RubyObject)
+class VagrantSSHConnection(vagrantSSH: RubyObject) {
 
 /**
   * Constructor for the SHH connection. Normally you do not need to create a connection on your own. Use {@link VagrantVm.createConnection()} to create a new SSH connection.
   *
   * @param vagrantSSH The Vagrant SSH connection object
-  */ {
+  */
   /**
     * Checks if the connection is ready. Normally you do not need this this methode because the connection should be always ready.
     *

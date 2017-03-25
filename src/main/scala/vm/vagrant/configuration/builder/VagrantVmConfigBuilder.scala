@@ -14,8 +14,8 @@ object VagrantVmConfigBuilder {
 }
 
 class VagrantVmConfigBuilder() {
-  private var portForwardings = new List[VagrantPortForwarding]
-  private var puppetProvisionerConfig: puppetProvisionerConfig = _
+  private var portForwardings: List[VagrantPortForwarding] = _
+  private var puppetProvisionerConfig: PuppetProvisionerConfig = _
   private var name: String = _
   private var ip: String = _
   private var boxName: String = _
@@ -75,6 +75,29 @@ class VagrantVmConfigBuilder() {
     }
     this
   }
+
+  /*
+
+  SSP - Part !!!!!!!!!!!!!!!!!!!!!!!!!
+
+   */
+
+  def withDevBox: VagrantVmConfigBuilder = {
+    this.boxName = "sds-devbox"
+    try
+      this.boxUrl = new URL("https://sds.ssp-europe.eu/api/v4/public/shares/downloads/YgegiC6hF3mtmSFoQ6IaLfF5maaIRGYm/5rogL8eq-fr2ZYhO6jW1XMxbbZxlaDw0L5gW7lj4v_mqMIssU1Ie79BRj9hHVDpBhcOU3YWWbELPUcYCOKAu47t4_y_8Mv-rmEnJLYbC7DDVz51is9AOd9VE5zdeU5ym4_HcGnX4TBLYCTwn3RiIcDo_EwCPnJ0h_RiKLG8_d26dgTohAl_KMYHQ1e4f18df7e302f02")
+    catch {
+      case e: MalformedURLException =>
+        throw new RuntimeException(e)
+    }
+    this
+  }
+
+  /*
+
+  SSP - Part !!!!!!!!!!!!!!!!!!!!!!!!!
+
+ */
 
   def withBoxName(boxName: String): VagrantVmConfigBuilder = {
     this.boxName = boxName

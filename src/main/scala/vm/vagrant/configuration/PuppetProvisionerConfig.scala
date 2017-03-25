@@ -10,11 +10,11 @@ package vm.vagrant.configuration
   * @author oliver.ziegert
   *
   */
-class PuppetProvisionerConfig(debug: Boolean, manifestsPath: String, manifestFile: String, modulesPath: String)
+class PuppetProvisionerConfig(debug: Boolean, manifestsPath: String, manifestFile: String, modulesPath: String) {
 
 /**
   * Creates a new {@link PuppetProvisionerConfig}
-  */ {
+  */
   /**
     * Returns the name of the Puppet manifest
     *

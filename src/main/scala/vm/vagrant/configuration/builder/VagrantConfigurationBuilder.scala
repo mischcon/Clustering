@@ -4,6 +4,7 @@ package vm.vagrant.configuration.builder
   * Created by oliver.ziegert on 24.03.17.
   */
 
+import scala.collection.immutable.List
 import vm.vagrant.configuration.VagrantConfiguration
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 import vm.vagrant.configuration.VagrantFileTemplateConfiguration
@@ -17,20 +18,20 @@ object VagrantConfigurationBuilder {
 
 class VagrantConfigurationBuilder() {
   private var environmentConfig: VagrantEnvironmentConfig = _
-  private var fileTemplateConfigurations = new List[VagrantFileTemplateConfiguration]
-  private var folderTemplateConfigurations = new List[VagrantFolderTemplateConfiguration]
+  private var fileTemplateConfigurations: List[VagrantFileTemplateConfiguration] = _
+  private var folderTemplateConfigurations: List[VagrantFolderTemplateConfiguration] = _
 
-  def withVagrantEnvironmentConfig(environmentConfig: VagrantConfigurationBuilder): VagrantConfigurationBuilder = {
+  def withVagrantEnvironmentConfig(environmentConfig: VagrantEnvironmentConfig): VagrantConfigurationBuilder = {
     this.environmentConfig = environmentConfig
     this
   }
 
-  def withVagrantFileTemplateConfiguration(fileTemplateConfiguration: VagrantConfigurationBuilder): VagrantConfigurationBuilder = {
+  def withVagrantFileTemplateConfiguration(fileTemplateConfiguration: VagrantFileTemplateConfiguration): VagrantConfigurationBuilder = {
     fileTemplateConfigurations = fileTemplateConfigurations :+ fileTemplateConfiguration
     this
   }
 
-  def withVagrantFolderTemplateConfiguration(folderTemplateConfiguration: VagrantConfigurationBuilder): VagrantConfigurationBuilder = {
+  def withVagrantFolderTemplateConfiguration(folderTemplateConfiguration: VagrantFolderTemplateConfiguration): VagrantConfigurationBuilder = {
     folderTemplateConfigurations = folderTemplateConfigurations :+ folderTemplateConfiguration
     this
   }
