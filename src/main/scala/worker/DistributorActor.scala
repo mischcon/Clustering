@@ -3,7 +3,7 @@ import akka.actor.{Actor, Props}
 import akka.remote.ContainerFormats.ActorRef
 import worker.messages.{AddTask, GetTask}
 
-class WorkerActor extends WorkerTrait{
+class DistributorActor extends WorkerTrait{
 
   override def preStart(): Unit = {
     log.debug("hello from distributor!")
@@ -32,6 +32,6 @@ class WorkerActor extends WorkerTrait{
   }
 
   def getTask(msg : GetTask) = {
-    context.children.head forward msg
+    context.children.foreach(u => u forward msg)
   }
 }

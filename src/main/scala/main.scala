@@ -1,6 +1,6 @@
 import akka.actor.{ActorRef, ActorSystem, Props}
 import com.typesafe.config.ConfigFactory
-import worker.{TaskActor, WorkerActor}
+import worker.{TaskActor, DistributorActor}
 import worker.messages.{AddTask, GetTask, Task}
 
 import scala.io.StdIn
@@ -15,7 +15,7 @@ object main extends App{
   val system : ActorSystem = ActorSystem("the-cluster", config.getConfig("master").withFallback(config))
   println("hello from master!")
 
-  val workerActor : ActorRef = system.actorOf(Props[WorkerActor], "distributor")
+  val workerActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
 
   val task = Task(null, false)
 

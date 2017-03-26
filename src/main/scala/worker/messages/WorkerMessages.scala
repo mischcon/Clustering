@@ -11,7 +11,9 @@ trait WorkerMessagesTrait
 
 case class AddTask(group : List[String], task : Task) extends WorkerMessagesTrait
 case class GetTask() extends WorkerMessagesTrait
-case object GetTaskFromTaskActor extends WorkerMessagesTrait
+case object OfferSelf extends WorkerMessagesTrait
+case class AquireExecutor(vmInfo : Object) extends WorkerMessagesTrait
+case class Executor(ref : ActorRef) extends WorkerMessagesTrait
 
 case class SendTask(task : Task)
 case class Result(res : Object) extends WorkerMessagesTrait

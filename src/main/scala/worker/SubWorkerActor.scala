@@ -1,16 +1,10 @@
 package worker
 
-import akka.actor.Actor.Receive
-import akka.actor.SupervisorStrategy.{Escalate, Stop}
-import akka.actor.{ActorRef, OneForOneStrategy, Props, SupervisorStrategy}
-import akka.event.Logging
-import akka.pattern._
+import akka.actor.{ActorRef, Props}
 import akka.util.Timeout
-import utils.Status
 import worker.messages._
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
@@ -23,7 +17,11 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
-    case "goodbye" => taskActors = taskActors.filter(x => x != sender())
+    case r : Result => {
+      // inform somebody that the test was successful
+      context.parent ! r
+      taskActors = taskActors.filter(x => x != sender())
+    }
     case x => log.debug(s"${self.path.name} received something unexpected: $x")
   }
 
