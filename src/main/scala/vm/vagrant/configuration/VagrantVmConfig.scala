@@ -13,7 +13,16 @@ import java.net.URL
   * @author oliver.ziegert
   *
   */
-class VagrantVmConfig(name: String, ip: String, hostName: String, boxName: String, boxUrl: URL, portForwardings: Iterable[VagrantPortForwarding], puppetProvisionerConfig: PuppetProvisionerConfig, guiMode: Boolean) {
+class VagrantVmConfig(name: String,
+                      ip: String,
+                      hostName: String,
+                      boxName: String,
+                      boxUrl: URL,
+                      portForwardings: Iterable[VagrantPortForwarding],
+                      puppetProvisionerConfig: PuppetProvisionerConfig,
+                      guiMode: Boolean = false,
+                      boot_timeout: Int = 300,
+                      boxCheckUpdate: Boolean = true){
 
   /**
     * Returns the host name of the VM
@@ -70,4 +79,13 @@ class VagrantVmConfig(name: String, ip: String, hostName: String, boxName: Strin
     * @return the static ip for the VM
     */
   def getIp: String = ip
+
+  /**
+    * Returns the Boot-Timeout for the VM
+    *
+    * @return the Boot-Timeout for the VM
+    */
+  def getBootTimeout: Int = boot_timeout
+
+  def getBoxCheckUpdate:Boolean = boxCheckUpdate
 }

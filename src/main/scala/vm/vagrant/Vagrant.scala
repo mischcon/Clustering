@@ -2,7 +2,6 @@ package vm.vagrant
 
 import java.io.{File, IOException}
 import java.nio.charset.Charset
-import java.util.HashMap
 import scala.io.Source.fromURL
 import scala.collection.JavaConverters._
 import sbt.io.IO.{copyFile, write, copyDirectory}
@@ -27,8 +26,8 @@ class Vagrant(debug: Boolean = false){
 
   def createEnvironment: VagrantEnvironment = {
     val os = if (System.getProperty("os.name").toLowerCase.contains("windows")) "windows" else "java"
-    val vagrantEnv = scriptingContainer.runScriptlet(s"RUBY_PLATFORM = '$os'\n" +
-      "require 'rubygems'\n" +
+    scriptingContainer.put("RUBY_PLATFORM", os)
+    val vagrantEnv = scriptingContainer.runScriptlet("require 'rubygems'\n" +
       "require 'vagrant-wrapper'\n" +
       "return VagrantWrapper.require_or_help_install('>= 1.1')").asInstanceOf[RubyObject]
     new VagrantEnvironment(vagrantEnv)

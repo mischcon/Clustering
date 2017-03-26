@@ -4,6 +4,7 @@ package vm.vagrant.configuration
   * Created by oliver.ziegert on 24.03.17.
   */
 
+import java.io.File
 import java.net.URL
 import java.util.UUID
 
@@ -18,7 +19,7 @@ object VagrantConfigurationUtilities {
 
   def createVagrantFileContent(config: VagrantEnvironmentConfig): String = {
     val builder = new StringBuilder
-    builder.append("Vagrant::Config.run do |config|").append("\n")
+    builder.append("Vagrant.configure(\"2\") do |config|").append("\n")
     for (vmConfig <- config.getVmConfigs) {
       builder.append(createVmInMultiEnvConfig(vmConfig))
     }
@@ -30,60 +31,175 @@ object VagrantConfigurationUtilities {
     val builder = new StringBuilder
     var vmName = vmConfig.getName
     if (vmName == null) vmName = UUID.randomUUID.toString
-    builder.append("config.vm.define :" + vmName + " do |" + vmName + "_config|").append("\n")
-    for (portForwarding <- vmConfig.getPortForwardings) {
-      builder.append(createPortForwardingConfig(vmName + "_config", portForwarding))
-    }
-    builder.append(createBoxNameConfig(vmName + "_config", vmConfig.getBoxName))
-    val boxUrl = vmConfig.getBoxUrl
-    if (boxUrl != null) builder.append(createBoxUrlConfig(vmName + "_config", boxUrl))
-    val ip = vmConfig.getIp
-    if (ip != null) builder.append(createHostOnlyIpConfig(vmName + "_config", ip))
-    val guiMode = vmConfig.isGuiMode
-    if (guiMode) builder.append(createGuiModeConfig(vmName + "_config"))
-    val hostName = vmConfig.getHostName
-    if (hostName != null) builder.append(createHostNameConfig(vmName + "_config", hostName))
-    val puppetProvisionerConfig = vmConfig.getPuppetProvisionerConfig
-    if (puppetProvisionerConfig != null) builder.append(createPuppetProvisionerConfig(vmName + "_config", puppetProvisionerConfig))
+    builder.append(createVmBootTimeoutConfig(vmConfig.getBootTimeout))
+    val boxName = vmConfig.getBoxName
+    if (boxName != null) builder.append(createVmBoxNameConfig(boxName))
+    builder.append(createVmBoxCheckUpdateConfig(vmConfig.getBoxCheckUpdate))
+
+
+
+
     builder.append("end").append("\n")
     builder.toString
   }
 
-  private def createPortForwardingConfig(vmConfigName: String, portForwarding: VagrantPortForwarding) = {
+  private def createVmBootTimeoutConfig(value: Int) = {
     val builder = new StringBuilder
-    val portForwardingName = portForwarding.getName
-    if (portForwardingName != null) builder.append(vmConfigName + ".vm.forward_port \"" + portForwardingName + "\", " + portForwarding.getGuestport + ", " + portForwarding.getHostport).append("\n")
-    else builder.append(vmConfigName + ".vm.forward_port " + portForwarding.getGuestport + ", " + portForwarding.getHostport).append("\n")
+    builder.append(s"  config.vm.boot_timeout = ${value}").append("\n")
     builder.toString
   }
 
-  private def createBoxNameConfig(vmConfigName: String, boxName: String) = {
+  private def createVmBoxNameConfig(value: String) = {
     val builder = new StringBuilder
-    builder.append(vmConfigName + ".vm.box = \"" + boxName + "\"").append("\n")
+    builder.append(s"""  config.vm.box = "$value"""").append("\n")
     builder.toString
   }
 
-  private def createHostNameConfig(vmConfigName: String, hostName: String) = {
+  private def createVmBoxCheckUpdateConfig(value: Boolean) = {
     val builder = new StringBuilder
-    if (hostName != null) builder.append(vmConfigName + ".vm.host_name = \"" + hostName + ".local\"").append("\n")
+    builder.append(s"""  config.vm.box_check_update = $value""").append("\n")
     builder.toString
   }
 
-  private def createBoxUrlConfig(vmConfigName: String, boxUrl: URL) = {
+  private def createVmBoxDownloadChecksumConfig(value: String) = {
     val builder = new StringBuilder
-    if (boxUrl != null) builder.append(vmConfigName + ".vm.box_url = \"" + boxUrl + "\"").append("\n")
+    builder.append(s"""  config.vm.box_download_checksum = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmBoxDownloadChecksumTypeConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.box_download_checksum_type = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmBoxDownloadClientCertConfig(value: File) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.box_download_client_cert = "${value.getAbsolutePath}"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm. = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmBoxDownloadCaCertConfig(value: File) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.box_download_ca_cert = "${value.getAbsolutePath}"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmBoxDownloadCaPathConfig(value: File) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.box_download_ca_path = "${value.getAbsolutePath}"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmBoxDownloadInsecureConfig(value: Boolean) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.box_download_insecure = $value""").append("\n")
+    builder.toString
+  }
+
+  private def createVmBoxDownloadLocationTrustedConfig(value: Boolean) = {
+    val builder = new StringBuilder
+    builder.append(s"  config.vm.box_download_location_trusted = ${value}").append("\n")
+    builder.toString
+  }
+
+  private def createVmBoxUrlConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.box_url = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmBoxVersionConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.box_version = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmCommunicatorConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.communicator = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmGracefulHaltTimeoutConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.graceful_halt_timeout = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmGuestConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.guest = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmHostNameConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.hostname = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmPostUpMessageConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.post_up_message = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmProvisionConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.provision = "$value"""").append("\n")    // TODO: Fertigstellen
+    builder.toString
+  }
+
+  private def createVmSyncedFolderConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm.synced_folder = "$value"""").append("\n")  // TODO: Fertigstellen
+    builder.toString
+  }
+
+  private def createVmUsablePortRangeConfig(value: String) = {
+    val builder = new StringBuilder
+    builder.append(s"""  config.vm. = "$value"""").append("\n")
+    builder.toString
+  }
+
+  private def createVmNetworkPortForwardingConfig(vmConfigName: String, portForwarding: VagrantPortForwarding) = {
+    val builder = new StringBuilder
+    if (portForwarding.isComplete) {
+      builder.append(s"""  config.vm.network "forwarded_port", guest: ${portForwarding.getGuestport}, host: ${portForwarding.getHostport}""")
+      val portForwardingName = portForwarding.getName
+      if (portForwardingName != null && !portForwardingName.isEmpty) builder.append(s", id: $portForwardingName")
+      val portForwardingProtocol = portForwarding.getpProtocol
+      if (portForwardingProtocol != null && !portForwardingProtocol.isEmpty) builder.append(s", protocol: $portForwardingProtocol")
+      builder.append("\n")
+    }
+    builder.toString
+  }
+
+  private def createVmProviderConfig(value: VagrantProviderConfig) = {
+    val builder = new StringBuilder
+    val providerName = value.getName
+    if (providerName != null && providerName.isEmpty) {
+      builder.append(s"""  config.vm.provider "$providerName" do |provider|""").append("\n")
+      builder.append(s"    provider.gui = ${value.isGuiMode}").append("\n")
+      val providerMemory = value.getMemory
+      if (providerMemory < 0 ) builder.append(s"""    provider.memory = "$providerMemory"""").append("\n")
+      val providerCpus = value.getCpus
+      if (providerMemory < 0 ) builder.append(s"""    provider.cpus = "$providerCpus"""").append("\n")
+      builder.append("  end").append("\n")
+    }
     builder.toString
   }
 
   private def createHostOnlyIpConfig(vmConfigName: String, ip: String) = {
     val builder = new StringBuilder
     if (ip != null) builder.append(vmConfigName + ".vm.network :hostonly, \"" + ip + "\"").append("\n")
-    builder.toString
-  }
-
-  private def createGuiModeConfig(vmConfigName: String) = {
-    val builder = new StringBuilder
-    builder.append(vmConfigName + ".vm.boot_mode = :gui").append("\n")
     builder.toString
   }
 
@@ -101,6 +217,8 @@ object VagrantConfigurationUtilities {
     }
     builder.toString
   }
+
+
 }
 
 class VagrantConfigurationUtilities private() {

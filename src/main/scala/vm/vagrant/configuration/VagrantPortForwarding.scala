@@ -9,7 +9,7 @@ package vm.vagrant.configuration
   * @author oliver.ziegert
   *
   */
-class VagrantPortForwarding(var name: String, var guestport: Int, var hostport: Int) {
+class VagrantPortForwarding(var name: String, var guestport: Int, var hostport: Int, var protocol: String) {
 
 /**
   * Constructor for the port forwarding
@@ -34,4 +34,13 @@ class VagrantPortForwarding(var name: String, var guestport: Int, var hostport: 
     * @return the hostport
     */
   def getHostport: Int = hostport
+
+  /**
+    * Returns the protocol
+    *
+    * @return the protocol
+    */
+  def getpProtocol: String = protocol
+
+  def isComplete: Boolean = if (guestport != 0 && hostport != 0) true else false
 }

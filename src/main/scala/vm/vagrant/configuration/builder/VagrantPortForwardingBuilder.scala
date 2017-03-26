@@ -16,6 +16,7 @@ class VagrantPortForwardingBuilder() {
   private var guestport: Int = _
   private var hostport: Int = _
   private var name: String = _
+  private var protocol: String = _
 
   def withHostPort(hostport: Int): VagrantPortForwardingBuilder = {
     this.hostport = hostport
@@ -32,9 +33,14 @@ class VagrantPortForwardingBuilder() {
     this
   }
 
+  def withProtocol(protocol: String): VagrantPortForwardingBuilder = {
+    this.protocol = protocol
+    this
+  }
+
   def build: VagrantPortForwarding = {
     if (guestport < 0) throw new VagrantBuilderException("no guestport defined")
     if (hostport < 0) throw new VagrantBuilderException("no hostport defined")
-    new VagrantPortForwarding(name, guestport, hostport)
+    new VagrantPortForwarding(name, guestport, hostport, protocol)
   }
 }

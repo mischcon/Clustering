@@ -27,7 +27,7 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
     */
   def up() {
     try
-      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "up"))
+      vagrantEnvironment.callMethod("execute", RubyString.newString(vagrantEnvironment.getRuntime, "up"))
     catch {
       case exception: RaiseException =>
         throw new VagrantException(exception)
