@@ -1,17 +1,13 @@
 package worker
 
-import java.lang.reflect.Method
-
-import akka.pattern._
-import akka.actor.{Actor, ActorRef}
-import akka.actor.Actor.Receive
-import utils.LoggingActor
-import worker.messages.{GetTask, SendTask, Task}
+import worker.messages.{Result, SendTask, Task}
 
 /**
   * Created by mischcon on 21.03.17.
   */
-class TaskActor(targetVM : ActorRef) extends WorkerTrait{
+class TaskActor(task : Task) extends WorkerTrait{
+
+  var isTaken : Boolean = false
 
   override def preStart(): Unit = {
     log.debug(s"Hello from ${self.path.name}")
@@ -21,14 +17,15 @@ class TaskActor(targetVM : ActorRef) extends WorkerTrait{
     log.debug(s"Goodbye from ${self.path.name}")
   }
 
-  // request new Task
-  context.system.actorSelection("user/distributor") ! GetTask()
-
   override def receive: Receive = {
-    case t : SendTask => {
+    case t : SendTask if ! isTaken => {
+      isTaken = true
       log.debug("received a task! - returning own actor ref for supervision purpose")
       sender ! self
 
+      val result : Object = t.task.method
+      context.parent ! Result(result)
+      context.stop(self)
     }
   }
 }

@@ -11,8 +11,10 @@ trait WorkerMessagesTrait
 
 case class AddTask(group : List[String], task : Task) extends WorkerMessagesTrait
 case class GetTask() extends WorkerMessagesTrait
+case object GetTaskFromTaskActor extends WorkerMessagesTrait
 
 case class SendTask(task : Task)
+case class Result(res : Object) extends WorkerMessagesTrait
 
 case class Task(method : Method, singleInstance: Boolean) extends WorkerMessagesTrait
 

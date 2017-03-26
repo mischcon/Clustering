@@ -9,7 +9,7 @@ import akka.util.Timeout
 import utils.Status
 import worker.messages._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import scala.concurrent.duration._
 
@@ -17,18 +17,14 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
 
   implicit val timeout = Timeout(2 seconds)
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
-  var tasks : List[(Task, Object, String, ActorRef)] = Nil
+
+  var taskActors : List[ActorRef] = Nil
 
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
+    case "goodbye" => taskActors = taskActors.filter(x => x != sender())
     case x => log.debug(s"${self.path.name} received something unexpected: $x")
-  }
-
-  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
-    case cause:Throwable =>
-      log.debug(s"${self.path.name} received throwable from child - stopping child")
-      Stop
   }
 
   def addTask(msg : AddTask) = {
@@ -42,50 +38,20 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
       else
         context.actorOf(Props(classOf[GroupActor], name), name.mkString(".")) ! msg
     }
-    // or add the task to the list in this worker
+    // or create new TaskActor
     else {
       log.debug(s"task was added to ${self.path.name}")
-      tasks = (msg.task, null, Status.NOT_RUNNING, null) :: tasks
+      taskActors = context.actorOf(Props(classOf[TaskActor], msg.task), s"TASK-${msg.task.method.getName}") :: taskActors
     }
-  }
-
-  def updateTask(task : Task, result : Object, status : String, target : ActorRef): Unit ={
-
   }
 
   def getTask(msg : GetTask) = {
-    // check if there are still tasks in this node
-    if(tasks.exists(p => p._3 == Status.NOT_RUNNING)){
-      // take one task
-      val task_to_run = tasks.filter(p => p._3 == Status.NOT_RUNNING).head
-      tasks = tasks.filter(p => p != task_to_run)
-      log.debug(s"task was taken from ${self.path.name} awaiting actor ref....")
-      /* pass the task to the node actor and request the actorRef of the execution actor
-      *
-      * This is neccessary because now we can supervise the executing actor
-      * */
-      val actorRef_of_executing_actor = sender() ? SendTask(task_to_run._1)
-
-      actorRef_of_executing_actor.onComplete {
-        case Success(ref : ActorRef) => {
-          log.debug(s"${self.path.name} received an actor ref! now monitoring the actor...")
-          context.watch(ref)
-          tasks = (task_to_run._1, null, Status.RUNNING, ref) :: tasks
-        }
-        case Failure(ex : Throwable) => {
-          // put task back in list
-          tasks = (task_to_run._1, null, Status.NOT_RUNNING, null) :: tasks
-          log.debug(s"NodeActor did not return the ActorRef of the executing actor: ${ex.getMessage}")
-        }
-      }
-    } else if(context.children.nonEmpty) {
-      // if not, forward the message to one of your children if there are any
-      log.debug(s"no tasks left in ${self.path.name} - forwarding to child")
-      context.children.head forward msg
-    } else {
-      log.debug(s"neither tasks nor children in ${self.path.name} - escalating to parent")
-      context.parent ! Escalate
-    }
+    // check if there is any free task actor left
+    if(taskActors.nonEmpty)
+      taskActors.foreach(x => x forward msg)
+    // if not, pass the message to your children
+    else
+      context.children.foreach(x => x forward msg)
   }
 
   override def preStart(): Unit = {
