@@ -28,7 +28,7 @@ object DBConnectionTest extends App {
   val result1 = Await.result(future1, timeout.duration).asInstanceOf[Option[RequestedTask]]
   result1 match {
     case Some(task) =>
-      println(s"${task.method} - ${task.status} - ${task.result}")
+      println(s"${task.method} - ${task.task_status} - ${task.end_state} - ${task.task_result}")
     case None =>
       println("no result")
   }
@@ -44,7 +44,7 @@ object DBConnectionTest extends App {
   result2 match {
     case Some(tasks) =>
       for (task <- tasks) {
-        println(s"${task.method} - ${task.status} - ${task.result}")
+        println(s"${task.method} - ${task.task_status} - ${task.end_state} - ${task.task_result}")
       }
     case None =>
       println("no result")
@@ -57,7 +57,7 @@ object DBConnectionTest extends App {
   result3 match {
     case Some(tasks) =>
       for (task <- tasks) {
-        println(s"${task.method} - ${task.status} - ${task.result}")
+        println(s"${task.method} - ${task.task_status} - ${task.end_state} - ${task.task_result}")
       }
     case None =>
       println("no result")

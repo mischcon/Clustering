@@ -10,13 +10,13 @@ import com.typesafe.config.ConfigFactory
   * Current database scheme:
   *
   * tasks:
-  * +-----+--------+-------------+---------+
-  * | id  | method |   status    | result  |
-  * +-----+--------+-------------+---------+
-  * | int | string | NOT_STARTED | SUCCESS |
-  * |     |        | IN_PROCESS  | FAILURE |
-  * |     |        | DONE        | ERROR   |
-  * +-----+--------+-------------+---------+
+  * +-----+--------+-------------+-----------+-------------+
+  * | id  | method | task_status | end_state | task_result |
+  * +-----+--------+-------------+-----------+-------------+
+  * | int | string | NOT_STARTED | SUCCESS   | string      |
+  * |     |        | IN_PROGRESS | FAILURE   |             |
+  * |     |        | DONE        | ERROR     |             |
+  * +-----+--------+-------------+-----------+-------------+
   * }}}
   * All messages that are meant to be sent to this actor use [[utils.db.DBMessage]].
   */
@@ -104,7 +104,7 @@ class DBActor extends Actor {
     connect match {
       case Some(connection) =>
         val statement = connection.createStatement()
-        val sql = s"SELECT status, result FROM tasks WHERE method = '$method';"
+        val sql = s"SELECT task_status, end_state, task_result FROM tasks WHERE method = '$method';"
         try {
           val resultSet = statement.executeQuery(sql)
           if (!resultSet.isBeforeFirst) {
@@ -112,10 +112,11 @@ class DBActor extends Actor {
             println(Console.RED + s"requested task: $method not found")
           }
           else while (resultSet.next()) {
-            val status = TaskStatus.valueOf(resultSet.getString("status"))
-            val result = resultSet.getString("result")
-            sender() ! Some(RequestedTask(method, status, result))
-            println(Console.GREEN + s"responsed w/ requested task:\n$method - $status - $result")
+            val task_status = TaskStatus.valueOf(resultSet.getString("task_status"))
+            val end_state = resultSet.getString("end_state")
+            val task_result = resultSet.getString("task_result")
+            sender() ! Some(RequestedTask(method, task_status, end_state, task_result))
+            println(Console.GREEN + s"responsed w/ requested task:\n$method - $task_status - $end_state - $task_result")
           }
         }
         catch {
@@ -137,7 +138,7 @@ class DBActor extends Actor {
     connect match {
       case Some(connection) =>
         val statement = connection.createStatement()
-        var sql = s"SELECT method, status, result FROM tasks WHERE method IN ("
+        var sql = s"SELECT method, task_status, end_state, task_result FROM tasks WHERE method IN ("
         for (method <- methods) {
           sql += s"'$method', "
         }
@@ -152,10 +153,11 @@ class DBActor extends Actor {
             var taskList = List[RequestedTask]()
             while (resultSet.next()) {
               val method = resultSet.getString("method")
-              val status = TaskStatus.valueOf(resultSet.getString("status"))
-              val result = resultSet.getString("result")
-              taskList = RequestedTask(method, status, result) :: taskList
-              println(Console.GREEN + s"responsed w/ requested task:\n$method - $status - $result")
+              val task_status = TaskStatus.valueOf(resultSet.getString("task_status"))
+              val end_state = resultSet.getString("end_state")
+              val task_result = resultSet.getString("task_result")
+              taskList = RequestedTask(method, task_status, end_state, task_result) :: taskList
+              println(Console.GREEN + s"responsed w/ requested task:\n$method - $task_status - $end_state - $task_result")
             }
             sender() ! Some(taskList)
           }
@@ -173,26 +175,27 @@ class DBActor extends Actor {
   /**
     * = Answers w/ requested tasks =
     * Some(List[ [[utils.db.RequestedTask]] ]) or [[scala.None]]
-    * @param status requested status from [[utils.db.TaskStatus]]
+    * @param task_status requested status from [[utils.db.TaskStatus]]
     */
-  def getTasksWithStatus(status: TaskStatus): Unit = {
+  def getTasksWithStatus(task_status: TaskStatus): Unit = {
     connect match {
       case Some(connection) =>
         val statement = connection.createStatement()
-        val sql = s"SELECT method, result FROM tasks WHERE status = '$status';"
+        val sql = s"SELECT method, end_state, task_result FROM tasks WHERE task_status = '$task_status';"
         try {
           val resultSet = statement.executeQuery(sql)
           if (!resultSet.isBeforeFirst) {
             sender() ! None
-            println(Console.RED + s"no tasks w/ status $status found")
+            println(Console.RED + s"no tasks w/ status $task_status found")
           }
           else {
             var taskList = List[RequestedTask]()
             while (resultSet.next()) {
               val method = resultSet.getString("method")
-              val result = resultSet.getString("result")
-              taskList = RequestedTask(method, status, result) :: taskList
-              println(Console.GREEN + s"responsed w/ requested task:\n$method - $status - $result")
+              val end_state = resultSet.getString("end_state")
+              val task_result = resultSet.getString("task_result")
+              taskList = RequestedTask(method, task_status, end_state, task_result) :: taskList
+              println(Console.GREEN + s"responsed w/ requested task:\n$method - $task_status - $end_state - $task_result")
             }
             sender() ! Some(taskList)
           }
@@ -210,13 +213,13 @@ class DBActor extends Actor {
   /**
     * = Updates task w/ new status =
     * @param method name of requested task
-    * @param status new status from [[utils.db.TaskStatus]]
+    * @param task_status new status from [[utils.db.TaskStatus]]
     */
-  def updateTaskStatus(method : String, status : TaskStatus): Unit = {
+  def updateTaskStatus(method : String, task_status : TaskStatus): Unit = {
     connect match {
       case Some(connection) =>
         val statement = connection.createStatement()
-        val sql = s"UPDATE tasks SET status = '$status' WHERE method = '$method';"
+        val sql = s"UPDATE tasks SET task_status = '$task_status' WHERE method = '$method';"
         try {
           // auto commit is on
           val result = statement.executeUpdate(sql)
@@ -236,13 +239,13 @@ class DBActor extends Actor {
   /**
     * = Updates several tasks w/ new status =
     * @param methods list w/ names of requested tasks
-    * @param status new status for all tasks from [[utils.db.TaskStatus]]
+    * @param task_status new status for all tasks from [[utils.db.TaskStatus]]
     */
-  def updateTasksStatus(methods : List[String], status : TaskStatus): Unit = {
+  def updateTasksStatus(methods : List[String], task_status : TaskStatus): Unit = {
     connect match {
       case Some(connection) =>
         val statement = connection.createStatement()
-        var sql = s"UPDATE tasks SET status = '$status' WHERE method IN ("
+        var sql = s"UPDATE tasks SET task_status = '$task_status' WHERE method IN ("
         for (method <- methods) {
           sql += s"'$method', "
         }
