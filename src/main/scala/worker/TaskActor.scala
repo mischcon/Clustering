@@ -22,7 +22,7 @@ class TaskActor(task : Task) extends WorkerTrait{
 
   var targetVm : ActorRef = null
 
-  implicit val timeout = Timeout(2 seconds)
+  implicit val timeout = Timeout(1 seconds)
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
 
   override def preStart(): Unit = {
@@ -40,7 +40,10 @@ class TaskActor(task : Task) extends WorkerTrait{
   * Failure: Inform the parent actor --> he should stop all other child actors
   *
   * */
-  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(
+    maxNrOfRetries = 0,
+    loggingEnabled = false
+  ){
     case t : TestSuccessException => {
       log.debug("received TestSuccessException!")
       taskDone = true

@@ -12,7 +12,7 @@ import scala.util.Random
 
 abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
 
-  implicit val timeout = Timeout(2 seconds)
+  implicit val timeout = Timeout(1 seconds)
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
 
   var taskActors : List[ActorRef] = Nil
@@ -20,34 +20,50 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
-    case Terminated => taskActors = taskActors.filter(x => x != sender())
+    case t : Terminated => check_suicide()
     case x => log.debug(s"${self.path.name} received something unexpected: $x")
   }
 
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
     case t : TestFailException => {
       /* Test as failed - this means that the entire node should be stopped */
-      handleFailure(t.task, t.result)
+      handleFailure(t.task, t.result, sender())
       Stop
     }
     case t : TestSuccessException => {
-      handleSuccess(t.task, t.result)
+      handleSuccess(t.task, t.result, sender())
       Stop
     }
   }
 
-  def handleSuccess(task : Task, result : Object): Unit ={
+  def handleSuccess(task : Task, result : Object, source : ActorRef): Unit ={
     /* DB Actor + write */
     log.debug("writing SUCCESS result to db")
+    // PLACEHOLDER - write to db
+
+    log.debug(s"removing actorRef from list: ${source.path.toString}")
+    taskActors = taskActors.filter(x => x != source)
   }
 
-  def handleFailure(task : Task, result : Object): Unit = {
+  def handleFailure(task : Task, result : Object, source : ActorRef): Unit = {
     /* DB Actor + write */
-    log.debug("writing FAILURE result to db")
+    log.debug(s"writing FAILURE result to db")
+    // PLACEHOLDER - write to db
+
+    log.debug(s"removing actorRef from list: ${source.path.toString}")
+    taskActors = taskActors.filter(x => x != source)
 
     /* stop all children */
     context.children.foreach(x => x ! PoisonPill)
-    self ! PoisonPill
+  }
+
+  def check_suicide(): Unit ={
+    if(taskActors.isEmpty && context.children.isEmpty) {
+      log.debug("no more tasks available and no more children present - performing suicide for the greater good")
+      self ! PoisonPill
+    } else {
+      log.debug(s"there are still children that depend on ${self.path.toString} - I will stay in this world (taskActors: ${taskActors.size} | children: ${context.children.size})")
+    }
   }
 
   def addTask(msg : AddTask) = {
@@ -56,15 +72,23 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
       val name = msg.group.take(group.length + 1)
 
       // check if we need to create a group actor or single instance actor
-      if(msg.task.singleInstance)
-        context.actorOf(Props(classOf[SingleInstanceActor], name), name.mkString(".")) ! msg
-      else
-        context.actorOf(Props(classOf[GroupActor], name), name.mkString(".")) ! msg
+      if(msg.task.singleInstance) {
+        val ref = context.actorOf(Props(classOf[SingleInstanceActor], name), name.mkString("."))
+        ref ! msg
+        context.watch(ref)
+      }
+      else {
+        val ref = context.actorOf(Props(classOf[GroupActor], name), name.mkString("."))
+        ref ! msg
+        context.watch(ref)
+      }
     }
     // or create new TaskActor
     else {
       log.debug(s"task was added to ${self.path.name}")
-      taskActors = context.actorOf(Props(classOf[TaskActor], msg.task), s"TASK-${msg.task.method.getName}-${new Random().nextLong()}") :: taskActors
+      val ref = context.actorOf(Props(classOf[TaskActor], msg.task), s"TASK-${msg.task.method.getName}-${new Random().nextLong()}")
+      context.watch(ref)
+      taskActors = ref :: taskActors
     }
   }
 

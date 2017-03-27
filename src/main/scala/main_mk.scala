@@ -20,22 +20,25 @@ object main extends App{
   val workerActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
 
   var tc : TestClass = new TestClass()
-  var method : Method = tc.getTestMethod
 
-  val task = Task(method, false)
+  var method_success : Method = tc.getTestMethodSuccess
+  var method_fail : Method = tc.getTestMethodFail
 
-  workerActor ! AddTask(List("nodes"), task)
-  workerActor ! AddTask(List("nodes"), task)
-  workerActor ! AddTask(List("nodes", "rooms"), task)
+  val task_success = Task(method_success, false)
+  val task_fail = Task(method_fail, false)
+
+  workerActor ! AddTask(List("nodes"), task_success)
+  workerActor ! AddTask(List("nodes"), task_success)
+  workerActor ! AddTask(List("nodes", "rooms"), task_success)
 
   val testVMNodesActor : ActorRef = system.actorOf(Props(classOf[TestVMNodesActor], null), "vmActor")
 
-
-
-  Thread.sleep(100)
   testVMNodesActor ! "get"
-  Thread.sleep(10000)
+  Thread.sleep(5000)
   testVMNodesActor ! "get"
+  Thread.sleep(5000)
+  testVMNodesActor ! "get"
+  Thread.sleep(5000)
 
   println(new PrivateMethodExposer(system)('printTree)())
 

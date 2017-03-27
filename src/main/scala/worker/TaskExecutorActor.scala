@@ -1,4 +1,6 @@
 package worker
+import java.lang.Exception
+
 import Exceptions.{TestFailException, TestSuccessException}
 import akka.actor.Actor.Receive
 import worker.messages.{Result, Task}
@@ -17,18 +19,22 @@ class TaskExecutorActor(task : Task, vmInfo : Object) extends WorkerTrait{
   }
 
   override def receive: Receive = {
-    case "run" => {
-      /* execute task */
-      log.debug("EXECUTING task + \"excepting\" result to parent / supervisor")
+    case "run" => run()
+  }
 
-      throw TestSuccessException(task, null)
+  def run(): Unit ={
+    log.debug("EXECUTING task + \"excepting\" result to parent / supervisor")
+    try {
+      var obj = task.method.getDeclaringClass.newInstance()
+      log.debug("created instance")
+      task.method.invoke(obj)
+      log.debug("invocation was successful")
+    } catch {
+      case e : Exception => {
+        log.debug(s"invocation failed - ${e.getCause.toString}")
+        throw new TestFailException(task, e.getCause)
+      }
     }
-    case "run_fail" => {
-      /* execute task */
-      log.debug("FAILING task + \"excepting\" result to parent / supervisor")
-
-      throw TestFailException(task, null)
-    }
-    case a => println(a)
+    throw TestSuccessException(task, null)
   }
 }
