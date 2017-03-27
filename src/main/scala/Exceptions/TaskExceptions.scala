@@ -1,7 +1,9 @@
 package Exceptions
 
+import worker.messages.Task
+
 /**
   * Created by mischcon on 26.03.2017.
   */
-case object TestFailException extends Throwable
-case object TestSuccessException extends Throwable
+case class TestFailException(task : Task, result: Object) extends Throwable
+case class TestSuccessException(task : Task, result : Object) extends Throwable

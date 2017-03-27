@@ -1,6 +1,5 @@
 package worker
-import akka.actor.{Actor, Props}
-import akka.remote.ContainerFormats.ActorRef
+import akka.actor.Props
 import worker.messages.{AddTask, GetTask}
 
 class DistributorActor extends WorkerTrait{
@@ -16,6 +15,7 @@ class DistributorActor extends WorkerTrait{
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
+    case a => log.debug(s"received unexpected message: $a")
   }
 
   def addTask(msg : AddTask) = {
@@ -32,6 +32,7 @@ class DistributorActor extends WorkerTrait{
   }
 
   def getTask(msg : GetTask) = {
+    log.debug(s"received getTask - forwarding (have children: ${context.children.size})")
     context.children.foreach(u => u forward msg)
   }
 }

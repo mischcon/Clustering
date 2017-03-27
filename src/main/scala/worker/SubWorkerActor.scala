@@ -1,11 +1,14 @@
 package worker
 
-import akka.actor.{ActorRef, Props}
+import Exceptions.{TestFailException, TestSuccessException}
+import akka.actor.SupervisorStrategy.{Escalate, Stop}
+import akka.actor.{ActorRef, OneForOneStrategy, PoisonPill, Props, SupervisorStrategy, Terminated}
 import akka.util.Timeout
 import worker.messages._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
+import scala.util.Random
 
 abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
 
@@ -17,12 +20,34 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
-    case r : Result => {
-      // inform somebody that the test was successful
-      context.parent ! r
-      taskActors = taskActors.filter(x => x != sender())
-    }
+    case Terminated => taskActors = taskActors.filter(x => x != sender())
     case x => log.debug(s"${self.path.name} received something unexpected: $x")
+  }
+
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
+    case t : TestFailException => {
+      /* Test as failed - this means that the entire node should be stopped */
+      handleFailure(t.task, t.result)
+      Stop
+    }
+    case t : TestSuccessException => {
+      handleSuccess(t.task, t.result)
+      Stop
+    }
+  }
+
+  def handleSuccess(task : Task, result : Object): Unit ={
+    /* DB Actor + write */
+    log.debug("writing SUCCESS result to db")
+  }
+
+  def handleFailure(task : Task, result : Object): Unit = {
+    /* DB Actor + write */
+    log.debug("writing FAILURE result to db")
+
+    /* stop all children */
+    context.children.foreach(x => x ! PoisonPill)
+    self ! PoisonPill
   }
 
   def addTask(msg : AddTask) = {
@@ -39,17 +64,21 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
     // or create new TaskActor
     else {
       log.debug(s"task was added to ${self.path.name}")
-      taskActors = context.actorOf(Props(classOf[TaskActor], msg.task), s"TASK-${msg.task.method.getName}") :: taskActors
+      taskActors = context.actorOf(Props(classOf[TaskActor], msg.task), s"TASK-${msg.task.method.getName}-${new Random().nextLong()}") :: taskActors
     }
   }
 
   def getTask(msg : GetTask) = {
     // check if there is any free task actor left
-    if(taskActors.nonEmpty)
+    if(taskActors.nonEmpty) {
+      log.debug(s"received GetTask - forwarding it to taskActors (have ${taskActors.size})")
       taskActors.foreach(x => x forward msg)
+    }
     // if not, pass the message to your children
-    else
+    else {
+      log.debug(s"received GetTask - forwarding it to children (have ${context.children.size})")
       context.children.foreach(x => x forward msg)
+    }
   }
 
   override def preStart(): Unit = {

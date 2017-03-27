@@ -2,15 +2,15 @@ package worker
 
 import Exceptions._
 import akka.actor.SupervisorStrategy.{Escalate, Stop}
-import akka.actor.{ActorRef, OneForOneStrategy, SupervisorStrategy, Terminated}
+import akka.actor.{ActorRef, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.cluster.Cluster
 import akka.pattern._
 import akka.util.Timeout
 import worker.messages._
-import scala.concurrent.duration._
 
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Random, Success}
 
 /**
   * Created by mischcon on 21.03.17.
@@ -20,10 +20,10 @@ class TaskActor(task : Task) extends WorkerTrait{
   var isTaken : Boolean = false
   var taskDone : Boolean = false
 
+  var targetVm : ActorRef = null
+
   implicit val timeout = Timeout(2 seconds)
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
-
-  val cluster = Cluster(context.system)
 
   override def preStart(): Unit = {
     log.debug(s"Hello from ${self.path.name}")
@@ -41,14 +41,17 @@ class TaskActor(task : Task) extends WorkerTrait{
   *
   * */
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
-    case TestSuccessException => {
-      taskDone = true
-      Stop
-    }
-    case TestFailException => {
+    case t : TestSuccessException => {
+      log.debug("received TestSuccessException!")
       taskDone = true
       Escalate
     }
+    case t : TestFailException => {
+      log.debug("received TestFailException!")
+      taskDone = true
+      Escalate
+    }
+    case _ => Escalate
   }
 
   /*
@@ -62,19 +65,47 @@ class TaskActor(task : Task) extends WorkerTrait{
   *    another Executor asks for a new task
   * */
   override def receive: Receive = {
-    case GetTask if ! isTaken => handleGetTask()
-    case Terminated if taskDone => context.stop(self)
-    case Terminated if ! taskDone => isTaken = false
+    case p : GetTask if ! isTaken => handleGetTask()
+    case Terminated => handleTermianted()
+  }
+
+  def handleTermianted() = {
+    if(taskDone) {
+      log.debug("Terminated + task done --> shutting down self")
+      context.stop(self)
+    } else {
+      log.debug("Terminated + NOT task done --> isTaken = false + targetVm = null")
+      isTaken = false
+      context.unwatch(targetVm)
+      targetVm = null
+    }
   }
 
   def handleGetTask() = {
+    log.debug(s"received GetTask and I am not taken! - sending SendTask to ${sender().path.toString}")
     isTaken = true
     val executor = sender() ? SendTask(task)
     executor.onComplete{
-      case Success(actorRef : ActorRef) => {
-        context.watch(actorRef)
+      case Success(target : AquireExecutor) => {
+        log.debug("received vmInfo - now creating Executor")
+        log.debug("PLACEHOLDER - need to get address of free executor for remote actor deployment")
+
+        // watch SENDER (the targetVM Actor)
+        targetVm = target.vmActorRef
+        context.watch(targetVm)
+
+        // get executor
+        val ex : ActorRef = context.actorOf(Props(classOf[TaskExecutorActor], task, target.vmInfo), s"EXECUTOR-${task.method.getName}-${new Random().nextLong()}")
+
+        // send actorRef to targetVm
+        log.debug("sending actorRef of EXECUTOR to targetVmActor")
+        targetVm ! Executor(ex)
+
+        log.debug("sending RUN to EXECUTOR")
+        ex ! "run"
       }
-      case Failure(Object) => {
+      case Failure(exception) => {
+        log.error("did not receive vmInfos - going back to isTaken = false")
         isTaken = false
       }
     }
