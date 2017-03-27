@@ -4,6 +4,7 @@ import Exceptions.{TestFailException, TestSuccessException}
 import akka.actor.SupervisorStrategy.{Escalate, Stop}
 import akka.actor.{ActorRef, OneForOneStrategy, PoisonPill, Props, SupervisorStrategy, Terminated}
 import akka.util.Timeout
+import utils.db.{TaskStatus, UpdateTaskStatus}
 import worker.messages._
 
 import scala.concurrent.ExecutionContext
@@ -39,7 +40,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   def handleSuccess(task : Task, result : Object, source : ActorRef): Unit ={
     /* DB Actor + write */
     log.debug("writing SUCCESS result to db")
-    // PLACEHOLDER - write to db
+    //context.system.actorSelection("user/db") ! UpdateTaskStatus(task.method.getName, TaskStatus.DONE)
 
     log.debug(s"removing actorRef from list: ${source.path.toString}")
     taskActors = taskActors.filter(x => x != source)
