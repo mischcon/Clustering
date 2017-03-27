@@ -5,9 +5,9 @@ import java.lang.annotation.Target;
 
 
 /**
- * <pre>
- * Main clustering annotation.
  *
+ * <strong>Main clustering annotation</strong><br>
+ * <pre>
  * id               - task identifier
  * clusterType      - SINGLE_INSTANCE or GROUPING
  * members          - task dependency chain (single member if clusterType is SINGLE_INSTANCE)

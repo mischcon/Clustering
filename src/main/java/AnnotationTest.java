@@ -1,10 +1,14 @@
 import org.junit.jupiter.api.Test;
 
+/**
+ * <strong>Test application for @Clustering</strong><br>
+ * will be removed later
+ */
 public class AnnotationTest {
 
-    /*
-    * @Clustering for methods
-    * **************************************************************************************************************/
+    /**
+     * @Clustering for methods
+     */
 
     @Clustering(
             id="get_nodes",
@@ -43,9 +47,9 @@ public class AnnotationTest {
     @Test public static void testGetConfig() { System.out.println("> testGetConfig"); }
 
 
-    /*
-    * @Clustering for classes
-    * **************************************************************************************************************/
+    /**
+     * @Clustering for classes
+     */
     @Clustering(
             id="groups",
             clusterType=ClusterType.GROUPING,

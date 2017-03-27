@@ -1,7 +1,5 @@
 /**
- * <pre>
- * Represents allowed task duration units.
- * </pre>
+ * <strong>Represents allowed task duration units</strong>
  */
 public enum DurationUnit {
     SEC,

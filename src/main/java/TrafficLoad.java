@@ -1,9 +1,6 @@
 /**
- * <pre>
- * Indicates traffic usage of a task.
- *
+ * <strong>Indicates traffic usage of a task</strong><br>
  * e.g. down-/upload of large files
- * </pre>
  */
 public enum TrafficLoad {
     MINOR,
