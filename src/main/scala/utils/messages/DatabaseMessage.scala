@@ -6,7 +6,7 @@ package utils.messages
 
 /* REQUEST */
 
-@Deprecated("leave for documentation")
+@Deprecated
 trait DataBaseMessageRequest
 
 case class CreateTaskEntry(task : String, vmId : String, status : String) extends DataBaseMessageRequest
@@ -21,7 +21,7 @@ case class DecreaseTaskCounter(vmId: String) extends DataBaseMessageRequest
 
 /* RESPONSE */
 
-@Deprecated("leave for documentation")
+@Deprecated
 trait DataBaseMessageResponse
 
 case class ResponseTaskEntry(task : String, vmId : String, status : String) extends DataBaseMessageRequest
