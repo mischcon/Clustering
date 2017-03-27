@@ -7,15 +7,30 @@ import java.lang.annotation.Target;
 /**
  *
  * <strong>Main clustering annotation</strong><br>
- * <pre>
- * id               - task identifier
- * clusterType      - SINGLE_INSTANCE or GROUPING
- * members          - task dependency chain (single member if clusterType is SINGLE_INSTANCE)
- *                    array should be ordered in the way members depend on each other
- *                    e.g. {"files", "uploads"} - "uploads" depends on "files" so it appears after "files"
- * expectedDuration - expected task duration
- * durationUnit     - unit for expectedDuration
- * expectedTraffic  - expected traffic load
+ * <ul>
+ *     <li>
+ *         id - task identifier
+ *     </li>
+ *     <li>
+ *         clusterType - SINGLE_INSTANCE or GROUPING
+ *     </li>
+ *     <li>
+ *         <p>
+ *             members - task dependency chain (single member if clusterType is SINGLE_INSTANCE)<br>
+ *             array should be ordered in the way members depend on each other<br>
+ *             e.g. {"files", "uploads"} - "uploads" depends on "files" so it appears after "files"<br>
+ *         </p>
+ *     </li>
+ *     <li>
+ *         expectedDuration - expected task duration
+ *     </li>
+ *     <li>
+ *         durationUnit - unit for expectedDuration
+ *     </li>
+ *     <li>
+ *         expectedTraffic - expected traffic load
+ *     </li>
+ * </ul>
  * </pre>
  */
 @Retention(RetentionPolicy.RUNTIME)

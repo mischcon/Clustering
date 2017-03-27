@@ -1,8 +1,13 @@
 name := "Clustering"
-
 version := "1.0"
-
 scalaVersion := "2.12.1"
+
+// *****************************************************************
+// documentation settings
+scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits")
+javacOptions in (Compile,doc) ++= Seq("-notimestamp", "-linksource")
+autoAPIMappings := true
+// *****************************************************************
 
 val akkaVersion = "2.4.17"
 val akkaHttpVersion = "10.0.5"
