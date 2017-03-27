@@ -9,38 +9,10 @@ package vm.vagrant.configuration
   * @author oliver.ziegert
   *
   */
-class VagrantPortForwarding(var name: String, var guestport: Int, var hostport: Int, var protocol: String) {
-
-/**
-  * Constructor for the port forwarding
-  */
-  /**
-    * The name of the port forwarding. This is optional and used by Vagrant internally
-    *
-    * @return name of the port forwarding
-    */
-  def getName: String = name
-
-  /**
-    * Returns the guestport.
-    *
-    * @return the guestport
-    */
-  def getGuestport: Int = guestport
-
-  /**
-    * Returns the hostport
-    *
-    * @return the hostport
-    */
-  def getHostport: Int = hostport
-
-  /**
-    * Returns the protocol
-    *
-    * @return the protocol
-    */
-  def getpProtocol: String = protocol
+class VagrantPortForwarding(var name: String,
+                            var guestport: Int,
+                            var hostport: Int,
+                            var protocol: String) {
 
   def isComplete: Boolean = if (guestport != 0 && hostport != 0) true else false
 }

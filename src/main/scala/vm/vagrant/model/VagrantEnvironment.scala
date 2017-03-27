@@ -34,6 +34,16 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
     }
   }
 
+  def destroy() {
+    try
+      vagrantEnvironment.callMethod("execute", RubyString.newString(vagrantEnvironment.getRuntime, "destroy"), RubyString.newString(vagrantEnvironment.getRuntime, "-f"))
+    catch {
+      case exception: RaiseException =>
+        throw new VagrantException(exception)
+    }
+  }
+
+
   /**
     * Adds a new box to Vagrant
     *
@@ -42,7 +52,7 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
     */
   def addBox(boxName: String, boxUrl: URL): Unit = {
     try
-      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "add"), RubyString.newString(vagrantEnvironment.getRuntime, boxName), RubyString.newString(vagrantEnvironment.getRuntime, boxUrl.toString))
+      vagrantEnvironment.callMethod("execute", RubyString.newString(vagrantEnvironment.getRuntime, "add"), RubyString.newString(vagrantEnvironment.getRuntime, boxName), RubyString.newString(vagrantEnvironment.getRuntime, boxUrl.toString))
     catch {
       case exception: RaiseException =>
         throw new VagrantException(exception)
@@ -87,7 +97,7 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
     */
   def init(boxName: String): Unit = {
     try
-      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "init"), RubyString.newString(vagrantEnvironment.getRuntime, boxName))
+      vagrantEnvironment.callMethod("execute", RubyString.newString(vagrantEnvironment.getRuntime, "init"), RubyString.newString(vagrantEnvironment.getRuntime, boxName))
     catch {
       case exception: RaiseException =>
         throw new VagrantException(exception)
@@ -217,12 +227,4 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
       throw new VagrantException(exception)
   }
 
-  /**
-    * destroys the complete environment with all VMs configured and running in it.
-    */
-  def destroy(): Unit = {
-    for (vm <- getAllVms) {
-      if (vm.isCreated) vm.destroy()
-    }
-  }
 }

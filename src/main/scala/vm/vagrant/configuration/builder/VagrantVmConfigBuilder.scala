@@ -1,11 +1,13 @@
 package vm.vagrant.configuration.builder
 
+import java.io.File
+
 import scala.collection.immutable.List
 import java.net.MalformedURLException
 import java.net.URL
-import vm.vagrant.configuration.PuppetProvisionerConfig
-import vm.vagrant.configuration.VagrantPortForwarding
-import vm.vagrant.configuration.VagrantVmConfig
+import java.util.UUID
+
+import vm.vagrant.configuration.{PuppetProvisionerConfig, VagrantPortForwarding, VagrantProviderConfig, VagrantVmConfig}
 import vm.vagrant.configuration.builder.util.VagrantBuilderException
 
 
@@ -14,14 +16,30 @@ object VagrantVmConfigBuilder {
 }
 
 class VagrantVmConfigBuilder() {
-  private var portForwardings = List[VagrantPortForwarding]()
-  private var puppetProvisionerConfig: PuppetProvisionerConfig = _
-  private var name: String = _
+  private var name: String =UUID.randomUUID.toString
   private var ip: String = _
+  private var hostName: String = _
   private var boxName: String = _
   private var boxUrl: URL = _
-  private var hostName: String = _
-  private var guiMode: Boolean = _
+  private var portForwardings: List[VagrantPortForwarding] = _
+  private var puppetProvisionerConfig: PuppetProvisionerConfig = _
+  private var guiMode: Boolean = false
+  private var bootTimeout: Int = 300
+  private var boxCheckUpdate: Boolean = true
+  private var boxDownloadChecksum: String = _
+  private var boxDownloadChecksumType:String = _
+  private var boxDownloadClientCert: File = _
+  private var boxDownloadCaCert: File = _
+  private var boxDownloadCaPath: File = _
+  private var boxDownloadInsecure: Boolean = false
+  private var boxDownloadLocationTrusted: Boolean = false
+  private var boxVersion: String = _
+  private var communicator:String = _
+  private var gracefulHaltTimeout: Int = 60
+  private var guest: String = _
+  private var postUpMessage: String = _
+  private var usablePortRange: String = "2200..2250"
+  private var provider: VagrantProviderConfig = new VagrantProviderConfig(memory = 2048, cpus = 2, customize = null, vmName = null)
 
 
   def withPuppetProvisionerConfig(puppetProvisionerConfig: PuppetProvisionerConfig): VagrantVmConfigBuilder = {
@@ -30,7 +48,7 @@ class VagrantVmConfigBuilder() {
   }
 
   def withVagrantPortForwarding(portForwarding: VagrantPortForwarding): VagrantVmConfigBuilder = {
-    portForwardings = portForwardings :+ portForwarding
+    portForwardings ::= portForwarding
     this
   }
 
@@ -111,6 +129,6 @@ class VagrantVmConfigBuilder() {
 
   def build: VagrantVmConfig = {
     if (boxName == null) throw new VagrantBuilderException("No boxName defined")
-    new VagrantVmConfig(name, ip, hostName, boxName, boxUrl, portForwardings, puppetProvisionerConfig, guiMode)
+    new VagrantVmConfig(name, ip, hostName, boxName, boxUrl, portForwardings, puppetProvisionerConfig, guiMode, bootTimeout, boxCheckUpdate, boxDownloadChecksum, boxDownloadChecksumType, boxDownloadClientCert, boxDownloadCaCert, boxDownloadCaPath, boxDownloadInsecure, boxDownloadLocationTrusted, boxVersion, communicator, gracefulHaltTimeout, guest, postUpMessage, usablePortRange, provider)
   }
 }

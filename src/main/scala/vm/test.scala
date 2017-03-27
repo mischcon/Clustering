@@ -28,7 +28,7 @@ class test {
   val configuration = VagrantConfigurationBuilder.create.withVagrantEnvironmentConfig(environmentConfig).build
   val vagrant = new Vagrant().createEnvironment(new File("/Volumes/Daten/Vagrant/scala.local"), configuration)
   vagrant.up
-
+  vagrant.destroy
 }
 
 object test extends App{

@@ -18,8 +18,8 @@ object VagrantConfigurationBuilder {
 
 class VagrantConfigurationBuilder() {
   private var environmentConfig: VagrantEnvironmentConfig = _
-  private var fileTemplateConfigurations = List[VagrantFileTemplateConfiguration]()
-  private var folderTemplateConfigurations = List[VagrantFolderTemplateConfiguration]()
+  private var fileTemplateConfigurations: List[VagrantFileTemplateConfiguration] = _
+  private var folderTemplateConfigurations: List[VagrantFolderTemplateConfiguration] = _
 
   def withVagrantEnvironmentConfig(environmentConfig: VagrantEnvironmentConfig): VagrantConfigurationBuilder = {
     this.environmentConfig = environmentConfig
