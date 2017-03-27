@@ -43,28 +43,46 @@ case class GetTasks(methods : List[String]) extends DBMessage
 case class GetTasksWithStatus(task_status : TaskStatus) extends DBMessage
 
 /**
+  * = Update task in database =
+  * @param method name of task to update
+  * @param task_status new status from [[utils.db.TaskStatus]]
+  * @param end_state new end_state from [[utils.db.EndState]]
+  * @param task_result new result
+  */
+case class UpdateTask(method : String, task_status : TaskStatus, end_state : EndState, task_result : String) extends DBMessage
+
+/**
+  * = Update several tasks in database =
+  * @param methods list w/ names of tasks to update
+  * @param task_status new status for all tasks from [[utils.db.TaskStatus]]
+  * @param end_state new end_state for all tasks from [[utils.db.EndState]]
+  * @param task_result new result for all tasks
+  */
+case class UpdateTasks(methods : List[String], task_status : TaskStatus, end_state : EndState, task_result : String) extends DBMessage
+
+/**
   * = Update task w/ new status in database =
-  * @param method name of requested task
+  * @param method name of task to update
   * @param task_status new status from [[utils.db.TaskStatus]]
   */
 case class UpdateTaskStatus(method : String, task_status : TaskStatus) extends DBMessage
 
 /**
   * = Update several tasks w/ new status in database =
-  * @param methods list w/ names of requested tasks
+  * @param methods list w/ names of tasks to update
   * @param task_status new status for all tasks from [[utils.db.TaskStatus]]
   */
 case class UpdateTasksStatus(methods : List[String], task_status : TaskStatus) extends DBMessage
 
 /**
-  * = Delete requested task from database =
-  * @param method name of requested task
+  * = Delete task from database =
+  * @param method name of task to delete
   */
 case class DeleteTask(method : String) extends DBMessage
 
 /**
-  * = Delete requested tasks from database =
-  * @param methods list w/ names of requested tasks
+  * = Delete tasks from database =
+  * @param methods list w/ names of tasks to delete
   */
 case class DeleteTasks(methods : List[String]) extends DBMessage
 
@@ -79,4 +97,4 @@ case class DeleteTasks(methods : List[String]) extends DBMessage
   * @param end_state entry in tasks table for column '''end_state'''
   * @param task_result entry in tasks table for column '''task_result'''
   */
-case class RequestedTask(method : String, task_status : TaskStatus, end_state : String, task_result : String) extends DBMessage
+case class RequestedTask(method : String, task_status : TaskStatus, end_state : EndState, task_result : String) extends DBMessage
