@@ -22,4 +22,4 @@
   * all-for-one
 
 ## ActorHierarchy
-![Bild](pictures/ActorHierarchy.png)
+![Bild](diagrams/ActorHierarchy.png)
