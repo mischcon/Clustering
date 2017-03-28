@@ -3,12 +3,12 @@ import java.lang.Exception
 
 import Exceptions.{TestFailException, TestSuccessException}
 import akka.actor.Actor.Receive
-import worker.messages.{Result, Task}
+import worker.messages.{ExecuteTask, Result, Task}
 
 /**
   * Created by mischcon on 26.03.2017.
   */
-class TaskExecutorActor(task : Task, vmInfo : Object) extends WorkerTrait{
+class TaskExecutorActor extends WorkerTrait{
 
   override def preStart(): Unit = {
     log.debug(s"hello from ${self.path.name}")
@@ -19,22 +19,22 @@ class TaskExecutorActor(task : Task, vmInfo : Object) extends WorkerTrait{
   }
 
   override def receive: Receive = {
-    case "run" => run()
+    case t : ExecuteTask => run(t)
   }
 
-  def run(): Unit ={
+  def run(msg : ExecuteTask): Unit ={
     log.debug("EXECUTING task + \"excepting\" result to parent / supervisor")
     try {
-      var obj = task.method.getDeclaringClass.newInstance()
+      var obj = msg.task.method.getDeclaringClass.newInstance()
       log.debug("created instance")
-      task.method.invoke(obj)
+      msg.task.method.invoke(obj)
       log.debug("invocation was successful")
     } catch {
       case e : Exception => {
         log.debug(s"invocation failed - ${e.getCause.toString}")
-        throw new TestFailException(task, e.getCause)
+        throw new TestFailException(msg.task, e.getCause)
       }
     }
-    throw TestSuccessException(task, null)
+    throw TestSuccessException(msg.task, null)
   }
 }

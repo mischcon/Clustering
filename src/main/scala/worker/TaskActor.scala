@@ -2,10 +2,12 @@ package worker
 
 import Exceptions._
 import akka.actor.SupervisorStrategy.{Escalate, Stop}
-import akka.actor.{ActorRef, OneForOneStrategy, Props, Status, SupervisorStrategy, Terminated}
+import akka.actor.{ActorRef, Deploy, OneForOneStrategy, Props, Status, SupervisorStrategy, Terminated}
 import akka.cluster.Cluster
 import akka.pattern._
+import akka.remote.RemoteScope
 import akka.util.Timeout
+import utils.messages.{ExecutorAddress, GetExecutorAddress}
 import worker.messages._
 
 import scala.concurrent.duration._
@@ -88,21 +90,36 @@ class TaskActor(task : Task) extends WorkerTrait{
     executor.onComplete{
       case Success(target : AquireExecutor) => {
         log.debug("received vmInfo - now creating Executor")
-        log.debug("PLACEHOLDER - need to get address of free executor for remote actor deployment")
 
         // watch SENDER (the targetVM Actor)
         targetVm = target.vmActorRef
         context.watch(targetVm)
 
         // get executor
-        val ex : ActorRef = context.actorOf(Props(classOf[TaskExecutorActor], task, target.vmInfo), s"EXECUTOR-${task.method.getName}-${new Random().nextLong()}")
+        (context.system.actorSelection("/user/ExecutorDirectory") ? GetExecutorAddress) onComplete{
+          case Success(addr : ExecutorAddress) => {
+            val ex : ActorRef = context.actorOf(Props[TaskExecutorActor].withDeploy(
+              Deploy(scope = RemoteScope(addr.address))
+            ), s"EXECUTOR-${task.method.getName}-${new Random().nextLong()}")
 
-        // send actorRef to targetVm
-        log.debug("sending actorRef of EXECUTOR to targetVmActor")
-        targetVm ! Executor(ex)
+            // send actorRef to targetVm
+            log.debug("sending actorRef of EXECUTOR to targetVmActor")
+            targetVm ! Executor(ex)
 
-        log.debug("sending RUN to EXECUTOR")
-        ex ! "run"
+            log.debug("sending RUN to EXECUTOR")
+            ex ! ExecuteTask(task, target.vmInfo)
+          }
+          case Failure(e) => {
+            /* IMPROVEMENT NEEDED
+            *
+            * If we are unable to get an executor just send a TERMINATED message to the target VM -
+            * currently this will destroy
+            * */
+            log.error("could not get an executor - sending TERMINATED to targetVm and goind back to isTaken = false")
+            targetVm ! Terminated
+            isTaken = false
+          }
+        }
       }
       case Failure(exception) => {
         log.error("did not receive vmInfos - going back to isTaken = false")

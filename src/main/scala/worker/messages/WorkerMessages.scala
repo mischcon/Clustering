@@ -15,6 +15,7 @@ case object OfferSelf extends WorkerMessagesTrait
 case class AquireExecutor(vmInfo : Object, vmActorRef : ActorRef) extends WorkerMessagesTrait
 case class Executor(ref : ActorRef) extends WorkerMessagesTrait
 
+case class ExecuteTask(task : Task, vmInfo : Object) extends WorkerMessagesTrait
 
 case class SendTask(task : Task)
 case class Result(res : Object) extends WorkerMessagesTrait

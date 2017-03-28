@@ -11,21 +11,22 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
 
   val cluster = Cluster(context.system)
 
-  var directory : Map[Member, Object] = Map.empty
+  var directory : Map[Address, Object] = Map(self.path.address -> null)
 
   override def receive: Receive = {
     case MemberJoined(member) => {
-      directory += (member -> null)
+      directory += (member.address -> null)
     }
     case MemberExited(member) => {
-      directory -= member
+      directory -= member.address
     }
     case GetExecutorAddress => getMember()
   }
 
   def getMember() = {
-    /* until a heal status is available we simply use a random approach */
-    sender() ! ExecutorAddress(new Random().shuffle(directory).head._1.address)
+    /* until a health status is available we simply use a random approach */
+    log.debug("received GetExecutorAddress - returning ExecutorAddress")
+    sender() ! ExecutorAddress(new Random().shuffle(directory).head._1)
   }
 
   override def preStart(): Unit = {

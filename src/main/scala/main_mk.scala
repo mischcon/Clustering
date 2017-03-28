@@ -2,6 +2,7 @@ import java.lang.reflect.Method
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import com.typesafe.config.ConfigFactory
+import utils.ExecutorDirectoryServiceActor
 import utils.db.DBActor
 import worker.{DistributorActor, TaskActor, TestVMNodesActor}
 import worker.messages.{AddTask, GetTask, Task}
@@ -19,6 +20,7 @@ object main extends App{
   println("hello from master!")
 
   val workerActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
+  val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
 
   val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
 
