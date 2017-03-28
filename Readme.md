@@ -23,3 +23,6 @@
 
 ## ActorHierarchy
 ![Bild](diagrams/ActorHierarchy.png)
+
+## Loadbalancing / "Pull" via GetTask (The Happy Path)
+![Bild](diagrams/GetTask(The Happy Path).png)

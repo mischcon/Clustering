@@ -1,0 +1,60 @@
+title GetTask(The Happy Path)
+
+VMNodesActor -> Distributor: GetTask
+Distributor -> GroupActor: GetTask
+GroupActor -> TaskActor: GetTask
+note right of TaskActor:
+    isTaken = true
+end note
+TaskActor -> VMNodesActor: ? SendTask(task)
+note left of VMNodesActor:
+    haveSpaceForTasks -= 1
+end note
+VMNodesActor -> TaskActor: AquireExecutor(vmInfo, self)
+note right of TaskActor:
+    targetVm = sender()
+end note
+TaskActor --> VMNodesActor: context.watch
+note right of TaskActor:
+    Monitor the VMNodesActor
+    in case of UNREACHABLE
+end note
+TaskActor -> ExecutorDirectoryActor: ? GetExecutorAdress
+ExecutorDirectoryActor -> TaskActor: NodeAdress(ip, path)
+TaskActor -> TaskActor: context.actorOf(ExecutorActor, ip, path)
+TaskActor --> ExecutorActor: context.actorOf
+TaskActor -> VMNodesActor: Executor(ActorRef of ExecutorActor)
+VMNodesActor --> ExecutorActor: context.watch
+note left of TaskActor:
+    In case of VMNodesActor UNREACHABLE:
+        > STOP the ExecutorActor 
+        > isTaken = false
+        > targetVm = null
+        
+    In case of ExecutorActor UNREACHABLE:
+        > isTaken = false
+        > targetVm = null
+        (even if we already have a VM - just
+        return to a "clean" state and wait for
+        another free VM)
+end note
+note left of VMNodesActor:
+    Monitor the Executor
+    in case of Termination:
+    1) Task done -> aquire new
+    2) Executor UNREACHABLE -> aquire new
+end note
+TaskActor -> ExecutorActor: ExecuteTask(task, vmInfo)
+ExecutorActor -> ExecutorActor: Perform the Task
+ExecutorActor -> TaskActor: TestResultException(Result)
+TaskActor -> GroupActor: TestResultException(Result)
+GroupActor -> GroupActor: remove Task from list
+GroupActor -> TaskActor: STOP
+TaskActor -> ExecutorActor: STOP
+destroy TaskActor
+ExecutorActor -> VMNodesActor: Terminated
+destroy ExecutorActor
+GroupActor -> DBActor: PublishResults(Task, Result)
+note left of VMNodesActor:
+    haveSpaceForTasks += 1
+end note
