@@ -12,9 +12,7 @@ import scala.concurrent.duration._
   * will be removed later
   */
 object DBConnectionTest extends App {
-  def uuid: String = {
-    java.util.UUID.randomUUID.toString
-  }
+  def uuid: String = java.util.UUID.randomUUID.toString
 
   implicit val timeout = Timeout(5 seconds)
 
@@ -24,44 +22,55 @@ object DBConnectionTest extends App {
   val method = uuid
   db ! CreateTask(method)
 
+  val methods = List(uuid, uuid, uuid)
+  db ! CreateTasks(methods)
+
   val future1 = db ? GetTask(method)
   val result1 = Await.result(future1, timeout.duration).asInstanceOf[Option[RequestedTask]]
   result1 match {
     case Some(task) =>
-      println(s"${task.method} - ${task.status} - ${task.result}")
+      println(s"[Future]: ${task.method} - ${task.task_status} - ${task.end_state} - ${task.task_result}")
     case None =>
-      println("no result")
+      println("[Future]: no result")
   }
 
-  db ! UpdateTaskStatus(method, TaskStatus.RUNNING)
-  db ! DeleteTask(method)
-
-  val methods = List(uuid, uuid, uuid)
-  db ! CreateTasks(methods)
-
-  val future2 = db ? GetTasksWithStatus(TaskStatus.RUNNING)
+  val future2 = db ? GetTasks(methods)
   val result2 = Await.result(future2, timeout.duration).asInstanceOf[Option[List[RequestedTask]]]
   result2 match {
     case Some(tasks) =>
-      for (task <- tasks) {
-        println(s"${task.method} - ${task.status} - ${task.result}")
-      }
+      for (task <- tasks)
+        println(s"[Future]: ${task.method} - ${task.task_status} - ${task.end_state} - ${task.task_result}")
     case None =>
-      println("no result")
+      println("[Future]: no result")
   }
 
-  db ! UpdateTasksStatus(methods, TaskStatus.DONE)
-
-  val future3 = db ? GetTasks(methods)
+  val future3 = db ? GetTasksWithStatus(TaskStatus.NOT_STARTED)
   val result3 = Await.result(future3, timeout.duration).asInstanceOf[Option[List[RequestedTask]]]
   result3 match {
     case Some(tasks) =>
-      for (task <- tasks) {
-        println(s"${task.method} - ${task.status} - ${task.result}")
-      }
+      for (task <- tasks)
+        println(s"[Future]: ${task.method} - ${task.task_status} - ${task.end_state} - ${task.task_result}")
     case None =>
-      println("no result")
+      println("[Future]: no result")
   }
 
+  db ! UpdateTask(method, TaskStatus.DONE, EndState.NONE, "HTTP Response 200")
+  db ! UpdateTasks(methods, TaskStatus.DONE, EndState.NONE, "HTTP Response 201")
+  db ! UpdateTaskStatus(method, TaskStatus.RUNNING)
+  db ! UpdateTasksStatus(methods, TaskStatus.RUNNING)
+
+  val future4 = db ? GetTasks(method :: methods)
+  val result4 = Await.result(future4, timeout.duration).asInstanceOf[Option[List[RequestedTask]]]
+  result4 match {
+    case Some(tasks) =>
+      for (task <- tasks)
+        println(s"[Future]: ${task.method} - ${task.task_status} - ${task.end_state} - ${task.task_result}")
+    case None =>
+      println("[Future]: no result")
+  }
+
+  db ! DeleteTask(method)
   db ! DeleteTasks(methods)
+
+  db ! "TEST"
 }
