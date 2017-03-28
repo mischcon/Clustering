@@ -43,53 +43,6 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
     }
   }
 
-
-  /**
-    * Adds a new box to Vagrant
-    *
-    * @param boxName name of the new box
-    * @param boxUrl  the url of the template box. For example "http://files.vagrantup.com/lucid32.box"
-    */
-  def addBox(boxName: String, boxUrl: URL): Unit = {
-    try
-      vagrantEnvironment.callMethod("execute", RubyString.newString(vagrantEnvironment.getRuntime, "add"), RubyString.newString(vagrantEnvironment.getRuntime, boxName), RubyString.newString(vagrantEnvironment.getRuntime, boxUrl.toString))
-    catch {
-      case exception: RaiseException =>
-        throw new VagrantException(exception)
-    }
-  }
-
-  /**
-    * Removes a box from Vagrant
-    *
-    * @param boxName name of the box you want to remove
-    */
-  def removeBox(boxName: String): Unit = {
-    try {
-      val boxes = vagrantEnvironment.callMethod("boxes").asInstanceOf[RubyObject].getInternalVariable("@boxes").asInstanceOf[RubyArray]
-      import scala.collection.JavaConversions._
-      for (box <- boxes) {
-        val name = box.asInstanceOf[RubyObject].callMethod("name").toString
-        if (name == boxName) box.asInstanceOf[RubyObject].callMethod("destroy")
-      }
-    } catch {
-      case exception: RaiseException =>
-        throw new VagrantException(exception)
-    }
-  }
-
-  /**
-    * Returns the main path to all box templates that Vagrant has installed on your system.
-    *
-    * @return
-    */
-  def getBoxesPath: String = try
-    vagrantEnvironment.callMethod("boxes_path").asInstanceOf[RubyObject].toString
-  catch {
-    case exception: RaiseException =>
-      throw new VagrantException(exception)
-  }
-
   /**
     * Creates a simple vagrantfile / configuration for this environment. The configuration contains only one VM that uses the given box
     *
@@ -104,29 +57,6 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
     }
   }
 
-  /**
-    * Return true if more than one VM is configured in this environment
-    *
-    * @return true if more than one VM is configured in this environment
-    */
-  def isMultiVmEnvironment: Boolean = try
-    vagrantEnvironment.callMethod("multivm?").asInstanceOf[RubyBoolean].isTrue
-  catch {
-    case exception: RaiseException =>
-      throw new VagrantException(exception)
-  }
-
-  /**
-    * Each Vagrant environment is configured in a path on your system.
-    *
-    * @return path for this environment
-    */
-  def getRootPath: String = try
-    vagrantEnvironment.callMethod("root_path").asInstanceOf[RubyObject].toString
-  catch {
-    case exception: RaiseException =>
-      throw new VagrantException(exception)
-  }
 
   /**
     * Creates a iterator for all available boxes in Vagrant.

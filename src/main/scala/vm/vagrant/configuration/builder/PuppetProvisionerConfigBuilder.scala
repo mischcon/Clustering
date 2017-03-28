@@ -4,7 +4,7 @@ package vm.vagrant.configuration.builder
   * Created by oliver.ziegert on 24.03.17.
   */
 
-import vm.vagrant.configuration.PuppetProvisionerConfig
+import vm.vagrant.configuration.VagrantProvisionerConfig
 import vm.vagrant.configuration.builder.util.VagrantBuilderException
 
 
@@ -49,9 +49,9 @@ class PuppetProvisionerConfigBuilder() {
     this
   }
 
-  def build: PuppetProvisionerConfig = {
+  def build: VagrantProvisionerConfig = {
     if (manifestPath == null) throw new VagrantBuilderException("no manifestPath defined!")
     if (manifestFile == null) throw new VagrantBuilderException("no manifestFile defined!")
-    new PuppetProvisionerConfig(debug, manifestPath, manifestFile, modulesPath)
+    new VagrantProvisionerConfig(debug, manifestPath, manifestFile, modulesPath)
   }
 }

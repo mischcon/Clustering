@@ -8,6 +8,8 @@ import java.io.File
 import java.net.URL
 import java.util.UUID
 
+import vm.vagrant.configuration.ChecksumType.ChecksumType
+
 /**
   * Some utilities for the configuration of Vagrant environments. This class creates configurationfiles for Vagrant.
   *
@@ -44,10 +46,9 @@ object VagrantConfigurationUtilities {
     if (vmConfig.boxVersion != null) builder.append(createVmBoxVersionConfig(vmConfig.boxVersion))
     if (vmConfig.communicator != null) builder.append(createVmCommunicatorConfig(vmConfig.communicator))
     if (vmConfig.gracefulHaltTimeout != 0) builder.append(createVmGracefulHaltTimeoutConfig(vmConfig.gracefulHaltTimeout))
-    if (vmConfig.guest != null) builder.append(createVmBoxDownloadChecksumTypeConfig(vmConfig.guest))
+    if (vmConfig.guest != null) builder.append(createVmGuestConfig(vmConfig.guest))
     if (vmConfig.hostName != null) builder.append(createVmHostNameConfig(vmConfig.hostName))
-    if (vmConfig.portForwardings != null )for (portForwarding <- vmConfig.portForwardings) { builder.append(createVmNetworkPortForwardingConfig(portForwarding)) }
-    //TODO: Network
+    if (vmConfig.vagrantNetworkConfigs != null) for (vagrantNetworkConfig <- vmConfig.vagrantNetworkConfigs) {createVmNetworkConfig(vagrantNetworkConfig)}
     if (vmConfig.postUpMessage != null) builder.append(createVmPostUpMessageConfig(vmConfig.postUpMessage))
     builder.append(createVmProviderConfig(vmConfig.provider))
     //TODO: Provision
@@ -81,9 +82,9 @@ object VagrantConfigurationUtilities {
     builder.toString
   }
 
-  private def createVmBoxDownloadChecksumTypeConfig(value: String) = {
+  private def createVmBoxDownloadChecksumTypeConfig(value: ChecksumType) = {
     val builder = new StringBuilder
-    builder.append(s"""    vm.vm.box_download_checksum_type = "$value"""").append("\n")
+    builder.append(s"""    vm.vm.box_download_checksum_type = "${value.toString}"""").append("\n")
     builder.toString
   }
 
@@ -173,15 +174,56 @@ object VagrantConfigurationUtilities {
     builder.toString
   }
 
-  // TODO: Network
+  private def createVmNetworkConfig(vagrantNetworkConfig: VagrantNetworkConfig): String = {
+    vagrantNetworkConfig match {
+      case x: VagrantPrivateNetworkConfig => createVmNetworkPrivateNetworkConfig(x.asInstanceOf[VagrantPrivateNetworkConfig])
+      case x: VagrantPortForwardingConfig => createVmNetworkPortForwardingConfig(x.asInstanceOf[VagrantPortForwardingConfig])
+      case x: VagrantPublicNetworkConfig  => createVmNetworkPublicNetworkConfig(x.asInstanceOf[VagrantPublicNetworkConfig])
+    }
 
-  private def createVmNetworkPortForwardingConfig(portForwarding: VagrantPortForwarding) = {
+  }
+
+  private def createVmNetworkPrivateNetworkConfig(privateNetwork: VagrantPrivateNetworkConfig) = {
+    val builder = new StringBuilder
+    if (privateNetwork.isComplete) {
+      builder.append(s"""  vm.vm.network "${privateNetwork.mode}"""")
+      if (privateNetwork.dhcp) builder.append(s""", type: "dhcp" """)
+      if (privateNetwork.ip != null && !privateNetwork.ip.isEmpty) builder.append(s""", ip: "${privateNetwork.ip}" """)
+      if (privateNetwork.netmask > 0) builder.append(s""", netmask: "${privateNetwork.netmask}" """)
+      if (!privateNetwork.autoConfig) builder.append(s", auto_config: ${privateNetwork.autoConfig.toString} ")
+      builder.append("\n")
+    }
+    builder.toString
+  }
+
+  private def createVmNetworkPortForwardingConfig(portForwarding: VagrantPortForwardingConfig) = {
     val builder = new StringBuilder
     if (portForwarding.isComplete) {
-      builder.append(s"""  vm.vm.network "forwarded_port", guest: ${portForwarding.guestport}, host: ${portForwarding.hostport}""")
-      if (portForwarding.name != null && !portForwarding.name.isEmpty) builder.append(s", id: $portForwarding.name")
-      if (portForwarding.protocol != null && !portForwarding.protocol.isEmpty) builder.append(s", protocol: $portForwarding.protocol")
+      builder.append(s"""  vm.vm.network "${portForwarding.mode}", guest: ${portForwarding.guestPort}, host: ${portForwarding.hostPort}""")
+      if (portForwarding.name != null && !portForwarding.name.isEmpty) builder.append(s", id: ${portForwarding.name}")
+      if (portForwarding.protocol != Protocol.tcp) builder.append(s", protocol: ${portForwarding.protocol.toString}")
+      if (portForwarding.autoCorrect) builder.append(s", auto_correct: ${portForwarding.autoCorrect}")
+      if (portForwarding.guestIp != null && !portForwarding.guestIp.isEmpty) builder.append(s""", guest_ip : "${portForwarding.guestIp}"""")
+      if (portForwarding.hostIp != null && !portForwarding.hostIp.isEmpty) builder.append(s""", host_ip : "${portForwarding.hostIp}"""")
       builder.append("\n")
+    }
+    builder.toString
+  }
+
+  private def createVmNetworkPublicNetworkConfig(publicNetwork: VagrantPublicNetworkConfig) = {
+    val builder = new StringBuilder
+    if (publicNetwork.isComplete) {
+      builder.append(s"""  vm.vm.network "${publicNetwork.mode}"""")
+      if (publicNetwork.useDhcpAssignedDefaultRoute) builder.append(s", use_dhcp_assigned_default_route: ${publicNetwork.useDhcpAssignedDefaultRoute.toString}")
+      if (publicNetwork.ip != null && !publicNetwork.ip.isEmpty) builder.append(s""", ip: "${publicNetwork.ip}"""")
+      if (publicNetwork.bridges != null && publicNetwork.bridges.length > 0) {
+        builder.append(", bridge:")
+        if (publicNetwork.bridges.length == 1 ) builder.append(s""" "${publicNetwork.bridges{0}}"""")
+        else {
+          builder.append(publicNetwork.bridges.mkString(" [ ", ", ", " ]"))
+        }
+      }
+      if (!publicNetwork.autoAonfig) builder.append(s", auto_config: ${publicNetwork.autoAonfig.toString}")
     }
     builder.toString
   }
@@ -200,7 +242,7 @@ object VagrantConfigurationUtilities {
     builder.toString
   }
 
-  private def createPuppetProvisionerConfig(vmConfigName: String, puppetProvisionerConfig: PuppetProvisionerConfig) = {
+  private def createPuppetProvisionerConfig(vmConfigName: String, puppetProvisionerConfig: VagrantProvisionerConfig) = {
     val builder = new StringBuilder
     if (puppetProvisionerConfig != null) {
       builder.append(vmConfigName + ".vm.provision :puppet do |puppet|").append("\n")

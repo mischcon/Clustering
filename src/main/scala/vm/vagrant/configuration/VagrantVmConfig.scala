@@ -6,8 +6,8 @@ package vm.vagrant.configuration
 
 import java.io.File
 import java.net.URL
-import java.util.UUID
 
+import vm.vagrant.configuration.ChecksumType.ChecksumType
 
 /**
   * A configuration class that can be used to define and create a VM in Vagrant.
@@ -15,27 +15,32 @@ import java.util.UUID
   * @author oliver.ziegert
   *
   */
-class VagrantVmConfig(val name: String,
-                      val ip: String,
-                      val hostName: String,
-                      val boxName: String,
-                      val boxUrl: URL,
-                      val portForwardings: List[VagrantPortForwarding],
-                      val puppetProvisionerConfig: PuppetProvisionerConfig,
-                      val guiMode: Boolean,
-                      val bootTimeout: Int,
-                      val boxCheckUpdate: Boolean,
-                      val boxDownloadChecksum: String,
-                      val boxDownloadChecksumType:String,
-                      val boxDownloadClientCert: File,
-                      val boxDownloadCaCert: File,
-                      val boxDownloadCaPath: File,
-                      val boxDownloadInsecure: Boolean,
-                      val boxDownloadLocationTrusted: Boolean,
-                      val boxVersion: String,
-                      val communicator:String,
-                      val gracefulHaltTimeout: Int,
-                      val guest: String,
-                      val postUpMessage: String,
-                      val usablePortRange: String,
-                      val provider: VagrantProviderConfig)
+class VagrantVmConfig(var name: String,
+                      var hostName: String,
+                      var boxName: String,
+                      var boxUrl: URL,
+                      var vagrantProvisionerConfigs: List[VagrantProvisionerConfig],
+                      var vagrantNetworkConfigs: List[VagrantNetworkConfig],
+                      var vagrantSyncedFolderConfigs: List[VagrantSyncedFolderConfig],
+                      var guiMode: Boolean,
+                      var bootTimeout: Int,
+                      var boxCheckUpdate: Boolean,
+                      var boxDownloadChecksum: String,
+                      var boxDownloadChecksumType: ChecksumType,
+                      var boxDownloadClientCert: File,
+                      var boxDownloadCaCert: File,
+                      var boxDownloadCaPath: File,
+                      var boxDownloadInsecure: Boolean,
+                      var boxDownloadLocationTrusted: Boolean,
+                      var boxVersion: String,
+                      var communicator: String,
+                      var gracefulHaltTimeout: Int,
+                      var guest: String,
+                      var postUpMessage: String,
+                      var usablePortRange: String,
+                      var provider: VagrantProviderConfig)
+
+object ChecksumType extends Enumeration{
+  type ChecksumType = Value
+  val md5, sha1, sha256 = Value
+}
