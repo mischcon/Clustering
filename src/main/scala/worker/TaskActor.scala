@@ -2,7 +2,7 @@ package worker
 
 import Exceptions._
 import akka.actor.SupervisorStrategy.{Escalate, Stop}
-import akka.actor.{ActorRef, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
+import akka.actor.{ActorRef, OneForOneStrategy, Props, Status, SupervisorStrategy, Terminated}
 import akka.cluster.Cluster
 import akka.pattern._
 import akka.util.Timeout
@@ -40,10 +40,7 @@ class TaskActor(task : Task) extends WorkerTrait{
   * Failure: Inform the parent actor --> he should stop all other child actors
   *
   * */
-  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(
-    maxNrOfRetries = 0,
-    loggingEnabled = false
-  ){
+  override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
     case t : TestSuccessException => {
       log.debug("received TestSuccessException!")
       taskDone = true

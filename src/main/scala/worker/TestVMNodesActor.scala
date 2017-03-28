@@ -1,8 +1,7 @@
 package worker
 
-import akka.actor.SupervisorStrategy.Resume
-import akka.actor.{OneForOneStrategy, Props, SupervisorStrategy, Terminated}
-import akka.remote.ContainerFormats.ActorRef
+import akka.actor.Status.Failure
+import akka.actor.Terminated
 import worker.messages._
 
 /**
@@ -33,6 +32,7 @@ class TestVMNodesActor(vmInfo : Object) extends WorkerTrait{
     }
     case t : SendTask if ! haveSpaceForTasks => {
       log.debug("received SendTask but I dont have any more space :(")
+      sender() ! Failure(new Exception)
     }
     case t : Executor => {
       log.debug("received an ActorRef, which means that this is an executor - monitoring it now")

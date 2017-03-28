@@ -37,11 +37,11 @@ object main extends App{
   val testVMNodesActor : ActorRef = system.actorOf(Props(classOf[TestVMNodesActor], null), "vmActor")
 
   testVMNodesActor ! "get"
-  Thread.sleep(5000)
+  Thread.sleep(500)
   testVMNodesActor ! "get"
-  Thread.sleep(5000)
+  Thread.sleep(500)
   testVMNodesActor ! "get"
-  Thread.sleep(5000)
+  Thread.sleep(500)
 
   println(new PrivateMethodExposer(system)('printTree)())
 
