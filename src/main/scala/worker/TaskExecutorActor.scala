@@ -1,9 +1,6 @@
 package worker
-import java.lang.Exception
-
 import Exceptions.{TestFailException, TestSuccessException}
-import akka.actor.Actor.Receive
-import worker.messages.{ExecuteTask, Result, Task}
+import worker.messages.ExecuteTask
 
 /**
   * Created by mischcon on 26.03.2017.
