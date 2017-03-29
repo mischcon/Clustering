@@ -1,6 +1,7 @@
 package utils.db
 
-import java.sql.{Connection, DriverManager}
+import java.sql.{Connection, DriverManager, PreparedStatement, Types}
+
 import akka.actor.Actor
 import com.typesafe.config.ConfigFactory
 
@@ -10,15 +11,15 @@ import com.typesafe.config.ConfigFactory
   * Current database scheme:
   *
   * tasks:
-  * +-----+--------+-------------+---------+
-  * | id  | method |   status    | result  |
-  * +-----+--------+-------------+---------+
-  * | int | string | NOT_STARTED | SUCCESS |
-  * |     |        | IN_PROCESS  | FAILURE |
-  * |     |        | DONE        | ERROR   |
-  * +-----+--------+-------------+---------+
+  * +-----+--------+-------------+-----------+-------------+
+  * | id  | method | task_status | end_state | task_result |
+  * +-----+--------+-------------+-----------+-------------+
+  * | int | string | NOT_STARTED | SUCCESS   | string      |
+  * |     |        | IN_PROGRESS | FAILURE   |             |
+  * |     |        | DONE        | ERROR     |             |
+  * +-----+--------+-------------+-----------+-------------+
   * }}}
-  * All messages that are meant to be sent to this actor use [[utils.db.DBMessage]].
+  * All messages that are meant to be sent to this actor are of type [[utils.db.DBMessage]].
   */
 class DBActor extends Actor {
 
@@ -37,8 +38,31 @@ class DBActor extends Actor {
   }
   catch {
     case e: Exception =>
-      println(Console.RED + e.getMessage)
+      println("[DBActor]: " + e.getMessage)
       None
+  }
+
+  /**
+    * = Performs database query =
+    * @param query requested query of type [[utils.db.DBQuery]]
+    */
+  def performQuery(query : DBQuery): Unit = {
+    connect match {
+      case Some(connection) =>
+        try {
+          query.perform(connection) match {
+            case ()  =>
+            case msg => sender() ! msg
+          }
+        }
+        catch {
+          case e: Exception =>
+            println("[DBActor]: " + e.getMessage)
+        }
+        finally connection.close()
+      case None =>
+        println("[DBActor]: could not connect")
+    }
   }
 
   /**
@@ -46,24 +70,7 @@ class DBActor extends Actor {
     * @param method name of the task to be saved; __must be unique__
     */
   def createTask(method : String): Unit = {
-    connect match {
-      case Some(connection) =>
-        val statement = connection.createStatement()
-        val sql = s"INSERT INTO tasks (method) VALUES ('$method');"
-        try {
-          // auto commit is on
-          val result = statement.executeUpdate(sql)
-          assert(result equals 1)
-          println(Console.GREEN + "task added")
-        }
-        catch {
-          case e: Exception =>
-            println(Console.RED + e.getMessage)
-        }
-        finally connection.close()
-      case None =>
-        println(Console.RED + "could not connect")
-    }
+    performQuery(new DBCreateTask(method))
   }
 
   /**
@@ -71,28 +78,7 @@ class DBActor extends Actor {
     * @param methods list w/ names of tasks to be saved; __names must be unique__
     */
   def createTasks(methods : List[String]): Unit = {
-    connect match {
-      case Some(connection) =>
-        val statement = connection.createStatement()
-        var sql = s"INSERT INTO tasks (method) VALUES"
-        for (method <- methods) {
-          sql += s" ('$method'),"
-        }
-        sql = sql.dropRight(1) + ";"
-        try {
-          // auto commit is on
-          val result = statement.executeUpdate(sql)
-          assert(result equals methods.size)
-          println(Console.GREEN + s"${methods.size} tasks added")
-        }
-        catch {
-          case e: Exception =>
-            println(Console.RED + e.getMessage)
-        }
-        finally connection.close()
-      case None =>
-        println(Console.RED + "could not connect")
-    }
+    performQuery(new DBCreateTasks(methods))
   }
 
   /**
@@ -101,31 +87,7 @@ class DBActor extends Actor {
     * @param method name of requested task
     */
   def getTask(method : String): Unit = {
-    connect match {
-      case Some(connection) =>
-        val statement = connection.createStatement()
-        val sql = s"SELECT status, result FROM tasks WHERE method = '$method';"
-        try {
-          val resultSet = statement.executeQuery(sql)
-          if (!resultSet.isBeforeFirst) {
-            sender() ! None
-            println(Console.RED + s"requested task: $method not found")
-          }
-          else while (resultSet.next()) {
-            val status = TaskStatus.valueOf(resultSet.getString("status"))
-            val result = resultSet.getString("result")
-            sender() ! Some(RequestedTask(method, status, result))
-            println(Console.GREEN + s"responsed w/ requested task:\n$method - $status - $result")
-          }
-        }
-        catch {
-          case e: Exception =>
-            println(Console.RED + e.getMessage)
-        }
-        finally connection.close()
-      case None =>
-        println(Console.RED + "could not connect")
-    }
+    performQuery(new DBGetTask(method))
   }
 
   /**
@@ -134,187 +96,74 @@ class DBActor extends Actor {
     * @param methods list w/ names of requested tasks
     */
   def getTasks(methods : List[String]): Unit = {
-    connect match {
-      case Some(connection) =>
-        val statement = connection.createStatement()
-        var sql = s"SELECT method, status, result FROM tasks WHERE method IN ("
-        for (method <- methods) {
-          sql += s"'$method', "
-        }
-        sql = sql.dropRight(2) + ");"
-        try {
-          val resultSet = statement.executeQuery(sql)
-          if (!resultSet.isBeforeFirst) {
-            sender() ! None
-            println(Console.RED + s"requested tasks not found")
-          }
-          else {
-            var taskList = List[RequestedTask]()
-            while (resultSet.next()) {
-              val method = resultSet.getString("method")
-              val status = TaskStatus.valueOf(resultSet.getString("status"))
-              val result = resultSet.getString("result")
-              taskList = RequestedTask(method, status, result) :: taskList
-              println(Console.GREEN + s"responsed w/ requested task:\n$method - $status - $result")
-            }
-            sender() ! Some(taskList)
-          }
-        }
-        catch {
-          case e: Exception =>
-            println(Console.RED + e.getMessage)
-        }
-        finally connection.close()
-      case None =>
-        println(Console.RED + "could not connect")
-    }
+    performQuery(new DBGetTasks(methods))
   }
 
   /**
     * = Answers w/ requested tasks =
     * Some(List[ [[utils.db.RequestedTask]] ]) or [[scala.None]]
-    * @param status requested status from [[utils.db.TaskStatus]]
+    * @param task_status requested status from [[utils.db.TaskStatus]]
     */
-  def getTasksWithStatus(status: TaskStatus): Unit = {
-    connect match {
-      case Some(connection) =>
-        val statement = connection.createStatement()
-        val sql = s"SELECT method, result FROM tasks WHERE status = '$status';"
-        try {
-          val resultSet = statement.executeQuery(sql)
-          if (!resultSet.isBeforeFirst) {
-            sender() ! None
-            println(Console.RED + s"no tasks w/ status $status found")
-          }
-          else {
-            var taskList = List[RequestedTask]()
-            while (resultSet.next()) {
-              val method = resultSet.getString("method")
-              val result = resultSet.getString("result")
-              taskList = RequestedTask(method, status, result) :: taskList
-              println(Console.GREEN + s"responsed w/ requested task:\n$method - $status - $result")
-            }
-            sender() ! Some(taskList)
-          }
-        }
-        catch {
-          case e: Exception =>
-            println(Console.RED + e.getMessage)
-        }
-        finally connection.close()
-      case None =>
-        println(Console.RED + "could not connect")
-    }
+  def getTasksWithStatus(task_status: TaskStatus): Unit = {
+    performQuery(new DBGetTasksWithStatus(task_status))
+  }
+
+  /**
+    * = Updates task w/ new values =
+    * @param method name of task to update
+    * @param task_status new status from [[utils.db.TaskStatus]]
+    * @param end_state new end_state from [[utils.db.EndState]]
+    * @param task_result new result
+    */
+  def updateTask(method : String, task_status : TaskStatus,
+                 end_state : EndState, task_result : String): Unit = {
+    performQuery(new DBUpdateTask(method, task_status, end_state, task_result))
+  }
+
+  /**
+    * = Updates several tasks w/ new values =
+    * @param methods list w/ names of tasks to update
+    * @param task_status new status for all tasks from [[utils.db.TaskStatus]]
+    * @param end_state new end_state for all tasks from [[utils.db.EndState]]
+    * @param task_result new result for all tasks
+    */
+  def updateTasks(methods : List[String], task_status : TaskStatus,
+                  end_state : EndState, task_result : String): Unit = {
+    performQuery(new DBUpdateTasks(methods, task_status, end_state, task_result))
   }
 
   /**
     * = Updates task w/ new status =
-    * @param method name of requested task
-    * @param status new status from [[utils.db.TaskStatus]]
+    * @param method name of task to update
+    * @param task_status new status from [[utils.db.TaskStatus]]
     */
-  def updateTaskStatus(method : String, status : TaskStatus): Unit = {
-    connect match {
-      case Some(connection) =>
-        val statement = connection.createStatement()
-        val sql = s"UPDATE tasks SET status = '$status' WHERE method = '$method';"
-        try {
-          // auto commit is on
-          val result = statement.executeUpdate(sql)
-          assert(result equals 1)
-          println(Console.GREEN + "task updated")
-        }
-        catch {
-          case e: Exception =>
-            println(Console.RED + e.getMessage)
-        }
-        finally connection.close()
-      case None =>
-        println(Console.RED + "could not connect")
-    }
+  def updateTaskStatus(method : String, task_status : TaskStatus): Unit = {
+    performQuery(new DBUpdateTaskStatus(method, task_status))
   }
 
   /**
     * = Updates several tasks w/ new status =
-    * @param methods list w/ names of requested tasks
-    * @param status new status for all tasks from [[utils.db.TaskStatus]]
+    * @param methods list w/ names of tasks to update
+    * @param task_status new status for all tasks from [[utils.db.TaskStatus]]
     */
-  def updateTasksStatus(methods : List[String], status : TaskStatus): Unit = {
-    connect match {
-      case Some(connection) =>
-        val statement = connection.createStatement()
-        var sql = s"UPDATE tasks SET status = '$status' WHERE method IN ("
-        for (method <- methods) {
-          sql += s"'$method', "
-        }
-        sql = sql.dropRight(2) + ");"
-        try {
-          // auto commit is on
-          val result = statement.executeUpdate(sql)
-          assert(result equals methods.size)
-          println(Console.GREEN + s"${methods.size} tasks updated")
-        }
-        catch {
-          case e: Exception =>
-            println(Console.RED + e.getMessage)
-        }
-        finally connection.close()
-      case None =>
-        println(Console.RED + "could not connect")
-    }
+  def updateTasksStatus(methods : List[String], task_status : TaskStatus): Unit = {
+    performQuery(new DBUpdateTasksStatus(methods, task_status))
   }
 
   /**
     * = Deletes requested task =
-    * @param method name of requested task
+    * @param method name of task to delete
     */
   def deleteTask(method : String): Unit = {
-    connect match {
-      case Some(connection) =>
-        val statement = connection.createStatement()
-        val sql = s"DELETE FROM tasks WHERE method = '$method';"
-        try {
-          // auto commit is on
-          val result = statement.executeUpdate(sql)
-          assert(result equals 1)
-          println(Console.GREEN + "task deleted")
-        }
-        catch {
-          case e: Exception =>
-            println(Console.RED + e.getMessage)
-        }
-        finally connection.close()
-      case None =>
-        println(Console.RED + "could not connect")
-    }
+    performQuery(new DBDeleteTask(method))
   }
 
   /**
     * = Deletes requested tasks =
-    * @param methods list w/ names of requested tasks
+    * @param methods list w/ names of tasks to delete
     */
   def deleteTasks(methods : List[String]): Unit = {
-    connect match {
-      case Some(connection) =>
-        val statement = connection.createStatement()
-        var sql = s"DELETE FROM tasks WHERE method IN ("
-        for (method <- methods) {
-          sql += s"'$method', "
-        }
-        sql = sql.dropRight(2) + ");"
-        try {
-          // auto commit is on
-          val result = statement.executeUpdate(sql)
-          assert(result equals methods.size)
-          println(Console.GREEN + s"${methods.size} tasks deleted")
-        }
-        catch {
-          case e: Exception =>
-            println(Console.RED + e.getMessage)
-        }
-        finally connection.close()
-      case None =>
-        println(Console.RED + "could not connect")
-    }
+    performQuery(new DBDeleteTasks(methods))
   }
 
   override def receive: Receive = {
@@ -326,15 +175,21 @@ class DBActor extends Actor {
       getTask(method)
     case GetTasks(methods) =>
       getTasks(methods)
-    case GetTasksWithStatus(status) =>
-      getTasksWithStatus(status)
-    case UpdateTaskStatus(method, status) =>
-      updateTaskStatus(method, status)
-    case UpdateTasksStatus(methods, status) =>
-      updateTasksStatus(methods, status)
+    case GetTasksWithStatus(task_status) =>
+      getTasksWithStatus(task_status)
+    case UpdateTask(method, task_status, end_state, task_result) =>
+      updateTask(method, task_status, end_state, task_result)
+    case UpdateTasks(methods, task_status, end_state, task_result) =>
+      updateTasks(methods, task_status, end_state, task_result)
+    case UpdateTaskStatus(method, task_status) =>
+      updateTaskStatus(method, task_status)
+    case UpdateTasksStatus(methods, task_status) =>
+      updateTasksStatus(methods, task_status)
     case DeleteTask(method) =>
       deleteTask(method)
     case DeleteTasks(methods) =>
       deleteTasks(methods)
+    case msg =>
+      println(s"[DBActor]: I do not process messages of type $msg")
   }
 }
