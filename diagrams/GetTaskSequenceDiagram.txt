@@ -23,6 +23,7 @@ TaskActor -> ExecutorDirectoryActor: ? GetExecutorAdress
 ExecutorDirectoryActor -> TaskActor: NodeAdress(ip, path)
 TaskActor -> TaskActor: context.actorOf(ExecutorActor, ip, path)
 TaskActor --> ExecutorActor: context.actorOf
+TaskActor --> ExecutorActor: context.watch
 TaskActor -> VMNodesActor: Executor(ActorRef of ExecutorActor)
 VMNodesActor --> ExecutorActor: context.watch
 note left of TaskActor:
