@@ -35,9 +35,21 @@ object main extends App{
   workerActor ! AddTask(List("nodes"), task_success)
   workerActor ! AddTask(List("nodes"), task_success)
   workerActor ! AddTask(List("nodes", "rooms"), task_success)
+  workerActor ! AddTask(List("nodes", "rooms", "files"), task_fail)
+  workerActor ! AddTask(List("groups"), task_success)
+  workerActor ! AddTask(List("groups", "users"), task_fail)
 
   val testVMNodesActor : ActorRef = system.actorOf(Props(classOf[TestVMNodesActor], null), "vmActor")
 
+  Thread.sleep(500)
+  println(new PrivateMethodExposer(system)('printTree)())
+
+  testVMNodesActor ! "get"
+  Thread.sleep(500)
+  testVMNodesActor ! "get"
+  Thread.sleep(500)
+  testVMNodesActor ! "get"
+  Thread.sleep(500)
   testVMNodesActor ! "get"
   Thread.sleep(500)
   testVMNodesActor ! "get"

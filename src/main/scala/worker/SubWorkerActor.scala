@@ -72,16 +72,22 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
     if(msg.group.length > group.length){
       val name = msg.group.take(group.length + 1)
 
-      // check if we need to create a group actor or single instance actor
-      if(msg.task.singleInstance) {
-        val ref = context.actorOf(Props(classOf[SingleInstanceActor], name), name.mkString("."))
-        ref ! msg
-        context.watch(ref)
-      }
-      else {
-        val ref = context.actorOf(Props(classOf[GroupActor], name), name.mkString("."))
-        ref ! msg
-        context.watch(ref)
+      context.child(name.mkString(".")) match {
+        case Some(child) => child ! msg
+        case None => {
+          msg.task.singleInstance match {
+            case false => {
+              val ref = context.actorOf(Props(classOf[GroupActor], name), name.mkString("."))
+              ref ! msg
+              context.watch(ref)
+            }
+            case true => {
+              val ref = context.actorOf(Props(classOf[SingleInstanceActor], name), name.mkString("."))
+              ref ! msg
+              context.watch(ref)
+            }
+          }
+        }
       }
     }
     // or create new TaskActor

@@ -21,7 +21,7 @@ class DistributorActor extends WorkerTrait{
   def addTask(msg : AddTask) = {
     val api = msg.group.head
     context.child(api) match {
-      case Some(child) => child ! msg
+      case Some(child) => println("found child"); child ! msg
       case None => {
         msg.task.singleInstance match {
           case false => context.actorOf(Props(classOf[GroupActor], msg.group.take(1)), api) ! msg
