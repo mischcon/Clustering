@@ -2,7 +2,7 @@ package utils
 
 import akka.actor.{Actor, ActorLogging, Address}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberExited, MemberJoined}
+import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberEvent, MemberExited, MemberJoined}
 import utils.messages.{ExecutorAddress, GetExecutorAddress}
 
 import scala.util.Random
@@ -15,18 +15,26 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
 
   override def receive: Receive = {
     case MemberJoined(member) => {
+      log.debug(s"MEMBER JOINED! Hello my friend at ${member.address.toString}")
       directory += (member.address -> null)
     }
     case MemberExited(member) => {
+      log.debug(s"MEMBER EXITED! Goodbye my friend at ${member.address.toString}")
       directory -= member.address
     }
     case GetExecutorAddress => getMember()
+    case a => log.debug(s"RECEIVED SOMETHING UNEXPECTED: $a")
   }
 
   def getMember() = {
     /* until a health status is available we simply use a random approach */
     log.debug("received GetExecutorAddress - returning ExecutorAddress")
-    sender() ! ExecutorAddress(new Random().shuffle(directory).head._1)
+    var addr : Address = new Random().shuffle(directory).head._1
+
+    // TODO: REMOVE only present for testing purpose
+    addr = new Random().shuffle(directory.filter( x => x._1 != self.path.address).map(x => x)).head._1
+
+    sender() ! ExecutorAddress(addr)
   }
 
   override def preStart(): Unit = {

@@ -105,7 +105,7 @@ class TaskActor(task : Task) extends WorkerTrait{
           case Success(addr : ExecutorAddress) => {
             executorActor = context.actorOf(Props[TaskExecutorActor].withDeploy(
               Deploy(scope = RemoteScope(addr.address))
-            ), s"EXECUTOR-${task.method.getName}-${new Random().nextLong()}")
+            ), s"EXECUTOR-${task.method}-${new Random().nextLong()}")
 
             // monitor executor
             context.watch(executorActor)

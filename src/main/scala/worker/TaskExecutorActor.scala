@@ -22,10 +22,13 @@ class TaskExecutorActor extends WorkerTrait{
   def run(msg : ExecuteTask): Unit ={
     log.debug("EXECUTING task + \"excepting\" result to parent / supervisor")
     try {
-      var obj = msg.task.method.getDeclaringClass.newInstance()
-      log.debug("created instance")
-      msg.task.method.invoke(obj)
-      log.debug("invocation was successful")
+      /*
+      * TODO search codebase for method name and execute
+      * */
+      println(s"EXECUTING METHOD: ${msg.task.method}")
+      //TESTING
+      if(msg.task.method.contains("fail"))
+        throw new Exception("method failed")
     } catch {
       case e : Exception => {
         log.debug(s"invocation failed - ${e.getCause.toString}")

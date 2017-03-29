@@ -29,8 +29,8 @@ object main extends App{
   var method_success : Method = tc.getTestMethodSuccess
   var method_fail : Method = tc.getTestMethodFail
 
-  val task_success = Task(method_success, false)
-  val task_fail = Task(method_fail, false)
+  val task_success = Task(method_success.getName, false)
+  val task_fail = Task(method_fail.getName, false)
 
   workerActor ! AddTask(List("nodes"), task_success)
   workerActor ! AddTask(List("nodes"), task_success)

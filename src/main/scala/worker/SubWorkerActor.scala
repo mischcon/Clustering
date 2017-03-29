@@ -93,7 +93,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
     // or create new TaskActor
     else {
       log.debug(s"task was added to ${self.path.name}")
-      val ref = context.actorOf(Props(classOf[TaskActor], msg.task), s"TASK-${msg.task.method.getName}-${new Random().nextLong()}")
+      val ref = context.actorOf(Props(classOf[TaskActor], msg.task), s"TASK-${msg.task.method}-${new Random().nextLong()}")
       context.watch(ref)
       taskActors = ref :: taskActors
     }
