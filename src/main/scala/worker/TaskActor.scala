@@ -1,17 +1,16 @@
 package worker
 
 import Exceptions._
-import akka.actor.SupervisorStrategy.{Escalate, Stop}
-import akka.actor.{ActorRef, Deploy, OneForOneStrategy, Props, Status, SupervisorStrategy, Terminated}
-import akka.cluster.Cluster
+import akka.actor.SupervisorStrategy.Escalate
+import akka.actor.{ActorRef, Deploy, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.pattern._
 import akka.remote.RemoteScope
 import akka.util.Timeout
 import utils.messages.{ExecutorAddress, GetExecutorAddress}
 import worker.messages._
 
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success}
 
 /**

@@ -1,8 +1,8 @@
 package utils
 
 import akka.actor.{Actor, ActorLogging, Address}
+import akka.cluster.Cluster
 import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberExited, MemberJoined}
-import akka.cluster.{Cluster, Member}
 import utils.messages.{ExecutorAddress, GetExecutorAddress}
 
 import scala.util.Random
