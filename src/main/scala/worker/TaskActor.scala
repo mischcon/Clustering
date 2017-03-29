@@ -94,7 +94,7 @@ class TaskActor(task : Task) extends WorkerTrait{
     isTaken = true
     val executor = sender() ? SendTask(task)
     executor.onComplete{
-      case Success(target : AquireExecutor) => {
+      case Success(target : AcquireExecutor) => {
         log.debug("received vmInfo - now creating Executor")
 
         // watch SENDER (the targetVM Actor)

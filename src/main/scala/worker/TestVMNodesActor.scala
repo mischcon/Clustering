@@ -28,7 +28,7 @@ class TestVMNodesActor(vmInfo : Object) extends WorkerTrait{
       log.debug("received SendTask and I still have space for tasks!")
       haveSpaceForTasks = false
 
-      sender() ! AquireExecutor(vmInfo, self)
+      sender() ! AcquireExecutor(vmInfo, self)
     }
     case t : SendTask if ! haveSpaceForTasks => {
       log.debug("received SendTask but I dont have any more space :(")
