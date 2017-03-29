@@ -23,6 +23,7 @@ class TaskActor(task : Task) extends WorkerTrait{
   var taskDone : Boolean = false
 
   var targetVm : ActorRef = null
+  var executorActor : ActorRef = null
 
   implicit val timeout = Timeout(1 seconds)
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
@@ -53,7 +54,10 @@ class TaskActor(task : Task) extends WorkerTrait{
       taskDone = true
       Escalate
     }
-    case _ => Escalate
+    case a : Throwable => {
+      log.debug(s"received an unexpected exception: ${a.getMessage}")
+      Escalate
+    }
   }
 
   /*
@@ -80,6 +84,8 @@ class TaskActor(task : Task) extends WorkerTrait{
       isTaken = false
       context.unwatch(targetVm)
       targetVm = null
+      context.unwatch(executorActor)
+      executorActor = null
     }
   }
 
@@ -98,16 +104,19 @@ class TaskActor(task : Task) extends WorkerTrait{
         // get executor
         (context.system.actorSelection("/user/ExecutorDirectory") ? GetExecutorAddress) onComplete{
           case Success(addr : ExecutorAddress) => {
-            val ex : ActorRef = context.actorOf(Props[TaskExecutorActor].withDeploy(
+            executorActor = context.actorOf(Props[TaskExecutorActor].withDeploy(
               Deploy(scope = RemoteScope(addr.address))
             ), s"EXECUTOR-${task.method.getName}-${new Random().nextLong()}")
 
+            // monitor executor
+            context.watch(executorActor)
+
             // send actorRef to targetVm
             log.debug("sending actorRef of EXECUTOR to targetVmActor")
-            targetVm ! Executor(ex)
+            targetVm ! Executor(executorActor)
 
-            log.debug("sending RUN to EXECUTOR")
-            ex ! ExecuteTask(task, target.vmInfo)
+            log.debug("sending ExecuteTask to EXECUTOR")
+            executorActor ! ExecuteTask(task, target.vmInfo)
           }
           case Failure(e) => {
             /* IMPROVEMENT NEEDED
