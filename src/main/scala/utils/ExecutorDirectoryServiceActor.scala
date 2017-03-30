@@ -32,7 +32,10 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
     var addr : Address = new Random().shuffle(directory).head._1
 
     // TODO: REMOVE only present for testing purpose
-    addr = new Random().shuffle(directory.filter( x => x._1 != self.path.address).map(x => x)).head._1
+    if(directory.exists(x => x._1 != self.path.address))
+      addr = new Random().shuffle(directory).filter(x => x._1 != self.path.address).head._1
+    else
+      addr = self.path.address
 
     sender() ! ExecutorAddress(addr)
   }

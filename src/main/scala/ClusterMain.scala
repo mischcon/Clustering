@@ -22,6 +22,7 @@ object ClusterMain extends App{
       // MASTER
       if (cli_config.mode == "master") {
         val system : ActorSystem = ActorSystem("the-cluster", config.getConfig("master").withFallback(config))
+        Cluster(system).join(Address("akka.tcp", "the-cluster", "localhost", 2550))
 
         val workerActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
@@ -87,7 +88,7 @@ object ClusterMain extends App{
 
         if(cli_config.seednode != null) {
           println(s"using ${cli_config.seednode} as seed-node")
-          Cluster(system).join(Address("tcp", "the-cluster", cli_config.seednode.split(":").head, cli_config.seednode.split(":").reverse.head.toInt))
+          Cluster(system).join(Address("akka.tcp", "the-cluster", cli_config.seednode.split(":").head, cli_config.seednode.split(":").reverse.head.toInt))
         }
 
         if(!cli_config.withExecutor)
