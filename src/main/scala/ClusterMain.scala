@@ -1,12 +1,13 @@
 import java.lang.reflect.Method
+import java.net.{InetAddress, NetworkInterface}
 
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster
 import com.typesafe.config.ConfigFactory
 import utils.db.DBActor
-import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor, PrivateMethodExposer}
-import worker.{DistributorActor, TestVMNodesActor}
+import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor}
 import worker.messages.{AddTask, Task}
+import worker.{DistributorActor, TestVMNodesActor}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -19,10 +20,28 @@ object ClusterMain extends App{
     case Some(cli_config) => {
 
       val config = ConfigFactory.load()
+      val interfaces = NetworkInterface.getNetworkInterfaces
+      println("Choose ip for listening:")
+      var counter = 0
+      var ips_list : List[String] = List.empty
+      while(interfaces.hasMoreElements) {
+        val addresses = interfaces.nextElement().getInetAddresses
+        while(addresses.hasMoreElements) {
+          var ip = addresses.nextElement().getHostAddress
+          println(s"  [$counter] $ip")
+          counter += 1
+          ips_list = ip :: ips_list
+        }
+      }
+      var localIp = ips_list.reverse(StdIn.readInt())
+      val hostnameConfig = ConfigFactory.parseString(s"akka.remote.netty.tcp.hostname = $localIp")
       // MASTER
       if (cli_config.mode == "master") {
-        val system : ActorSystem = ActorSystem("the-cluster", config.getConfig("master").withFallback(config))
-        Cluster(system).join(Address("akka.tcp", "the-cluster", "localhost", 2550))
+        val system : ActorSystem = ActorSystem("the-cluster", hostnameConfig
+          .withFallback(config.getConfig("master").withFallback(config)))
+
+        Cluster(system).join(Address("akka.tcp", "the-cluster", localIp, 2550))
+        println(s"Cluster created! Seed node IP is $localIp")
 
         val workerActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
@@ -84,7 +103,8 @@ object ClusterMain extends App{
       }
       // CLIENT
       else {
-        val system : ActorSystem = ActorSystem("the-cluster", config.getConfig("client").withFallback(config))
+        val system : ActorSystem = ActorSystem("the-cluster", hostnameConfig
+          .withFallback(config.getConfig("client").withFallback(config)))
 
         if(cli_config.seednode != null) {
           println(s"using ${cli_config.seednode} as seed-node")
@@ -112,4 +132,6 @@ object ClusterMain extends App{
     case None =>
       System.exit(1)
   }
+
+  InetAddress.getLocalHost.getHostAddress
 }
