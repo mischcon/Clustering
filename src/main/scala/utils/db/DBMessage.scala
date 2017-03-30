@@ -10,6 +10,29 @@ trait DBMessage
  */
 
 /**
+  * = Request ''task_status - amount'' relation =
+  * __Example__:
+  * {{{
+  * NOT_STARTED #
+  * RUNNING     #
+  * DONE        #
+  * }}}
+  */
+case object CountTaskStatus extends DBMessage
+
+/**
+  * = Request ''end_state - amount'' relation =
+  * __Example__:
+  * {{{
+  * NONE    #
+  * SUCCESS #
+  * FAILURE #
+  * ERROR   #
+  * }}}
+  */
+case object CountEndState extends DBMessage
+
+/**
   * = Create task entry in the database =
   * @param method name of the task to be saved; __must be unique__
   */
@@ -91,7 +114,19 @@ case class DeleteTasks(methods : List[String]) extends DBMessage
  */
 
 /**
-  * = Response message class of [[utils.db.DBActor]] =
+  * = Response message for [[utils.db.CountTaskStatus]] =
+  * @param result contains (task_status -> amount) key-value pairs
+  */
+case class CountedTaskStatus(result : Map[TaskStatus, Int]) extends DBMessage
+
+/**
+  * = Response message for [[utils.db.CountEndState]] =
+  * @param result contains (end_state -> amount) key-value pairs
+  */
+case class CountedEndState(result : Map[EndState, Int]) extends DBMessage
+
+/**
+  * = Response message for task entry =
   * @param method entry in tasks table for column '''method'''
   * @param task_status entry in tasks table for column '''task_status'''
   * @param end_state entry in tasks table for column '''end_state'''
