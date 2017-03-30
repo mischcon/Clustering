@@ -35,6 +35,7 @@ object ClusterMain extends App{
       }
       var localIp = ips_list.reverse(StdIn.readInt())
       val hostnameConfig = ConfigFactory.parseString(s"akka.remote.netty.tcp.hostname = $localIp")
+
       // MASTER
       if (cli_config.mode == "master") {
         val system : ActorSystem = ActorSystem("the-cluster", hostnameConfig
@@ -132,6 +133,4 @@ object ClusterMain extends App{
     case None =>
       System.exit(1)
   }
-
-  InetAddress.getLocalHost.getHostAddress
 }
