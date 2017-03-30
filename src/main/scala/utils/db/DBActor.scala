@@ -1,6 +1,6 @@
 package utils.db
 
-import java.sql.{Connection, DriverManager, PreparedStatement, Types}
+import java.sql.{Connection, DriverManager}
 
 import akka.actor.Actor
 import com.typesafe.config.ConfigFactory
@@ -63,6 +63,20 @@ class DBActor extends Actor {
       case None =>
         println("[DBActor]: could not connect")
     }
+  }
+
+  /**
+    * = Answers w/ [[utils.db.CountedTaskStatus]] =
+    */
+  def countTaskStatus(): Unit = {
+    performQuery(new DBCountTaskStatus)
+  }
+
+  /**
+    * = Answers w/ [[utils.db.CountedEndState]] =
+    */
+  def countEndState(): Unit = {
+    performQuery(new DBCountEndState)
   }
 
   /**
@@ -167,6 +181,10 @@ class DBActor extends Actor {
   }
 
   override def receive: Receive = {
+    case CountTaskStatus =>
+      countTaskStatus()
+    case CountEndState =>
+      countEndState()
     case CreateTask(method) =>
       createTask(method)
     case CreateTasks(methods) =>

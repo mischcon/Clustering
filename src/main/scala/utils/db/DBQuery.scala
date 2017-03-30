@@ -6,6 +6,54 @@ trait DBQuery {
   def perform(connection: Connection) : Any
 }
 
+class DBCountTaskStatus extends DBQuery {
+  override def perform(connection: Connection): CountedTaskStatus = {
+    val sql =
+      s"SELECT '${TaskStatus.NOT_STARTED}' AS task_status, COALESCE(COUNT(*), 0) AS amount " +
+      s"FROM tasks WHERE task_status = '${TaskStatus.NOT_STARTED}' UNION ALL " +
+      s"SELECT '${TaskStatus.RUNNING}' AS task_status, COALESCE(COUNT(*), 0) AS amount " +
+      s"FROM tasks WHERE task_status = '${TaskStatus.RUNNING}' UNION ALL " +
+      s"SELECT '${TaskStatus.DONE}' AS task_status, COALESCE(COUNT(*), 0) AS amount " +
+      s"FROM tasks WHERE task_status = '${TaskStatus.DONE}';"
+    val statement : PreparedStatement = connection.prepareStatement(sql)
+    val resultSet = statement.executeQuery()
+    var result = Map[TaskStatus, Int]()
+    while (resultSet.next()) {
+      val task_status = TaskStatus.valueOf(resultSet.getString("task_status"))
+      val amount = resultSet.getInt("amount")
+      result += (task_status -> amount)
+    }
+    for ((task_status, amount) <- result) println(s"[DB]: $task_status - $amount")
+    CountedTaskStatus(result)
+  }
+}
+
+class DBCountEndState extends DBQuery {
+  override def perform(connection: Connection): CountedEndState = {
+    val sql =
+      "SELECT end_state, COALESCE(COUNT(*), 0) AS amount " +
+      s"FROM tasks WHERE end_state IS NULL UNION ALL " +
+      s"SELECT '${EndState.SUCCESS}' AS end_state, COALESCE(COUNT(*), 0) AS amount " +
+      s"FROM tasks WHERE end_state = '${EndState.SUCCESS}' UNION ALL " +
+      s"SELECT '${EndState.FAILURE}' AS end_state, COALESCE(COUNT(*), 0) AS amount " +
+      s"FROM tasks WHERE end_state = '${EndState.FAILURE}' UNION ALL " +
+      s"SELECT '${EndState.ERROR}' AS end_state, COALESCE(COUNT(*), 0) AS amount " +
+      s"FROM tasks WHERE end_state = '${EndState.ERROR}';"
+    val statement : PreparedStatement = connection.prepareStatement(sql)
+    val resultSet = statement.executeQuery()
+    var result = Map[EndState, Int]()
+    while (resultSet.next()) {
+      val end_state =
+        if (resultSet.getString("end_state") == null) EndState.NONE
+        else EndState.valueOf(resultSet.getString("end_state"))
+      val amount = resultSet.getInt("amount")
+      result += (end_state -> amount)
+    }
+    for ((end_state, amount) <- result) println(s"[DB]: $end_state - $amount")
+    CountedEndState(result)
+  }
+}
+
 class DBCreateTask(method : String) extends DBQuery {
   override def perform(connection : Connection) : Unit = {
     val sql = "INSERT INTO tasks (method) VALUES (?);"
