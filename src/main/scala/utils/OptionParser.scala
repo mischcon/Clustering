@@ -16,7 +16,7 @@ class ClusterOptionParser() {
     cmd("master").action( (_, c) => c.copy(mode = "master") ).
       text("run as master").
       children(
-        opt[File]('i', "input").required().valueName("<task jar>").text("jar file that contains the tasks")
+        opt[String]('i', "input").required().action((s, c) => c.copy(input = s)).valueName("<task jar>").text("jar file that contains the tasks")
       )
 
     cmd("client").action( (_, c) => c.copy(mode = "client"))
@@ -33,7 +33,7 @@ class ClusterOptionParser() {
 }
 
 
-case class Config(mode: String = "", debug : Boolean = false,
+case class Config(mode: String = "", debug : Boolean = false, input : String = null,
                   verbose : Boolean = false, seednode : String = "localhost", withVm : Boolean = true,
                   withExecutor : Boolean = true)
 
