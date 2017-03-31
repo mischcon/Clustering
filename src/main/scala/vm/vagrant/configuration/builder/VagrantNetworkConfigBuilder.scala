@@ -113,7 +113,7 @@ class VagrantPublicNetworkConfigBuilder extends VagrantNetworkConfigBuilder {
   private var dhcp: Boolean = _
   private var useDhcpAssignedDefaultRoute: Boolean = _
   private var ip: String = _
-  private var bridges: List[String] = _
+  private var bridges: List[String] = List()
   private var autoAonfig: Boolean = true
 
   def withDhcp(dhcp: Boolean): VagrantPublicNetworkConfigBuilder = {
@@ -132,7 +132,7 @@ class VagrantPublicNetworkConfigBuilder extends VagrantNetworkConfigBuilder {
   }
 
   def withBridge(bridge: String): VagrantPublicNetworkConfigBuilder = {
-    this.bridges ::= bridges
+    this.bridges ::= bridge
     this
   }
 

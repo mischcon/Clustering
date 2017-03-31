@@ -2,7 +2,7 @@ package vm.vagrant.configuration.builder
 
 import java.io.File
 
-import scala.collection.immutable.List
+import scala.collection.immutable._
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.UUID
@@ -21,9 +21,9 @@ class VagrantVmConfigBuilder() {
   private var hostName: String = _
   private var boxName: String = _
   private var boxUrl: URL = _
-  private var vagrantProvisionerConfigs: List[VagrantProvisionerConfig] = _
-  private var vagrantNetworkConfigs: List[VagrantNetworkConfig] = _
-  private var vagrantSyncedFolderConfigs: List[VagrantSyncedFolderConfig] = _
+  private var vagrantProvisionerConfigs: List[VagrantProvisionerConfig] = List()
+  private var vagrantNetworkConfigs: List[VagrantNetworkConfig] = List()
+  private var vagrantSyncedFolderConfigs: List[VagrantSyncedFolderConfig] = List()
   private var guiMode: Boolean = false
   private var bootTimeout: Int = 300
   private var boxCheckUpdate: Boolean = true
@@ -183,7 +183,8 @@ class VagrantVmConfigBuilder() {
    */
 
   def build: VagrantVmConfig = {
-    if (boxName == null) throw new VagrantBuilderException("No boxName defined")
+    if (boxName == null && !boxName.isEmpty) throw new VagrantBuilderException("No boxName defined")
+    if (provider == null) throw new VagrantBuilderException("No provider defined")
     new VagrantVmConfig(name = name,
       hostName = hostName,
       boxName = boxName,

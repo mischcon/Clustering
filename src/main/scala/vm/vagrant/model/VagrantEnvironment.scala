@@ -25,18 +25,18 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
   /**
     * Start all VMs in this environment
     */
-  def up() {
+  def up(): String = {
     try
-      vagrantEnvironment.callMethod("execute", RubyString.newString(vagrantEnvironment.getRuntime, "up"))
+      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "up")).convertToString().toString
     catch {
       case exception: RaiseException =>
         throw new VagrantException(exception)
     }
   }
 
-  def destroy() {
+  def destroy(): String = {
     try
-      vagrantEnvironment.callMethod("execute", RubyString.newString(vagrantEnvironment.getRuntime, "destroy"), RubyString.newString(vagrantEnvironment.getRuntime, "-f"))
+      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "destroy"), RubyString.newString(vagrantEnvironment.getRuntime, "-f")).convertToString().toString
     catch {
       case exception: RaiseException =>
         throw new VagrantException(exception)
@@ -48,9 +48,9 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
     *
     * @param boxName name of the box for the VM
     */
-  def init(boxName: String): Unit = {
+  def init(boxName: String): String = {
     try
-      vagrantEnvironment.callMethod("execute", RubyString.newString(vagrantEnvironment.getRuntime, "init"), RubyString.newString(vagrantEnvironment.getRuntime, boxName))
+      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "init"), RubyString.newString(vagrantEnvironment.getRuntime, boxName)).convertToString().toString
     catch {
       case exception: RaiseException =>
         throw new VagrantException(exception)
@@ -64,94 +64,8 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
     * @return a iterator for all boxes.
     */
   def getAllAvailableBoxes: Iterable[String] = try {
-    val boxes = vagrantEnvironment.callMethod("boxes").asInstanceOf[RubyObject].getInternalVariable("@boxes").asInstanceOf[RubyArray]
-    val ret = new util.ArrayList[String]
-    for (box <- boxes) {
-      ret.add(box.asInstanceOf[RubyObject].callMethod("name").toString)
-    }
-    ret
-  } catch {
-    case exception: RaiseException =>
-      throw new VagrantException(exception)
-  }
-
-  /**
-    * Creates a iterator for all configured VMs in this environment.
-    *
-    * @return a iterator for all VMs in this environment.
-    */
-  def getAllVms: Iterable[VagrantVm] = try {
-    val o = vagrantEnvironment.callMethod("vms_ordered").asInstanceOf[RubyArray]
-    val vms = new util.ArrayList[VagrantVm]
-    for (vm <- o) {
-      vms.add(new VagrantVm(vm.asInstanceOf[RubyObject]))
-    }
-    vms
-  } catch {
-    case exception: RaiseException =>
-      throw new VagrantException(exception)
-  }
-
-  /**
-    * Returns a specific VM at the given index.
-    *
-    * @param index the index
-    * @return the VM at the given index
-    */
-  def getVm(index: Int): VagrantVm = try {
-    val o = vagrantEnvironment.callMethod("vms_ordered").asInstanceOf[RubyArray]
-    new VagrantVm(o.get(index).asInstanceOf[RubyObject])
-  } catch {
-    case exception: RaiseException =>
-      throw new VagrantException(exception)
-  }
-
-  /**
-    * Returns the count of all VMs configured in this environment
-    *
-    * @return the count of all VMs
-    */
-  def getVmCount: Int = try {
-    val o = vagrantEnvironment.callMethod("vms_ordered").asInstanceOf[RubyArray]
-    o.size
-  } catch {
-    case exception: RaiseException =>
-      throw new VagrantException(exception)
-  }
-
-  /**
-    * Returns the filename of the Vagrantfile for this environment. Normally the name is "Vagrantfile"
-    *
-    * @return the filename of the Vagrantfile
-    */
-  def getVagrantfileName: String = try
-    vagrantEnvironment.callMethod("vagrantfile_name").asInstanceOf[RubyObject].toString
-  catch {
-    case exception: RaiseException =>
-      throw new VagrantException(exception)
-  }
-
-  /**
-    * Returns the global home path for Vagrant. This path is used by Vagrant to store global configs and states
-    *
-    * @return the global home path for Vagrant
-    */
-  def getHomePath: String = try
-    vagrantEnvironment.callMethod("home_path").asInstanceOf[RubyObject].toString
-  catch {
-    case exception: RaiseException =>
-      throw new VagrantException(exception)
-  }
-
-  /**
-    * If this environment is a single VM environment (only contains one VM) this methode will return the VM object.
-    *
-    * @return the object for the VM in this environment.
-    */
-  def getPrimaryVm: VagrantVm = try {
-    val rubyVm = vagrantEnvironment.callMethod("primary_vm").asInstanceOf[RubyObject]
-    if (rubyVm == null || rubyVm.isInstanceOf[RubyNil]) throw new VagrantException("No primary vm found. Maybe there is no vm defined in your configuration or you are working with a multi vm environment.")
-    new VagrantVm(rubyVm)
+    val boxes = vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "box"), RubyString.newString(vagrantEnvironment.getRuntime, "list")).convertToString().toString
+    boxes.split("\n").map(d => d.split(" "){0})
   } catch {
     case exception: RaiseException =>
       throw new VagrantException(exception)

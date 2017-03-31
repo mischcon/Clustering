@@ -10,8 +10,8 @@ package vm.vagrant.configuration
   * @author oliver.ziegert
   *
   */
-class VagrantProviderConfig(val name : String = "virtualbox",
-                            val guiMode: Boolean = false,
+class VagrantProviderConfig(val name : String,
+                            val guiMode: Boolean,
                             val memory: Int,
                             val cpus: Int,
                             val customize: List[String],

@@ -1,5 +1,6 @@
 package vm.vagrant.configuration.builder
 
+import vm.vagrant.configuration.builder.util.VagrantBuilderException
 import vm.vagrant.configuration.{VagrantSyncedFolderConfig, VagrantSyncedFolderNfsConfig, VagrantSyncedFolderRsyncConfig, VagrantSyncedFolderVirtualBoxConfig}
 
 /**
@@ -17,15 +18,27 @@ trait VagrantSyncedFoldersConfigBuilder {
 }
 
 class VagrantSyncedFolderNfsConfigBuilder extends VagrantSyncedFoldersConfigBuilder {
-  private var create: Boolean = _
-  private var disabled: Boolean = _
+  private var hostPath: String = _
+  private var guestPath: String = _
+  private var create: Boolean = false
+  private var disabled: Boolean = false
   private var group: String = _
   private var mountOptions: Array[String] = _
   private var owner: String = _
   private var name: String = _
-  private var nfsExport: Boolean = _
-  private var nfsUdp: Boolean = _
-  private var nfsVersion: Int = _
+  private var nfsExport: Boolean = true
+  private var nfsUdp: Boolean = true
+  private var nfsVersion: Int = 3
+
+  def withHostPath(hostPath: String): VagrantSyncedFolderNfsConfigBuilder = {
+    this.hostPath = hostPath
+    this
+  }
+
+  def withGuestPath(guestPath: String): VagrantSyncedFolderNfsConfigBuilder = {
+    this.guestPath = guestPath
+    this
+  }
 
   def withCreate(create: Boolean): VagrantSyncedFolderNfsConfigBuilder = {
     this.create = create
@@ -73,7 +86,13 @@ class VagrantSyncedFolderNfsConfigBuilder extends VagrantSyncedFoldersConfigBuil
   }
 
   override def build: VagrantSyncedFolderConfig = {
-    new VagrantSyncedFolderNfsConfig(_create = create,
+    if (hostPath == null)
+      throw new VagrantBuilderException("No hostPath defined")
+    if (guestPath == null)
+      throw new VagrantBuilderException("No guestPath defined")
+    new VagrantSyncedFolderNfsConfig(_hostPath = hostPath,
+                                     _guestPath = guestPath,
+                                     _create = create,
                                      _disabled = disabled,
                                      _group = group,
                                      _mountOptions = mountOptions,
@@ -86,12 +105,24 @@ class VagrantSyncedFolderNfsConfigBuilder extends VagrantSyncedFoldersConfigBuil
 }
 
 class VagrantSyncedFolderVirtualBoxConfigBuilder extends VagrantSyncedFoldersConfigBuilder {
+  private var hostPath: String = _
+  private var guestPath: String = _
   private var create: Boolean = _
   private var disabled: Boolean = _
   private var group: String = _
   private var mountOptions: Array[String] = _
   private var owner: String = _
   private var name: String = _
+
+  def withHostPath(hostPath: String): VagrantSyncedFolderVirtualBoxConfigBuilder = {
+    this.hostPath = hostPath
+    this
+  }
+
+  def withGuestPath(guestPath: String): VagrantSyncedFolderVirtualBoxConfigBuilder = {
+    this.guestPath = guestPath
+    this
+  }
 
   def withCreate(create: Boolean): VagrantSyncedFolderVirtualBoxConfigBuilder = {
     this.create = create
@@ -124,7 +155,11 @@ class VagrantSyncedFolderVirtualBoxConfigBuilder extends VagrantSyncedFoldersCon
   }
 
   override def build: VagrantSyncedFolderConfig = {
-    new VagrantSyncedFolderVirtualBoxConfig(_create = create,
+    if (hostPath == null && guestPath == null)
+      throw new VagrantBuilderException("HostPath and GuestPath is required!")
+    new VagrantSyncedFolderVirtualBoxConfig(_hostPath = hostPath,
+                                            _guestPath = guestPath,
+                                            _create = create,
                                             _disabled = disabled,
                                             _group = group,
                                             _mountOptions = mountOptions,
@@ -134,12 +169,24 @@ class VagrantSyncedFolderVirtualBoxConfigBuilder extends VagrantSyncedFoldersCon
 }
 
 class VagrantSyncedFolderRsyncConfigBuilder extends VagrantSyncedFoldersConfigBuilder {
+  private var hostPath: String = _
+  private var guestPath: String = _
   private var create: Boolean = _
   private var disabled: Boolean = _
   private var group: String = _
   private var mountOptions: Array[String] = _
   private var owner: String = _
   private var name: String = _
+
+  def withHostPath(hostPath: String): VagrantSyncedFolderRsyncConfigBuilder = {
+    this.hostPath = hostPath
+    this
+  }
+
+  def withGuestPath(guestPath: String): VagrantSyncedFolderRsyncConfigBuilder = {
+    this.guestPath = guestPath
+    this
+  }
 
   def withCreate(create: Boolean): VagrantSyncedFolderRsyncConfigBuilder = {
     this.create = create
@@ -172,7 +219,11 @@ class VagrantSyncedFolderRsyncConfigBuilder extends VagrantSyncedFoldersConfigBu
   }
 
   override def build: VagrantSyncedFolderConfig = {
-    new VagrantSyncedFolderRsyncConfig(_create = create,
+    if (hostPath == null && guestPath == null)
+      throw new VagrantBuilderException("HostPath and GuestPath is required!")
+    new VagrantSyncedFolderRsyncConfig(_hostPath = hostPath,
+                                       _guestPath = guestPath,
+                                       _create = create,
                                        _disabled = disabled,
                                        _group = group,
                                        _mountOptions = mountOptions,

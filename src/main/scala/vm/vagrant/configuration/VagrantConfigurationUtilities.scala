@@ -48,11 +48,11 @@ object VagrantConfigurationUtilities {
     if (vmConfig.gracefulHaltTimeout != 0) builder.append(createVmGracefulHaltTimeoutConfig(vmConfig.gracefulHaltTimeout))
     if (vmConfig.guest != null) builder.append(createVmGuestConfig(vmConfig.guest))
     if (vmConfig.hostName != null) builder.append(createVmHostNameConfig(vmConfig.hostName))
-    if (vmConfig.vagrantNetworkConfigs != null) for (vagrantNetworkConfig <- vmConfig.vagrantNetworkConfigs) {createVmNetworkConfig(vagrantNetworkConfig)}
+    if (vmConfig.vagrantNetworkConfigs != null) for (vagrantNetworkConfig <- vmConfig.vagrantNetworkConfigs) builder.append(createVmNetworkConfig(vagrantNetworkConfig))
     if (vmConfig.postUpMessage != null) builder.append(createVmPostUpMessageConfig(vmConfig.postUpMessage))
     builder.append(createVmProviderConfig(vmConfig.provider))
     //TODO: Provision
-    //TODO: SyncFolder
+    if (vmConfig.vagrantSyncedFolderConfigs != null) for (vagrantSyncedFolderConfig <- vmConfig.vagrantSyncedFolderConfigs) builder.append(createVmSyncFolderConfig(vagrantSyncedFolderConfig))
     if (!vmConfig.usablePortRange.equals("2200..2250")) builder.append(createVmUsablePortRangeConfig(vmConfig.usablePortRange))
     builder.append("  end").append("\n")
     builder.toString
@@ -160,14 +160,6 @@ object VagrantConfigurationUtilities {
     builder.toString
   }
 
-  // TODO: Fertigstellen
-
-  private def createVmSyncedFolderConfig(value: String) = {
-    val builder = new StringBuilder
-    builder.append(s"""    vm.vm.synced_folder = "$value"""").append("\n")
-    builder.toString
-  }
-
   private def createVmUsablePortRangeConfig(value: String) = {
     val builder = new StringBuilder
     builder.append(s"""    vm.vm.usable_port_range = "$value"""").append("\n")
@@ -186,7 +178,7 @@ object VagrantConfigurationUtilities {
   private def createVmNetworkPrivateNetworkConfig(privateNetwork: VagrantPrivateNetworkConfig) = {
     val builder = new StringBuilder
     if (privateNetwork.isComplete) {
-      builder.append(s"""  vm.vm.network "${privateNetwork.mode}"""")
+      builder.append(s"""    vm.vm.network "${privateNetwork.mode}"""")
       if (privateNetwork.dhcp) builder.append(s""", type: "dhcp" """)
       if (privateNetwork.ip != null && !privateNetwork.ip.isEmpty) builder.append(s""", ip: "${privateNetwork.ip}" """)
       if (privateNetwork.netmask > 0) builder.append(s""", netmask: "${privateNetwork.netmask}" """)
@@ -199,12 +191,12 @@ object VagrantConfigurationUtilities {
   private def createVmNetworkPortForwardingConfig(portForwarding: VagrantPortForwardingConfig) = {
     val builder = new StringBuilder
     if (portForwarding.isComplete) {
-      builder.append(s"""  vm.vm.network "${portForwarding.mode}", guest: ${portForwarding.guestPort}, host: ${portForwarding.hostPort}""")
-      if (portForwarding.name != null && !portForwarding.name.isEmpty) builder.append(s", id: ${portForwarding.name}")
+      builder.append(s"""    vm.vm.network "${portForwarding.mode}", guest: ${portForwarding.guestPort}, host: ${portForwarding.hostPort}""")
+      if (portForwarding.name != null && !portForwarding.name.isEmpty) builder.append(s""", id: "${portForwarding.name}"""")
       if (portForwarding.protocol != Protocol.tcp) builder.append(s", protocol: ${portForwarding.protocol.toString}")
       if (portForwarding.autoCorrect) builder.append(s", auto_correct: ${portForwarding.autoCorrect}")
-      if (portForwarding.guestIp != null && !portForwarding.guestIp.isEmpty) builder.append(s""", guest_ip : "${portForwarding.guestIp}"""")
-      if (portForwarding.hostIp != null && !portForwarding.hostIp.isEmpty) builder.append(s""", host_ip : "${portForwarding.hostIp}"""")
+      if (portForwarding.guestIp != null && !portForwarding.guestIp.isEmpty) builder.append(s""", guest_ip: "${portForwarding.guestIp}"""")
+      if (portForwarding.hostIp != null && !portForwarding.hostIp.isEmpty) builder.append(s""", host_ip: "${portForwarding.hostIp}"""")
       builder.append("\n")
     }
     builder.toString
@@ -213,7 +205,7 @@ object VagrantConfigurationUtilities {
   private def createVmNetworkPublicNetworkConfig(publicNetwork: VagrantPublicNetworkConfig) = {
     val builder = new StringBuilder
     if (publicNetwork.isComplete) {
-      builder.append(s"""  vm.vm.network "${publicNetwork.mode}"""")
+      builder.append(s"""    vm.vm.network "${publicNetwork.mode}"""")
       if (publicNetwork.useDhcpAssignedDefaultRoute) builder.append(s", use_dhcp_assigned_default_route: ${publicNetwork.useDhcpAssignedDefaultRoute.toString}")
       if (publicNetwork.ip != null && !publicNetwork.ip.isEmpty) builder.append(s""", ip: "${publicNetwork.ip}"""")
       if (publicNetwork.bridges != null && publicNetwork.bridges.length > 0) {
@@ -224,7 +216,34 @@ object VagrantConfigurationUtilities {
         }
       }
       if (!publicNetwork.autoAonfig) builder.append(s", auto_config: ${publicNetwork.autoAonfig.toString}")
+      builder.append("\n")
     }
+    builder.toString
+  }
+
+  private def createVmSyncFolderConfig(syncFolder: VagrantSyncedFolderConfig) = {
+    var builder = new StringBuilder
+    builder.append(s"""    vm.vm.synced_folder "${syncFolder.hostPath}", "${syncFolder.guestPath}", type: "${syncFolder.mode}" """)
+    if (syncFolder.create) builder.append(s", create: ${syncFolder.create.toString}")
+    if (syncFolder.disabled) builder.append(s", disabled: ${syncFolder.disabled.toString}")
+    if (syncFolder.group != null && !syncFolder.group.isEmpty) builder.append(s""", group: "${syncFolder.group}" """)
+    if (syncFolder.mountOptions != null && syncFolder.mountOptions.length > 0) builder.append(s""", mount_options: ${syncFolder.mountOptions.mkString("""["""", """", """", """"]""")} """)
+    if (syncFolder.owner != null && !syncFolder.owner.isEmpty) builder.append(s""", owner: "${syncFolder.owner}" """)
+    if (syncFolder.name != null && !syncFolder.name.isEmpty) builder.append(s""", id: "${syncFolder.name}" """)
+    syncFolder match {
+      case x: VagrantSyncedFolderNfsConfig => builder.append(createVmSyncedFolderNfsConfig(x.asInstanceOf[VagrantSyncedFolderNfsConfig]))
+      case _ =>
+    }
+    builder.append("\n")
+    builder.toString
+  }
+
+  private def createVmSyncedFolderNfsConfig(nfsConfig: VagrantSyncedFolderNfsConfig) = {
+    val builder = new StringBuilder
+    if (!nfsConfig.nfsExport) builder.append(s", nfs_export: ${nfsConfig.nfsExport.toString}")
+    if (!nfsConfig.nfsUdp) builder.append(s", nfs_udp : ${nfsConfig.nfsUdp.toString}")
+    if (!nfsConfig.nfsUdp) builder.append(s", nfs_udp : ${nfsConfig.nfsUdp.toString}")
+    if (nfsConfig.nfsVersion != 3) builder.append(s", nfs_version: ${nfsConfig.nfsVersion.toString}")
     builder.toString
   }
 
@@ -233,26 +252,11 @@ object VagrantConfigurationUtilities {
     if (value.name != null && !value.name.isEmpty) {
       builder.append(s"""    vm.vm.provider "${value.name}" do |provider|""").append("\n")
       if (value.guiMode) builder.append(s"      provider.gui = ${value.guiMode}").append("\n")
-      if (value.memory > 0 ) builder.append(s"""      provider.memory = "${value.memory}"""").append("\n")
-      if (value.cpus > 0 ) builder.append(s"""      provider.cpus = "${value.cpus}"""").append("\n")
+      if (value.memory > 0 ) builder.append(s"""      provider.memory = "${value.memory.toString}"""").append("\n")
+      if (value.cpus > 0 ) builder.append(s"""      provider.cpus = ${value.cpus.toString}""").append("\n")
       if (value.vmName != null && !value.vmName.isEmpty) builder.append(s"""      provider.name = "${value.vmName}"""").append("\n")
       if (value.customize != null) for (customize <- value.customize) { builder.append(s"      provider.customize = ${customize}").append("\n") }
       builder.append("    end").append("\n")
-    }
-    builder.toString
-  }
-
-  private def createPuppetProvisionerConfig(vmConfigName: String, puppetProvisionerConfig: VagrantProvisionerConfig) = {
-    val builder = new StringBuilder
-    if (puppetProvisionerConfig != null) {
-      builder.append(vmConfigName + ".vm.provision :puppet do |puppet|").append("\n")
-      builder.append("puppet.manifests_path = \"" + puppetProvisionerConfig.getManifestsPath + "\"").append("\n")
-      builder.append("puppet.manifest_file  = \"" + puppetProvisionerConfig.getManifestFile + "\"").append("\n")
-      val modulesPath = puppetProvisionerConfig.getModulesPath
-      if (modulesPath != null) builder.append("puppet.module_path  = \"" + modulesPath + "\"").append("\n")
-      val debug = puppetProvisionerConfig.isDebug
-      if (debug) builder.append("puppet.options  = \"--verbose --debug\"").append("\n")
-      builder.append("end").append("\n")
     }
     builder.toString
   }
