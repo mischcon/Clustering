@@ -54,8 +54,8 @@ object DBConnectionTest extends App {
       println("[Future]: no result")
   }
 
-  db ! UpdateTask(method, TaskStatus.DONE, EndState.NONE, "HTTP Response 200")
-  db ! UpdateTasks(methods, TaskStatus.DONE, EndState.NONE, "HTTP Response 201")
+  db ! UpdateTask(method, TaskStatus.DONE, EndState.SUCCESS, "HTTP Response 200")
+  db ! UpdateTasks(methods, TaskStatus.DONE, EndState.SUCCESS, "HTTP Response 201")
   db ! UpdateTaskStatus(method, TaskStatus.RUNNING)
   db ! UpdateTasksStatus(methods, TaskStatus.RUNNING)
 
@@ -68,6 +68,14 @@ object DBConnectionTest extends App {
     case None =>
       println("[Future]: no result")
   }
+
+  val future5 = db ? CountTaskStatus
+  val result5 = Await.result(future5, timeout.duration).asInstanceOf[CountedTaskStatus]
+//  println("[Future]: " + result5.result)
+
+  val future6 = db ? CountEndState
+  val result6 = Await.result(future6, timeout.duration).asInstanceOf[CountedEndState]
+//  println("[Future]: " + result6.result)
 
   db ! DeleteTask(method)
   db ! DeleteTasks(methods)

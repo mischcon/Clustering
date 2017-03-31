@@ -51,6 +51,8 @@ object ClusterMain extends App{
         // TODO: Create missing / not yet implemented Actors
 
         // TODO: Load codebase
+        val loader : TestingCodebaseLoader = new TestingCodebaseLoader(config.input)
+        val testMethods = loader.getClassClusterMethods
 
         // TODO: Add Tasks and start the execution
 
