@@ -6,6 +6,7 @@ object ClusterMain extends App{
   parser.parser.parse(args, Config()) match {
     case Some(config) =>
       val loader : TestingCodebaseLoader = new TestingCodebaseLoader(config.input)
+      val testMethods = loader.getClassClusterMethods
     case None =>
       System.exit(1)
   }

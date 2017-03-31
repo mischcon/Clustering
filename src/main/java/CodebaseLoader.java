@@ -1,24 +1,25 @@
-import sun.misc.IOUtils;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 class TestingCodebaseLoader extends ClassLoader{
 
-    String path;
+    private String path;
 
-    Map<String, Class> classRaw = new HashMap<>();
-    Map<String, String> classClusterMethods = new HashMap<>();
+    private Map<String, Class> classRaw = new HashMap<>();
+    private Map<String, List<String>> classClusterMethods = new HashMap<>();
 
-    byte[] jar;
+    private byte[] jar;
 
     public TestingCodebaseLoader(String path) throws IOException {
         this(Files.readAllBytes(Paths.get(path)));
@@ -57,13 +58,18 @@ class TestingCodebaseLoader extends ClassLoader{
             Class cls = classRaw.get(key);
             for(Method m : cls.getMethods()){
                 Annotation an = m.getAnnotation(Clustering.class);
-                if(an != null)
-                    classClusterMethods.put(key, m.getName());
+                if(an != null) {
+                    if(!classClusterMethods.containsKey(key))
+                        classClusterMethods.put(key, new LinkedList<>());
+                    List list = classClusterMethods.get(key);
+                    list.add(m.getName());
+                    classClusterMethods.put(key, list);
+                }
             }
         }
     }
 
-    public Map<String, String> getClassClusterMethods(){
+    public Map<String, List<String>> getClassClusterMethods(){
         return this.classClusterMethods;
     }
 
