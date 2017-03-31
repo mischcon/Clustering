@@ -12,12 +12,24 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+class TestEntry {
+    String classname;
+    String methodname;
+    Clustering annotation;
+
+    public TestEntry(String classname, String methodname, Clustering annotation) {
+        this.classname = classname;
+        this.methodname = methodname;
+        this.annotation = annotation;
+    }
+}
+
 class TestingCodebaseLoader extends ClassLoader{
 
     private String path;
 
     private Map<String, Class> classRaw = new HashMap<>();
-    private Map<String, List<String>> classClusterMethods = new HashMap<>();
+    private List<TestEntry> classClusterMethods = new LinkedList<>();
 
     private byte[] jar;
 
@@ -59,17 +71,13 @@ class TestingCodebaseLoader extends ClassLoader{
             for(Method m : cls.getMethods()){
                 Annotation an = m.getAnnotation(Clustering.class);
                 if(an != null) {
-                    if(!classClusterMethods.containsKey(key))
-                        classClusterMethods.put(key, new LinkedList<>());
-                    List list = classClusterMethods.get(key);
-                    list.add(m.getName());
-                    classClusterMethods.put(key, list);
+                    classClusterMethods.add(new TestEntry(cls.getName(), m.getName(), (Clustering) an));
                 }
             }
         }
     }
 
-    public Map<String, List<String>> getClassClusterMethods(){
+    public List<TestEntry> getClassClusterMethods(){
         return this.classClusterMethods;
     }
 

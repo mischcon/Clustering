@@ -1,27 +1,33 @@
 package worker
 
-import Exceptions.{TestFailException, TestSuccessException}
-import akka.actor.SupervisorStrategy.{Escalate, Stop}
-import akka.actor.{ActorRef, OneForOneStrategy, PoisonPill, Props, SupervisorStrategy, Terminated}
+import Exceptions.{DependencyFailException, TestFailException, TestSuccessException}
+import akka.actor.SupervisorStrategy.Stop
+import akka.actor.{ActorRef, ActorSelection, OneForOneStrategy, PoisonPill, Props, SupervisorStrategy, Terminated}
+import akka.pattern._
 import akka.util.Timeout
-import utils.db.{TaskStatus, UpdateTaskStatus}
+import utils.db.{EndState, TaskStatus, UpdateTask}
 import worker.messages._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import scala.util.Random
+import scala.util.{Failure, Random, Success}
 
 abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
 
   implicit val timeout = Timeout(1 seconds)
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
 
+  val dbActor : ActorSelection = context.system.actorSelection("/user/db")
   var taskActors : List[ActorRef] = Nil
 
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
     case t : Terminated => check_suicide()
+    case x : PersistAndSuicide => {
+      taskActors = List.empty
+      context.children.foreach(a => a ! x)
+    }
     case x => log.debug(s"${self.path.name} received something unexpected: $x")
   }
 
@@ -40,28 +46,28 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   def handleSuccess(task : Task, result : Object, source : ActorRef): Unit ={
     /* DB Actor + write */
     log.debug("writing SUCCESS result to db")
-    //context.system.actorSelection("user/db") ! UpdateTaskStatus(task.method.getName, TaskStatus.DONE)
+    dbActor ! UpdateTask(s"${task.cls.getName}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null)
 
     log.debug(s"removing actorRef from list: ${source.path.toString}")
     taskActors = taskActors.filter(x => x != source)
   }
 
-  def handleFailure(task : Task, result : Object, source : ActorRef): Unit = {
+  def handleFailure(task : Task, result : Throwable, source : ActorRef): Unit = {
     /* DB Actor + write */
     log.debug(s"writing FAILURE result to db")
-    // PLACEHOLDER - write to db
+    dbActor ! UpdateTask(s"${task.cls.getName}.${task.method}", TaskStatus.DONE, EndState.FAILURE, result.getCause.toString)
 
     log.debug(s"removing actorRef from list: ${source.path.toString}")
     taskActors = taskActors.filter(x => x != source)
 
-    /* stop all children */
-    context.children.foreach(x => x ! PoisonPill)
+    // advice all taskActor to write their results to DB and commit suicide
+    context.children.foreach(x => x ! PersistAndSuicide(s"${task.cls.getName}.${task.method}"))
   }
 
   def check_suicide(): Unit ={
     if(taskActors.isEmpty && context.children.isEmpty) {
       log.debug("no more tasks available and no more children present - performing suicide for the greater good")
-      self ! PoisonPill
+      context.stop(self)
     } else {
       log.debug(s"there are still children that depend on ${self.path.toString} - I will stay in this world (taskActors: ${taskActors.size} | children: ${context.children.size})")
     }

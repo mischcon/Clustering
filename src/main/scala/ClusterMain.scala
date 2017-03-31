@@ -4,14 +4,15 @@ import java.net.{InetAddress, NetworkInterface}
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster
 import com.typesafe.config.ConfigFactory
-import utils.db.DBActor
+import utils.db.{CreateTask, DBActor}
 import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor}
 import worker.messages.{AddTask, Task}
 import worker.{DistributorActor, TestVMNodesActor}
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, JavaConversions}
 import scala.concurrent.duration.Duration
 import scala.io.StdIn
+import scala.collection.JavaConverters._
 
 object ClusterMain extends App{
 
@@ -44,34 +45,45 @@ object ClusterMain extends App{
         Cluster(system).join(Address("akka.tcp", "the-cluster", localIp, 2550))
         println(s"Cluster created! Seed node IP is $localIp")
 
-        val workerActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
+        val distributorActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
         val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
 
         // TODO: Create missing / not yet implemented Actors
 
-        // TODO: Load codebase
-        val loader : TestingCodebaseLoader = new TestingCodebaseLoader(config.input)
+        // Load codebase
+        val loader : TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
         val testMethods = loader.getClassClusterMethods
 
-        // TODO: Add Tasks and start the execution
+        // Add Tasks
+        for(a <- testMethods.asScala.toList){
+          var singleInstance : Boolean = true
+          if(a.annotation.clusterType() == ClusterType.GROUPING)
+            singleInstance = false
+
+          // Add Task to dependency tree
+          distributorActor ! AddTask(a.annotation.members().toList, Task(loader.getTestClass(a.classname), a.methodname, singleInstance))
+
+          // Add Task to Database
+          dBActor ! CreateTask(s"${a.classname}.${a.methodname}")
+        }
 
         /* TEST PURPOSE - REMOVE IF NOT NEEDED */
 
-        var tc : TestClass = new TestClass()
-
-        var method_success : Method = tc.getTestMethodSuccess
-        var method_fail : Method = tc.getTestMethodFail
-
-        val task_success = Task(method_success.getName, false)
-        val task_fail = Task(method_fail.getName, false)
-
-        workerActor ! AddTask(List("nodes"), task_success)
-        workerActor ! AddTask(List("nodes"), task_success)
-        workerActor ! AddTask(List("nodes", "rooms"), task_success)
-        workerActor ! AddTask(List("nodes", "rooms", "files"), task_fail)
-        workerActor ! AddTask(List("groups"), task_success)
-        workerActor ! AddTask(List("groups", "users"), task_fail)
+//        var tc : TestClass = new TestClass()
+//
+//        var method_success : Method = tc.getTestMethodSuccess
+//        var method_fail : Method = tc.getTestMethodFail
+//
+//        val task_success = Task(method_success.getName, false)
+//        val task_fail = Task(method_fail.getName, false)
+//
+//        distributorActor ! AddTask(List("nodes"), task_success)
+//        distributorActor ! AddTask(List("nodes"), task_success)
+//        distributorActor ! AddTask(List("nodes", "rooms"), task_success)
+//        distributorActor ! AddTask(List("nodes", "rooms", "files"), task_fail)
+//        distributorActor ! AddTask(List("groups"), task_success)
+//        distributorActor ! AddTask(List("groups", "users"), task_fail)
 
         val testVMNodesActor : ActorRef = system.actorOf(Props(classOf[TestVMNodesActor], null), "vmActor")
 

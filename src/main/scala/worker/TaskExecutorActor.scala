@@ -1,4 +1,6 @@
 package worker
+import java.lang.reflect.Method
+
 import Exceptions.{TestFailException, TestSuccessException}
 import worker.messages.ExecuteTask
 
@@ -20,21 +22,19 @@ class TaskExecutorActor extends WorkerTrait{
   }
 
   def run(msg : ExecuteTask): Unit ={
-    log.debug("EXECUTING task + \"excepting\" result to parent / supervisor")
+    log.debug(s"EXECUTING ${msg.task.method}")
     try {
-      /*
-      * TODO search codebase for method name and execute
-      * */
-      println(s"EXECUTING METHOD: ${msg.task.method}")
-      //TESTING
-      if(msg.task.method.contains("fail"))
-        throw new Exception("method failed")
+      val cls : Class[_] = msg.task.cls
+      val obj = cls.newInstance()
+      val method = cls.getMethod(msg.task.method)
+      val res = method.invoke(obj)
+      throw TestSuccessException(msg.task, res)
     } catch {
       case e : Exception => {
         log.debug(s"invocation failed - ${e.getCause.toString}")
-        throw new TestFailException(msg.task, e.getCause)
+        throw new TestFailException(msg.task, e)
       }
     }
-    throw TestSuccessException(msg.task, null)
+
   }
 }

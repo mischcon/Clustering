@@ -29,15 +29,15 @@ object main extends App{
   var method_success : Method = tc.getTestMethodSuccess
   var method_fail : Method = tc.getTestMethodFail
 
-  val task_success = Task(method_success.getName, false)
-  val task_fail = Task(method_fail.getName, false)
-
-  workerActor ! AddTask(List("nodes"), task_success)
-  workerActor ! AddTask(List("nodes"), task_success)
-  workerActor ! AddTask(List("nodes", "rooms"), task_success)
-  workerActor ! AddTask(List("nodes", "rooms", "files"), task_fail)
-  workerActor ! AddTask(List("groups"), task_success)
-  workerActor ! AddTask(List("groups", "users"), task_fail)
+//  val task_success = Task(method_success.getName, false)
+//  val task_fail = Task(method_fail.getName, false)
+//
+//  workerActor ! AddTask(List("nodes"), task_success)
+//  workerActor ! AddTask(List("nodes"), task_success)
+//  workerActor ! AddTask(List("nodes", "rooms"), task_success)
+//  workerActor ! AddTask(List("nodes", "rooms", "files"), task_fail)
+//  workerActor ! AddTask(List("groups"), task_success)
+//  workerActor ! AddTask(List("groups", "users"), task_fail)
 
   val testVMNodesActor : ActorRef = system.actorOf(Props(classOf[TestVMNodesActor], null), "vmActor")
 

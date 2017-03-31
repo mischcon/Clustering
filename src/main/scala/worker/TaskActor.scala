@@ -2,10 +2,11 @@ package worker
 
 import Exceptions._
 import akka.actor.SupervisorStrategy.Escalate
-import akka.actor.{ActorRef, Deploy, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
+import akka.actor.{ActorRef, Deploy, OneForOneStrategy, PoisonPill, Props, SupervisorStrategy, Terminated}
 import akka.pattern._
 import akka.remote.RemoteScope
 import akka.util.Timeout
+import utils.db.{EndState, TaskStatus, UpdateTask, UpdateTaskStatus}
 import utils.messages.{ExecutorAddress, GetExecutorAddress}
 import worker.messages._
 
@@ -71,7 +72,12 @@ class TaskActor(task : Task) extends WorkerTrait{
   * */
   override def receive: Receive = {
     case p : GetTask if ! isTaken => handleGetTask()
-    case Terminated => handleTermianted()
+    case Terminated => handleTermianted();
+    case a : PersistAndSuicide => {
+      log.debug("received PersistAndSuicide")
+      context.system.actorSelection("/user/db") ! UpdateTask(s"${task.cls.getName}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}")
+      context.stop(self)
+    }
   }
 
   def handleTermianted() = {
@@ -85,6 +91,9 @@ class TaskActor(task : Task) extends WorkerTrait{
       targetVm = null
       context.unwatch(executorActor)
       executorActor = null
+
+      // updating database
+      context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.cls.getName}.${task.method}", TaskStatus.NOT_STARTED)
     }
   }
 
@@ -116,6 +125,9 @@ class TaskActor(task : Task) extends WorkerTrait{
 
             log.debug("sending ExecuteTask to EXECUTOR")
             executorActor ! ExecuteTask(task, target.vmInfo)
+
+            // updating database
+            context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.cls.getName}.${task.method}", TaskStatus.RUNNING)
           }
           case Failure(e) => {
             /* IMPROVEMENT NEEDED
