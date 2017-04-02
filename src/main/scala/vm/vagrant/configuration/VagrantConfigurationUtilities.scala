@@ -51,7 +51,7 @@ object VagrantConfigurationUtilities {
     if (vmConfig.vagrantNetworkConfigs != null) for (vagrantNetworkConfig <- vmConfig.vagrantNetworkConfigs) builder.append(createVmNetworkConfig(vagrantNetworkConfig))
     if (vmConfig.postUpMessage != null) builder.append(createVmPostUpMessageConfig(vmConfig.postUpMessage))
     builder.append(createVmProviderConfig(vmConfig.provider))
-    //TODO: Provision
+    if (vmConfig.vagrantProvisionerConfigs != null) for (vagrantProvisionerConfig <- vmConfig.vagrantProvisionerConfigs) builder.append(createVmProvisionerConfig(vagrantProvisionerConfig))
     if (vmConfig.vagrantSyncedFolderConfigs != null) for (vagrantSyncedFolderConfig <- vmConfig.vagrantSyncedFolderConfigs) builder.append(createVmSyncFolderConfig(vagrantSyncedFolderConfig))
     if (!vmConfig.usablePortRange.equals("2200..2250")) builder.append(createVmUsablePortRangeConfig(vmConfig.usablePortRange))
     builder.append("  end").append("\n")
@@ -247,18 +247,53 @@ object VagrantConfigurationUtilities {
     builder.toString
   }
 
-  private def createVmProviderConfig(value: VagrantProviderConfig) = {
+  private def createVmProviderConfig(provider: VagrantProviderConfig) = {
     val builder = new StringBuilder
-    if (value.name != null && !value.name.isEmpty) {
-      builder.append(s"""    vm.vm.provider "${value.name}" do |provider|""").append("\n")
-      if (value.guiMode) builder.append(s"      provider.gui = ${value.guiMode}").append("\n")
-      if (value.memory > 0 ) builder.append(s"""      provider.memory = "${value.memory.toString}"""").append("\n")
-      if (value.cpus > 0 ) builder.append(s"""      provider.cpus = ${value.cpus.toString}""").append("\n")
-      if (value.vmName != null && !value.vmName.isEmpty) builder.append(s"""      provider.name = "${value.vmName}"""").append("\n")
-      if (value.customize != null) for (customize <- value.customize) { builder.append(s"      provider.customize = ${customize}").append("\n") }
+    if (provider.name != null && !provider.name.isEmpty) {
+      builder.append(s"""    vm.vm.provider "${provider.name}" do |provider|""").append("\n")
+      if (provider.guiMode) builder.append(s"      provider.gui = ${provider.guiMode}").append("\n")
+      if (provider.memory > 0 ) builder.append(s"""      provider.memory = "${provider.memory.toString}"""").append("\n")
+      if (provider.cpus > 0 ) builder.append(s"""      provider.cpus = ${provider.cpus.toString}""").append("\n")
+      if (provider.vmName != null && !provider.vmName.isEmpty) builder.append(s"""      provider.name = "${provider.vmName}"""").append("\n")
+      if (provider.customize != null) for (customize <- provider.customize) { builder.append(s"      provider.customize = ${customize}").append("\n") }
       builder.append("    end").append("\n")
     }
     builder.toString
+  }
+
+  private def createVmProvisionerConfig(provisioner: VagrantProvisionerConfig) = {
+    val builder = new StringBuilder
+    builder.append(s"""    vm.vm.provision "${provisioner.mode}"""")
+    if (provisioner.run != Run.once) builder.append(s""", run: "${provisioner.run.toString}"""")
+    if (provisioner.preserveOrder) builder.append(s", preserve_order: ${provisioner.preserveOrder}")
+    provisioner match {
+      case x: VagrantProvisionerFileConfig => builder.append(createVmProvisionerFileConfig(x))
+      case x: VagrantProvisionerShellConfig => builder.append(createVmProvisionerShellConfig(x))
+    }
+    builder.append("\n")
+    builder.toString()
+  }
+
+  private def createVmProvisionerFileConfig(provisionerFile: VagrantProvisionerFileConfig) = {
+    val builder = new StringBuilder
+    if (provisionerFile.source != null) builder.append(s""", source: "${provisionerFile.source.toString}"""")
+    if (provisionerFile.destination != null) builder.append(s""", destination: "${provisionerFile.destination.toString}"""")
+    builder.toString()
+  }
+
+  private def createVmProvisionerShellConfig(provisionerShell: VagrantProvisionerShellConfig) = {
+    val builder = new StringBuilder
+    if (provisionerShell.args != null && provisionerShell.args.length > 0) builder.append(s""", args: ${provisionerShell.args.mkString("""["""", """", """", """"]""")}""")
+    if (provisionerShell.binary) builder.append(s", binary: ${provisionerShell.binary.toString} ")
+    if (!provisionerShell.privileged) builder.append(s", privileged: ${provisionerShell.privileged.toString} ")
+    if (provisionerShell.uploadPath != null) builder.append(s""", upload_path: "${provisionerShell.uploadPath.toString}" """)
+    if (provisionerShell.keepColor) builder.append(s", keep_color: ${provisionerShell.keepColor.toString} ")
+    if (provisionerShell.name != null && !provisionerShell.name.isEmpty) builder.append(s""", name: "${provisionerShell.name}"""")
+    if (provisionerShell.md5 != null && !provisionerShell.md5.isEmpty) builder.append(s""", md5: "${provisionerShell.md5}"""")
+    else if (provisionerShell.sha1 != null && !provisionerShell.sha1.isEmpty) builder.append(s""", sha1: "${provisionerShell.sha1}"""")
+    if (provisionerShell.inline != null && !provisionerShell.inline.isEmpty) builder.append(s", inline: <<-SHELL\n${provisionerShell.inline}\n    SHELL")
+    else if (provisionerShell.path != null) builder.append(s""", path: "${provisionerShell.path.toString}" """)
+    builder.toString()
   }
 }
 

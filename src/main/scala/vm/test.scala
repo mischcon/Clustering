@@ -117,6 +117,11 @@ class test {
       .withMemory(4096)
       .withCpus(2)
       .withVmName("Test-VM2").build())
+    .withVagrantProvisionerConfig(VagrantProvisionerConfigBuilder
+      .createShellConfig
+      .withInline("echo 'Alles Toll!!'")
+      .withName("Test-Inline")
+      .build  )
     .build
   val environmentConfig = VagrantEnvironmentConfigBuilder
     .create
@@ -124,7 +129,7 @@ class test {
     .withVagrantVmConfig(vmConfig2)
     .build
   val vagrant = new Vagrant().createEnvironment(new File("/Volumes/Daten/Vagrant/scala.local"), environmentConfig)
-  //vagrant.up
+  println(vagrant.up)
   println(vagrant.destroy)
 }
 
