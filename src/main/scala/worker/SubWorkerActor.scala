@@ -46,7 +46,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   def handleSuccess(task : Task, result : Object, source : ActorRef): Unit ={
     /* DB Actor + write */
     log.debug("writing SUCCESS result to db")
-    dbActor ! UpdateTask(s"${task.cls.getName}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null)
+    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null)
 
     log.debug(s"removing actorRef from list: ${source.path.toString}")
     taskActors = taskActors.filter(x => x != source)
@@ -55,13 +55,13 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   def handleFailure(task : Task, result : Throwable, source : ActorRef): Unit = {
     /* DB Actor + write */
     log.debug(s"writing FAILURE result to db")
-    dbActor ! UpdateTask(s"${task.cls.getName}.${task.method}", TaskStatus.DONE, EndState.FAILURE, result.getCause.toString)
+    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.FAILURE, result.getCause.toString)
 
     log.debug(s"removing actorRef from list: ${source.path.toString}")
     taskActors = taskActors.filter(x => x != source)
 
     // advice all taskActor to write their results to DB and commit suicide
-    context.children.foreach(x => x ! PersistAndSuicide(s"${task.cls.getName}.${task.method}"))
+    context.children.foreach(x => x ! PersistAndSuicide(s"${task.classname}.${task.method}"))
   }
 
   def check_suicide(): Unit ={

@@ -1,5 +1,6 @@
 package worker
-import java.lang.reflect.Method
+
+
 
 import Exceptions.{TestFailException, TestSuccessException}
 import worker.messages.ExecuteTask
@@ -24,7 +25,8 @@ class TaskExecutorActor extends WorkerTrait{
   def run(msg : ExecuteTask): Unit ={
     log.debug(s"EXECUTING ${msg.task.method}")
     try {
-      val cls : Class[_] = msg.task.cls
+      val loader = new OwnLoader
+      val cls : Class[_] = loader.getClassObject(msg.task.classname, msg.task.raw_cls)
       val obj = cls.newInstance()
       val method = cls.getMethod(msg.task.method)
       val res = method.invoke(obj)
@@ -36,5 +38,12 @@ class TaskExecutorActor extends WorkerTrait{
       }
     }
 
+  }
+}
+
+class OwnLoader extends ClassLoader {
+
+  def getClassObject(classname : String, raw_class : Array[Byte]) = {
+    defineClass(classname, raw_class, 0, raw_class.length)
   }
 }

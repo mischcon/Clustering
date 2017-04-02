@@ -1,5 +1,4 @@
-import java.lang.reflect.Method
-import java.net.{InetAddress, NetworkInterface}
+import java.net.NetworkInterface
 
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster
@@ -9,10 +8,10 @@ import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor}
 import worker.messages.{AddTask, Task}
 import worker.{DistributorActor, TestVMNodesActor}
 
-import scala.concurrent.{Await, JavaConversions}
+import scala.collection.JavaConverters._
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.io.StdIn
-import scala.collection.JavaConverters._
 
 object ClusterMain extends App{
 
@@ -62,7 +61,7 @@ object ClusterMain extends App{
             singleInstance = false
 
           // Add Task to dependency tree
-          distributorActor ! AddTask(a.annotation.members().toList, Task(loader.getTestClass(a.classname), a.methodname, singleInstance))
+          distributorActor ! AddTask(a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
 
           // Add Task to Database
           dBActor ! CreateTask(s"${a.classname}.${a.methodname}")
@@ -113,6 +112,7 @@ object ClusterMain extends App{
         println("Press any key to stop...")
         StdIn.readLine()
         println("Shutting down the Cluster...")
+        println(new PrivateMethodExposer(system)('printTree)())
         Await.result(system.terminate(), Duration.Inf)
         System.exit(0)
       }

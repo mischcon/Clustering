@@ -28,10 +28,12 @@ class TestingCodebaseLoader extends ClassLoader{
 
     private String path;
 
-    private Map<String, Class> classRaw = new HashMap<>();
+    private Map<String, byte[]> classRaw = new HashMap<>();
     private List<TestEntry> classClusterMethods = new LinkedList<>();
 
     private byte[] jar;
+
+    public TestingCodebaseLoader(){}
 
     public TestingCodebaseLoader(String path) throws IOException {
         this(Files.readAllBytes(Paths.get(path)));
@@ -59,15 +61,19 @@ class TestingCodebaseLoader extends ClassLoader{
                 }
                 bout.close();
                 byte[] raw_class = bout.toByteArray();
-                Class cls = defineClass(classname, raw_class, 0, raw_class.length);
-                classRaw.put(classname, cls);
+                classRaw.put(classname, raw_class);
             }
         }
     }
 
+    public Class getClassFromByte(byte[] raw_class, String classname){
+        return defineClass(classname, raw_class, 0, raw_class.length);
+    }
+
     private void getMethods() {
         for(String key : classRaw.keySet()){
-            Class cls = classRaw.get(key);
+            byte[] raw = classRaw.get(key);
+            Class cls = defineClass(key, raw, 0, raw.length);
             for(Method m : cls.getMethods()){
                 Annotation an = m.getAnnotation(Clustering.class);
                 if(an != null) {
@@ -81,7 +87,7 @@ class TestingCodebaseLoader extends ClassLoader{
         return this.classClusterMethods;
     }
 
-    public Class getTestClass(String classname){
+    public byte[] getRawTestClass(String classname){
         return this.classRaw.get(classname);
     }
 }
