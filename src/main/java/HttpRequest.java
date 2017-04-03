@@ -15,12 +15,10 @@ import java.util.HashMap;
 
 
 class HttpRequest implements ClusteringCommunication {
-    HashMap<String, ActorRef> actors = new HashMap<>();
 
-    public void addActor(String name, ActorRef actor) {
-        this.actors.put(name, actor);
-        System.out.println("new actor added");
-    }
+    @PostInject
+    ActorRef vmProxy;
+    ActorRef sender;
 
     @Override
     public Object send(Object obj) {

@@ -28,7 +28,11 @@ class TestActor extends Actor {
       println("HELLO")
       for (field <- obj.getClass.getDeclaredFields) {
         if (field.getType.getName.equals("HttpRequest")) {
-          println("value: " + field.get(obj))
+          val httpRequest = field
+          for (field <- field.getType.getDeclaredFields) {
+            println("field: " + field.getName)
+            println("value: " + field.get(obj))
+          }
         }
       }
   }
