@@ -139,7 +139,7 @@ class TaskActor(task : Task) extends WorkerTrait{
             * currently this will destroy
             * */
             log.error("could not get an executor - sending TERMINATED to targetVm and goind back to isTaken = false")
-            targetVm ! Terminated
+            targetVm ! CannotGetExecutor
             isTaken = false
           }
         }

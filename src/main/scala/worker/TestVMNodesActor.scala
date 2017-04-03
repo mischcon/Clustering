@@ -40,15 +40,21 @@ class TestVMNodesActor(vmInfo : Object) extends WorkerTrait{
     }
     case t : Terminated => {
       log.debug(s"received TERMINATED from ${t.actor.path.toString}, which means that the task is done - now I have space for a new task!")
-      haveSpaceForTasks = true
-
-      Thread.sleep(1000)
-      self ! "get"
+      handleFailure()
     }
+    case CannotGetExecutor => handleFailure()
     case NoMoreTasks => {
       log.debug("it seems as if there are no more tasks - shutting down self")
       context.stop(self)
     }
     case a => log.error(s"received something unexpected: ${a}")
+  }
+
+  def handleFailure(): Unit ={
+    log.debug("releasing task - now I have space for a new task!")
+    haveSpaceForTasks = true
+
+    Thread.sleep(1000)
+    self ! "get"
   }
 }
