@@ -17,3 +17,5 @@ case class Executor(ref : ActorRef) extends WorkerMessagesTrait
 case class ExecuteTask(task : Task, vmInfo : Object) extends WorkerMessagesTrait
 case class SendTask(task : Task)
 case class Task(raw_cls : Array[Byte], classname : String, method : String, singleInstance: Boolean) extends WorkerMessagesTrait
+
+case object NoMoreTasks extends WorkerMessagesTrait

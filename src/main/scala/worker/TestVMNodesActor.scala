@@ -39,8 +39,15 @@ class TestVMNodesActor(vmInfo : Object) extends WorkerTrait{
       context.watch(t.ref)
     }
     case t : Terminated => {
-      log.debug("received TERMINATED, which means that the task is done - now I have space for a new task!")
+      log.debug(s"received TERMINATED from ${t.actor.path.toString}, which means that the task is done - now I have space for a new task!")
       haveSpaceForTasks = true
+
+      Thread.sleep(1000)
+      self ! "get"
+    }
+    case NoMoreTasks => {
+      log.debug("it seems as if there are no more tasks - shutting down self")
+      context.stop(self)
     }
     case a => log.error(s"received something unexpected: ${a}")
   }

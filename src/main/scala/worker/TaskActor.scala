@@ -1,8 +1,10 @@
 package worker
 
 import Exceptions._
-import akka.actor.SupervisorStrategy.Escalate
-import akka.actor.{ActorRef, Deploy, OneForOneStrategy, PoisonPill, Props, SupervisorStrategy, Terminated}
+import akka.actor.SupervisorStrategy.{Escalate, Stop}
+import akka.actor.{ActorRef, DeathPactException, Deploy, OneForOneStrategy, PoisonPill, Props, SupervisorStrategy, Terminated}
+import akka.cluster.Cluster
+import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberExited, MemberJoined}
 import akka.pattern._
 import akka.remote.RemoteScope
 import akka.util.Timeout
@@ -55,8 +57,9 @@ class TaskActor(task : Task) extends WorkerTrait{
       Escalate
     }
     case a : Throwable => {
-      log.debug(s"received an unexpected exception: ${a.getMessage}")
-      Escalate
+      log.debug(s"received an unexpected exception - resetting: ${a.getMessage}")
+      taskDone = false
+      Stop
     }
   }
 
@@ -72,7 +75,7 @@ class TaskActor(task : Task) extends WorkerTrait{
   * */
   override def receive: Receive = {
     case p : GetTask if ! isTaken => handleGetTask()
-    case Terminated => handleTermianted();
+    case t : Terminated => handleTermianted()
     case a : PersistAndSuicide => {
       log.debug("received PersistAndSuicide")
       context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}")

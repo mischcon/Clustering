@@ -2,7 +2,7 @@ package utils
 
 import akka.actor.{Actor, ActorLogging, Address}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberEvent, MemberExited, MemberJoined}
+import akka.cluster.ClusterEvent._
 import utils.messages.{ExecutorAddress, GetExecutorAddress}
 
 import scala.util.Random
@@ -18,9 +18,11 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
       log.debug(s"MEMBER JOINED! Hello my friend at ${member.address.toString}")
       directory += (member.address -> null)
     }
-    case MemberExited(member) => {
-      log.debug(s"MEMBER EXITED! Goodbye my friend at ${member.address.toString}")
+    case UnreachableMember(member) => {
+      log.debug(s"MEMBER UNREACHABLE! Goodbye my friend at ${member.address.toString}")
       directory -= member.address
+      log.debug(s"DOWNING my fellow friend at ${member.address.toString}")
+      cluster.down(member.address)
     }
     case GetExecutorAddress => getMember()
     case a => log.debug(s"RECEIVED SOMETHING UNEXPECTED: $a")
@@ -44,7 +46,7 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
     super.preStart()
     log.debug("Hello from ExecutorDirectoryService")
     log.debug("Now reacting on MemberJoined and MemberExited Cluster Events")
-    cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberJoined], classOf[MemberExited])
+    cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberJoined], classOf[UnreachableMember])
   }
 
   override def postStop(): Unit = {

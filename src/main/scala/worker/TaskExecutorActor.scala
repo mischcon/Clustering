@@ -25,6 +25,8 @@ class TaskExecutorActor extends WorkerTrait{
   def run(msg : ExecuteTask): Unit ={
     log.debug(s"EXECUTING ${msg.task.method}")
     try {
+      println("Sleeping for 10 seconds...")
+      Thread.sleep(10000)
       val loader = new OwnLoader
       val cls : Class[_] = loader.getClassObject(msg.task.classname, msg.task.raw_cls)
       val obj = cls.newInstance()

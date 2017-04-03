@@ -1,6 +1,6 @@
 package worker
 import akka.actor.Props
-import worker.messages.{AddTask, GetTask}
+import worker.messages.{AddTask, GetTask, NoMoreTasks}
 
 class DistributorActor extends WorkerTrait{
 
@@ -32,6 +32,10 @@ class DistributorActor extends WorkerTrait{
   }
 
   def getTask(msg : GetTask) = {
+    if(context.children.isEmpty){
+      log.debug("No children present")
+      sender() ! NoMoreTasks
+    }
     log.debug(s"received getTask - forwarding (have children: ${context.children.size})")
     context.children.foreach(u => u forward msg)
   }

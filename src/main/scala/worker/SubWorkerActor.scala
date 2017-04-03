@@ -1,16 +1,15 @@
 package worker
 
-import Exceptions.{DependencyFailException, TestFailException, TestSuccessException}
+import Exceptions.{TestFailException, TestSuccessException}
 import akka.actor.SupervisorStrategy.Stop
-import akka.actor.{ActorRef, ActorSelection, OneForOneStrategy, PoisonPill, Props, SupervisorStrategy, Terminated}
-import akka.pattern._
+import akka.actor.{ActorRef, ActorSelection, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.util.Timeout
 import utils.db.{EndState, TaskStatus, UpdateTask}
 import worker.messages._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import scala.util.{Failure, Random, Success}
+import scala.util.Random
 
 abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
 

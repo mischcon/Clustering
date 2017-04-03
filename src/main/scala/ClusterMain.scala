@@ -93,19 +93,6 @@ object ClusterMain extends App{
         StdIn.readLine()
 
         testVMNodesActor ! "get"
-        Thread.sleep(500)
-        testVMNodesActor ! "get"
-        Thread.sleep(500)
-        testVMNodesActor ! "get"
-        Thread.sleep(500)
-        testVMNodesActor ! "get"
-        Thread.sleep(500)
-        testVMNodesActor ! "get"
-        Thread.sleep(500)
-        testVMNodesActor ! "get"
-        Thread.sleep(500)
-
-        println(new PrivateMethodExposer(system)('printTree)())
 
         /* END TEST PURPOSE */
 
