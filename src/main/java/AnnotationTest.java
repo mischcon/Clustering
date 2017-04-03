@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
  */
 public class AnnotationTest {
 
-    ProxyRequest<String> proxyRequest = new ProxyRequest();
+    private ProxyRequest<String> proxyRequest = new ProxyRequest<>();
 
     /**
      * @Clustering for methods
@@ -22,7 +22,7 @@ public class AnnotationTest {
             expectedTraffic=TrafficLoad.MINOR)
     void testGetNodes() {
         System.out.println("testGetNodes");
-        System.out.println("response: " + proxyRequest.getResponse("HELLO"));
+        System.out.println("response: " + proxyRequest.getResponse("GET /nodes"));
     }
 
     @Clustering(
@@ -32,7 +32,10 @@ public class AnnotationTest {
             expectedDuration=5,
             durationUnit=DurationUnit.SEC,
             expectedTraffic=TrafficLoad.MINOR)
-    void testCreateFile() { System.out.println("testCreateFile"); }
+    void testCreateFile() {
+        System.out.println("testCreateFile");
+        System.out.println("response: " + proxyRequest.getResponse("POST /nodes/files"));
+    }
 
     @Clustering(
             id="file_upload",
@@ -41,7 +44,10 @@ public class AnnotationTest {
             expectedDuration=10,
             durationUnit=DurationUnit.MIN,
             expectedTraffic=TrafficLoad.MAJOR)
-    void testUploadFile() { System.out.println("testUploadFile"); }
+    void testUploadFile() {
+        System.out.println("testUploadFile");
+        System.out.println("response: " + proxyRequest.getResponse("PUT /nodes/files/uploads"));
+    }
 
     @Clustering(
             id="get_config",
@@ -50,7 +56,10 @@ public class AnnotationTest {
             expectedDuration=1,
             durationUnit=DurationUnit.MIN,
             expectedTraffic=TrafficLoad.MINOR)
-    void testGetConfig() { System.out.println("testGetConfig"); }
+    void testGetConfig() {
+        System.out.println("testGetConfig");
+        System.out.println("response: " + proxyRequest.getResponse("GET /config"));
+    }
 
     /**
      * @Clustering for classes
@@ -70,28 +79,5 @@ public class AnnotationTest {
         void testGetGroup() { System.out.println("testGetGroup"); }
         void testCreateGroup() { System.out.println("testCreateGroup"); }
         void testDeleteGroup() { System.out.println("testDeleteGroup"); }
-    }
-
-    public static void main(String[] args) {
-        AnnotationTest test = new AnnotationTest();
-
-        test.testGetNodes();
-        test.testCreateFile();
-        test.testUploadFile();
-        test.testGetConfig();
-
-        TestGroups groups = new TestGroups();
-
-        groups.setup();
-        groups.testGetGroup();
-        groups.teardown();
-
-        groups.setup();
-        groups.testCreateGroup();
-        groups.teardown();
-
-        groups.setup();
-        groups.testDeleteGroup();
-        groups.teardown();
     }
 }

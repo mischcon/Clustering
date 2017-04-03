@@ -6,9 +6,9 @@ import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 class ProxyRequest<T> {
-    private ActorRef vmProxy;
-    private Timeout timeout;
-    private Future<Object> future;
+    protected ActorRef vmProxy;
+    protected Timeout timeout;
+    protected Future<Object> future;
 
     ProxyRequest() {
         this.timeout = new Timeout(Duration.create(5, "seconds"));
