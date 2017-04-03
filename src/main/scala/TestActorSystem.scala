@@ -3,56 +3,54 @@ import java.lang.reflect.{Method}
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 
 
-class TestActor extends Actor {
+class TaskExecutorActor extends Actor {
   val vmProxyActor : ActorRef = context.actorOf(Props[VMProxyActor], name="vmProxyActor")
 
   def receive = {
-    case task : Method =>
-//      for (taskClassAttribute <- task.getDeclaringClass.getDeclaredFields) {
-//        if (taskClassAttribute.getType.getName.equals("HttpRequest")) {
-//          for (httpRequestField <- taskClassAttribute.getType.getDeclaredFields) {
-//            httpRequestField.setAccessible(true)
-//            val field : Field = httpRequestField;
-//            if (f.isAnnotationPresent(classOf[PostInject])) {
-//              f.getName match {
-//                case "vmProxy" =>
-//                  println(field.get("vmProxy"))
-//                case "sender" =>
-//                  println(field.get("sender"))
-//              }
-//            }
-//          }
-//        }
-//      }
     case obj : Object =>
-      println("HELLO")
       for (field <- obj.getClass.getDeclaredFields) {
-        if (field.getType.getName.equals("HttpRequest")) {
-          val httpRequest = field
-          for (field <- field.getType.getDeclaredFields) {
-            println("field: " + field.getName)
-            println("value: " + field.get(obj))
+        if (field.getType.isAssignableFrom(classOf[ProxyRequest[Object]])) {
+          field.setAccessible(true)
+          val proxyRequest : ProxyRequest[Object] = field.get(obj).asInstanceOf[ProxyRequest[Object]]
+          for (field <- proxyRequest.getClass.getDeclaredFields) {
+            field.getName match {
+              case "vmProxy" =>
+                field.setAccessible(true)
+                field.set(proxyRequest, vmProxyActor)
+                assert(field.get(proxyRequest) eq vmProxyActor, "vm proxy injection failed.")
+              case _ =>
+            }
           }
         }
       }
+      for (method <- obj.getClass.getDeclaredMethods) {
+        method.getName match {
+          case name if name startsWith "test" =>
+            method.invoke(obj)
+          case _ =>
+        }
+      }
+    case _ =>
   }
 }
 
 class VMProxyActor extends Actor {
   def receive = {
     case s : String =>
-      println(s)
+      sender() ! s"got a String : $s"
+    case d : Integer =>
+      sender() ! s"got an Integer was sent : $d"
+    case o =>
+      sender() ! s"got an Object of class : ${o.getClass.getName}"
   }
 }
 
 
 object TestActorSystem extends App {
   val system = ActorSystem("testActorSystem")
-  val testActor = system.actorOf(Props[TestActor], name="testActor")
+  val executor = system.actorOf(Props[TaskExecutorActor], name="testActor")
 
-  val test : AnnotationTest = new AnnotationTest()
-
-  testActor ! test
+  executor ! new AnnotationTest()
 
   system.terminate()
 }

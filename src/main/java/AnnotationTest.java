@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.lang.reflect.Method;
 
 /**
@@ -6,20 +7,7 @@ import java.lang.reflect.Method;
  */
 public class AnnotationTest {
 
-    HttpRequest httpRequest = new HttpRequest();
-
-    public HttpRequest getHttpRequest() {
-        return httpRequest;
-    }
-
-    public Method getTestMethod() throws NoSuchMethodException {
-        try {
-            httpRequest.getResponse("GET", "http://httpbin.org/get");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return this.getClass().getMethod("getTestMethod");
-    }
+    ProxyRequest<String> proxyRequest = new ProxyRequest();
 
     /**
      * @Clustering for methods
@@ -33,13 +21,8 @@ public class AnnotationTest {
             durationUnit=DurationUnit.SEC,
             expectedTraffic=TrafficLoad.MINOR)
     void testGetNodes() {
-        try {
-            HttpRequest httpRequest = new HttpRequest();
-            httpRequest.getResponse("GET", "http://httpbin.org/get");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         System.out.println("testGetNodes");
+        System.out.println("response: " + proxyRequest.getResponse("HELLO"));
     }
 
     @Clustering(
