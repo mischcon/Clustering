@@ -1,4 +1,9 @@
 import akka.actor.ActorRef;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
 import utils.db.GetTask;
 
 import java.io.BufferedReader;
@@ -9,8 +14,10 @@ import java.net.URL;
 
 
 
-abstract class HttpRequest implements ClusteringCommunication {
+class HttpRequest implements ClusteringCommunication {
+    @PostInject
     private ActorRef sender;
+    @PostInject
     private ActorRef vmProxy;
 
     @Override
@@ -18,28 +25,33 @@ abstract class HttpRequest implements ClusteringCommunication {
         return null;
     }
 
-    HttpResponse getResponse(String method, String url) throws IOException {
+    HttpResponse getResponse(String method, String url) throws Exception {
         URL obj = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
 
         connection.setRequestMethod(method);
         connection.setRequestProperty("User-Agent", "CLUSTER");
 
-        vmProxy.tell(new GetTask("test"), sender);
+        // vmProxy.tell(new GetTask("test"), sender);
 
-        int responseCode = connection.getResponseCode();
-        System.out.println("\nSending 'GET' request to URL : " + url);
-        System.out.println("Response Code : " + responseCode);
+//        Timeout timeout = new Timeout(Duration.create(5, "seconds"));
+//        Future<Object> future = Patterns.ask(vmProxy, "HELLO", timeout);
+//        String result = (String) Await.result(future, timeout.duration());
+//        System.out.println(result);
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String inputLine;
-        StringBuilder response = new StringBuilder();
+//        int responseCode = connection.getResponseCode();
+//        System.out.println("\nSending 'GET' request to URL : " + url);
+//        System.out.println("Response Code : " + responseCode);
+//
+//        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//        String inputLine;
+//        StringBuilder response = new StringBuilder();
+//
+//        while ((inputLine = in.readLine()) != null) {
+//            response.append(inputLine);
+//        }
+//        in.close();
 
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
-        }
-        in.close();
-
-        return new HttpResponse(response.toString());
+        return new HttpResponse("TEST");//result);
     }
 }

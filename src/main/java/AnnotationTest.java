@@ -16,7 +16,15 @@ public class AnnotationTest {
             expectedDuration=3,
             durationUnit=DurationUnit.SEC,
             expectedTraffic=TrafficLoad.MINOR)
-    void testGetNodes() { System.out.println("testGetNodes"); }
+    public void testGetNodes() {
+        try {
+            HttpRequest httpRequest = new HttpRequest();
+            httpRequest.getResponse("GET", "http://httpbin.org/get");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // System.out.println("testGetNodes");
+    }
 
     @Clustering(
             id="create_file",
