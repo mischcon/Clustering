@@ -1,9 +1,25 @@
+import java.lang.reflect.Method;
 
 /**
  * <strong>Test application for @Clustering</strong><br>
  * will be removed later
  */
 public class AnnotationTest {
+
+    HttpRequest httpRequest = new HttpRequest();
+
+    public HttpRequest getHttpRequest() {
+        return httpRequest;
+    }
+
+    public Method getTestMethod() throws NoSuchMethodException {
+        try {
+            httpRequest.getResponse("GET", "http://httpbin.org/get");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return this.getClass().getMethod("getTestMethod");
+    }
 
     /**
      * @Clustering for methods
@@ -16,14 +32,14 @@ public class AnnotationTest {
             expectedDuration=3,
             durationUnit=DurationUnit.SEC,
             expectedTraffic=TrafficLoad.MINOR)
-    public void testGetNodes() {
+    void testGetNodes() {
         try {
             HttpRequest httpRequest = new HttpRequest();
             httpRequest.getResponse("GET", "http://httpbin.org/get");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // System.out.println("testGetNodes");
+        System.out.println("testGetNodes");
     }
 
     @Clustering(
@@ -56,6 +72,7 @@ public class AnnotationTest {
     /**
      * @Clustering for classes
      */
+
     @Clustering(
             id="groups",
             clusterType=ClusterType.GROUPING,

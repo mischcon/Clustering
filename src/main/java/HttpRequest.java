@@ -11,18 +11,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
+import java.util.HashMap;
 
 
 class HttpRequest implements ClusteringCommunication {
-    @PostInject
-    private ActorRef sender;
-    @PostInject
-    private ActorRef vmProxy;
+    HashMap<String, ActorRef> actors = new HashMap<>();
+
+    public void addActor(String name, ActorRef actor) {
+        this.actors.put(name, actor);
+        System.out.println("new actor added");
+    }
 
     @Override
     public Object send(Object obj) {
-        return null;
+        return "test";
     }
 
     HttpResponse getResponse(String method, String url) throws Exception {
@@ -32,13 +34,13 @@ class HttpRequest implements ClusteringCommunication {
         connection.setRequestMethod(method);
         connection.setRequestProperty("User-Agent", "CLUSTER");
 
-        // vmProxy.tell(new GetTask("test"), sender);
-
+//        actors.get("vmproxy").tell(new GetTask("test"), actors.get("sender"));
+//
 //        Timeout timeout = new Timeout(Duration.create(5, "seconds"));
-//        Future<Object> future = Patterns.ask(vmProxy, "HELLO", timeout);
+//        Future<Object> future = Patterns.ask(actors.get("vmproxy"), "HELLO", timeout);
 //        String result = (String) Await.result(future, timeout.duration());
 //        System.out.println(result);
-
+//
 //        int responseCode = connection.getResponseCode();
 //        System.out.println("\nSending 'GET' request to URL : " + url);
 //        System.out.println("Response Code : " + responseCode);
