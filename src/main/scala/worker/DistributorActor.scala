@@ -5,27 +5,29 @@ import worker.messages.{AddTask, GetTask, NoMoreTasks}
 class DistributorActor extends WorkerTrait{
 
   override def preStart(): Unit = {
+    super.preStart()
     log.debug("hello from distributor!")
   }
 
   override def postStop(): Unit = {
+    super.postStop()
     log.debug("Goodbye from distributor!")
   }
 
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
-    case a => log.debug(s"received unexpected message: $a")
+    case a => log.warning(s"received unexpected message: $a")
   }
 
   def addTask(msg : AddTask) = {
     val api = msg.group.head
     context.child(api) match {
-      case Some(child) => println("found child"); child ! msg
+      case Some(child) => child ! msg
       case None => {
         msg.task.singleInstance match {
-          case false => context.actorOf(Props(classOf[GroupActor], msg.group.take(1)), api) ! msg
-          case true => context.actorOf(Props(classOf[SingleInstanceActor], msg.group.take(1)), api) ! msg
+          case false => context.actorOf(Props(classOf[GroupActor], msg.group.take(1)), s"GROUP-$api") ! msg
+          case true => context.actorOf(Props(classOf[SingleInstanceActor], msg.group.take(1)), s"SINGLEINSTANCE-$api") ! msg
         }
       }
     }

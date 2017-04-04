@@ -15,21 +15,21 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
 
   override def receive: Receive = {
     case MemberJoined(member) => {
-      log.debug(s"MEMBER JOINED! Hello my friend at ${member.address.toString}")
+      log.info(s"MEMBER JOINED! Hello my friend at ${member.address.toString}")
       if(member.hasRole("executor")){
-        log.debug("Member has role EXECUTOR - adding it to the executor list")
+        log.info("Member has role EXECUTOR - adding it to the executor list")
         directory += (member.address -> null)
       }
 
     }
     case UnreachableMember(member) => {
-      log.debug(s"MEMBER UNREACHABLE! Goodbye my friend at ${member.address.toString}")
+      log.info(s"MEMBER UNREACHABLE! Goodbye my friend at ${member.address.toString}")
       directory -= member.address
-      log.debug(s"DOWNING my fellow friend at ${member.address.toString}")
+      log.info(s"DOWNING my fellow friend at ${member.address.toString}")
       cluster.down(member.address)
     }
     case GetExecutorAddress => getMember()
-    case a => log.debug(s"RECEIVED SOMETHING UNEXPECTED: $a")
+    case a => log.warning(s"received unexpected message: $a")
   }
 
   def getMember() = {
@@ -49,7 +49,7 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
   override def preStart(): Unit = {
     super.preStart()
     log.debug("Hello from ExecutorDirectoryService")
-    log.debug("Now reacting on MemberJoined and MemberExited Cluster Events")
+    log.debug("Now reacting on MemberJoined and UnreachableMember Cluster Events")
     cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberJoined], classOf[UnreachableMember])
   }
 

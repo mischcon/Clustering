@@ -6,15 +6,18 @@ import worker.messages.ExecuteTask
 class TaskExecutorActor extends WorkerTrait{
 
   override def preStart(): Unit = {
+    super.preStart()
     log.debug(s"hello from ${self.path.name}")
   }
 
   override def postStop(): Unit = {
+    super.postStop()
     log.debug(s"goodbye from ${self.path.name}")
   }
 
   override def receive: Receive = {
     case t : ExecuteTask => run(t)
+    case a => log.warning(s"received unexpected message: $a")
   }
 
   def run(msg : ExecuteTask): Unit ={

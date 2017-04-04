@@ -26,10 +26,12 @@ class TaskActor(task : Task) extends WorkerTrait{
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
 
   override def preStart(): Unit = {
+    super.preStart()
     log.debug(s"Hello from ${self.path.name}")
   }
 
   override def postStop(): Unit = {
+    super.postStop()
     log.debug(s"Goodbye from ${self.path.name}")
   }
 
@@ -53,16 +55,6 @@ class TaskActor(task : Task) extends WorkerTrait{
     }
   }
 
-  /*
-  * Terminated: This event can occur because of two different causes
-  * 1) The executing actor has been shutted down because of the STOP directive
-  *    from the supervisorStrategy above (implies that taskDone = true)
-  *    In this case simply shut down the TaskActor because it has done its work
-  * 2) The executing actor is UNREACHABLE because the node has been disconnected
-  *    In this case taskDone = false, which means that the task still needs to be
-  *    executed (re-run) - so simply set isTaken back to false and wait until
-  *    another Executor asks for a new task
-  * */
   override def receive: Receive = {
     case p : GetTask if ! isTaken => handleGetTask()
     case t : Terminated => handleTermianted(t)
@@ -136,7 +128,7 @@ class TaskActor(task : Task) extends WorkerTrait{
             // updating database
             context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING)
           }
-          case Failure(e) => {
+          case Failure(_) => {
             log.error("could not get an executor - sending CannotGetExecutor to targetVm and goind back to isTaken = false")
             targetVm ! CannotGetExecutor
             isTaken = false

@@ -67,23 +67,6 @@ object ClusterMain extends App{
           dBActor ! CreateTask(s"${a.classname}.${a.methodname}")
         }
 
-        /* TEST PURPOSE - REMOVE IF NOT NEEDED */
-
-//        var tc : TestClass = new TestClass()
-//
-//        var method_success : Method = tc.getTestMethodSuccess
-//        var method_fail : Method = tc.getTestMethodFail
-//
-//        val task_success = Task(method_success.getName, false)
-//        val task_fail = Task(method_fail.getName, false)
-//
-//        distributorActor ! AddTask(List("nodes"), task_success)
-//        distributorActor ! AddTask(List("nodes"), task_success)
-//        distributorActor ! AddTask(List("nodes", "rooms"), task_success)
-//        distributorActor ! AddTask(List("nodes", "rooms", "files"), task_fail)
-//        distributorActor ! AddTask(List("groups"), task_success)
-//        distributorActor ! AddTask(List("groups", "users"), task_fail)
-
         val testVMNodesActor : ActorRef = system.actorOf(Props(classOf[TestVMNodesActor], null), "vmActor")
 
         Thread.sleep(500)

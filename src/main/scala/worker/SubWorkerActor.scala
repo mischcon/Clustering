@@ -27,7 +27,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
       taskActors = List.empty
       context.children.foreach(a => a ! x)
     }
-    case x => log.debug(s"${self.path.name} received something unexpected: $x")
+    case x => log.warning(s"${self.path.name} received something unexpected: $x")
   }
 
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
@@ -47,7 +47,6 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
     log.debug("writing SUCCESS result to db")
     dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null)
 
-    log.debug(s"removing actorRef from list: ${source.path.toString}")
     taskActors = taskActors.filter(x => x != source)
   }
 
@@ -56,7 +55,6 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
     log.debug(s"writing FAILURE result to db")
     dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.FAILURE, result.getCause.toString)
 
-    log.debug(s"removing actorRef from list: ${source.path.toString}")
     taskActors = taskActors.filter(x => x != source)
 
     // advice all taskActor to write their results to DB and commit suicide
@@ -118,10 +116,12 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   }
 
   override def preStart(): Unit = {
+    super.preStart()
     log.debug(s"Hello from ${self.path.name}")
   }
 
   override def postStop(): Unit = {
+    super.postStop()
     log.debug(s"Goodbye from ${self.path.name}")
   }
 }
