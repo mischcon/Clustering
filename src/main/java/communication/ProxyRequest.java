@@ -1,3 +1,5 @@
+package communication;
+
 import akka.actor.ActorRef;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
@@ -5,10 +7,10 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
-class ProxyRequest<T> {
-    protected ActorRef vmProxy;
-    protected Timeout timeout;
-    protected Future<Object> future;
+public class ProxyRequest<T> {
+    private ActorRef vmProxy;
+    private Timeout timeout;
+    private Future<Object> future;
 
     ProxyRequest() {
         this.timeout = new Timeout(Duration.create(5, "seconds"));
@@ -18,11 +20,11 @@ class ProxyRequest<T> {
         this.timeout = new Timeout(Duration.create(timeout, "seconds"));
     }
 
-    void send(T request) {
+    private void send(T request) {
         this.future = Patterns.ask(vmProxy, request, timeout);
     }
 
-    Object receive() {
+    private Object receive() {
         try {
             return Await.result(future, timeout.duration());
         }
@@ -32,7 +34,7 @@ class ProxyRequest<T> {
         return null;
     }
 
-    Object getResponse(T request) {
+    public Object getResponse(T request) {
         send(request);
         return receive();
     }

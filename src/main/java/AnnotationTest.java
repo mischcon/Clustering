@@ -1,28 +1,40 @@
-import java.awt.*;
-import java.lang.reflect.Method;
+import clustering.ClusterType;
+import clustering.Clustering;
+import clustering.DurationUnit;
+import clustering.TrafficLoad;
+import communication.ClusteringTask;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
- * <strong>Test application for @Clustering</strong><br>
+ * <strong>Test application for @clustering.Clustering</strong><br>
  * will be removed later
  */
-public class AnnotationTest {
-
-    private ProxyRequest<String> proxyRequest = new ProxyRequest<>();
+public class AnnotationTest implements ClusteringTask {
 
     /**
      * @Clustering for methods
      */
 
     @Clustering(
-            id="get_nodes",
-            clusterType=ClusterType.GROUPING,
-            members={"nodes"},
+            id="get",
+            clusterType= ClusterType.SINGLE_INSTANCE,
+            members={},
             expectedDuration=3,
-            durationUnit=DurationUnit.SEC,
-            expectedTraffic=TrafficLoad.MINOR)
-    void testGetNodes() {
-        System.out.println("testGetNodes");
-        System.out.println("response: " + proxyRequest.getResponse("GET /nodes"));
+            durationUnit= DurationUnit.SEC,
+            expectedTraffic= TrafficLoad.MINOR)
+    void testGet() throws IOException {
+        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
+
+        String url = "https://httpbin.org/get";
+        URL obj = new URL(url);
+        HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("User-Agent", "CLUSTER");
+
+        System.out.println("response: " + request.getResponse(connection));
     }
 
     @Clustering(
@@ -33,8 +45,8 @@ public class AnnotationTest {
             durationUnit=DurationUnit.SEC,
             expectedTraffic=TrafficLoad.MINOR)
     void testCreateFile() {
-        System.out.println("testCreateFile");
-        System.out.println("response: " + proxyRequest.getResponse("POST /nodes/files"));
+        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("response: " + request.getResponse("POST /nodes/files"));
     }
 
     @Clustering(
@@ -45,8 +57,8 @@ public class AnnotationTest {
             durationUnit=DurationUnit.MIN,
             expectedTraffic=TrafficLoad.MAJOR)
     void testUploadFile() {
-        System.out.println("testUploadFile");
-        System.out.println("response: " + proxyRequest.getResponse("PUT /nodes/files/uploads"));
+        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("response: " + request.getResponse("PUT /nodes/files/uploads"));
     }
 
     @Clustering(
@@ -57,8 +69,8 @@ public class AnnotationTest {
             durationUnit=DurationUnit.MIN,
             expectedTraffic=TrafficLoad.MINOR)
     void testGetConfig() {
-        System.out.println("testGetConfig");
-        System.out.println("response: " + proxyRequest.getResponse("GET /config"));
+        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("response: " + request.getResponse("GET /config"));
     }
 
     /**

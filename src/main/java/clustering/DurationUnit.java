@@ -1,3 +1,5 @@
+package clustering;
+
 /**
  * <strong>Represents allowed task duration units</strong>
  */
