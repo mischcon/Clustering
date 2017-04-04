@@ -1,5 +1,0 @@
-package router
-
-trait RouterTrait {
-
-}

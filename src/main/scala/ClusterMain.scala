@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster
 import com.typesafe.config.ConfigFactory
 import utils.db.{CreateTask, DBActor}
-import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor}
+import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor, PrivateMethodExposer}
 import worker.messages.{AddTask, Task}
 import worker.{DistributorActor, TestVMNodesActor}
 
