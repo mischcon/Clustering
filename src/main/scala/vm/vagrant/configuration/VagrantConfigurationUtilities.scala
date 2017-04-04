@@ -138,7 +138,7 @@ object VagrantConfigurationUtilities {
 
   private def createVmGracefulHaltTimeoutConfig(value: Int) = {
     val builder = new StringBuilder
-    builder.append(s"""    vm.vm.graceful_halt_timeout = "$value"""").append("\n")
+    builder.append(s"    vm.vm.graceful_halt_timeout = $value").append("\n")
     builder.toString
   }
 
@@ -181,7 +181,7 @@ object VagrantConfigurationUtilities {
       builder.append(s"""    vm.vm.network "${privateNetwork.mode}"""")
       if (privateNetwork.dhcp) builder.append(s""", type: "dhcp" """)
       if (privateNetwork.ip != null && !privateNetwork.ip.isEmpty) builder.append(s""", ip: "${privateNetwork.ip}" """)
-      if (privateNetwork.netmask > 0) builder.append(s""", netmask: "${privateNetwork.netmask}" """)
+      if (privateNetwork.netmask != null && !privateNetwork.netmask.isEmpty) builder.append(s""", netmask: "${privateNetwork.netmask}" """)
       if (!privateNetwork.autoConfig) builder.append(s", auto_config: ${privateNetwork.autoConfig.toString} ")
       builder.append("\n")
     }
@@ -215,7 +215,7 @@ object VagrantConfigurationUtilities {
           builder.append(publicNetwork.bridges.mkString(" [ ", ", ", " ]"))
         }
       }
-      if (!publicNetwork.autoAonfig) builder.append(s", auto_config: ${publicNetwork.autoAonfig.toString}")
+      if (!publicNetwork.autoConfig) builder.append(s", auto_config: ${publicNetwork.autoConfig.toString}")
       builder.append("\n")
     }
     builder.toString

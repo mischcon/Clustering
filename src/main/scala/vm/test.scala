@@ -15,7 +15,7 @@ class test {
 
 
 
-  val vmConfig = VagrantVmConfigBuilder
+  var vmConfig = VagrantVmConfigBuilder
     .create
     .withName("Test-VM")
     .withHostName("Test-VM.pc-ziegert.local")
@@ -38,7 +38,7 @@ class test {
       .createPrivateNetworkConfig
       .withDhcp(false)
       .withIp("192.168.10.200")
-      .withNetmask(24)
+      .withNetmask("255.255.255.0")
       .build)
     .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
       .createPublicNetworkConfig
@@ -72,6 +72,7 @@ class test {
     .withName("Test-VM2")
     .withHostName("Test-VM.pc-ziegert.local")
     .withBoxName("centos/7")
+    .withBoxCheckUpdate(true)
     .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
       .createPortForwardingConfig
       .withName("Test-PortForwarding")
@@ -90,7 +91,7 @@ class test {
       .createPrivateNetworkConfig
       .withDhcp(false)
       .withIp("192.168.10.201")
-      .withNetmask(24)
+      .withNetmask("255.255.255.0")
       .build)
     .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
       .createPublicNetworkConfig
@@ -129,8 +130,14 @@ class test {
     .withVagrantVmConfig(vmConfig2)
     .build
   val vagrant = new Vagrant().createEnvironment(new File("/Volumes/Daten/Vagrant/scala.local"), environmentConfig)
-  println(vagrant.up)
-  println(vagrant.destroy)
+  //vagrant.up()
+  // println(vagrant.up)
+  val test = vagrant.status()
+  println(test.mkString("Status:\n", "\n", ""))
+  //println(vagrant.destroy())
+  vmConfig = vagrant.getBoxePortMapping(vmConfig)
+  println(vagrant.sshExecute(vmConfig, "echo 'Test'"))
+  println(vagrant.sshExecute(vmConfig2, "echo 'Test2'"))
 }
 
 object test extends App{

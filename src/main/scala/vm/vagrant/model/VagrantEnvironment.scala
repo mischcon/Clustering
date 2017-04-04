@@ -2,13 +2,17 @@ package vm.vagrant.model
 
 import java.net.URL
 import java.util
+
 import org.jruby.RubyArray
 import org.jruby.RubyBoolean
 import org.jruby.RubyNil
 import org.jruby.RubyObject
 import org.jruby.RubyString
 import org.jruby.exceptions.RaiseException
-import vm.vagrant.util.VagrantException
+import vm.vagrant.configuration.VagrantVmConfig
+import vm.vagrant.model.VmStatus.VmStatus
+import vm.vagrant.util.{VagrantException, VagrantVmConfigUtil}
+
 import scala.collection.JavaConversions._
 
 /**
@@ -25,19 +29,94 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
   /**
     * Start all VMs in this environment
     */
-  def up(): String = {
+  def up(vmConfig: VagrantVmConfig = null): String = {
     try
-      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "up")).convertToString().toString
+      if (vmConfig != null)
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "up"), RubyString.newString(vagrantEnvironment.getRuntime, vmConfig.name)).convertToString().toString
+      else
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "up")).convertToString().toString
     catch {
       case exception: RaiseException =>
         throw new VagrantException(exception)
     }
   }
 
-  def destroy(): String = {
+  def destroy(vmConfig: VagrantVmConfig = null): String = {
     try
-      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "destroy"), RubyString.newString(vagrantEnvironment.getRuntime, "-f")).convertToString().toString
+      if (vmConfig != null)
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "destroy"), RubyString.newString(vagrantEnvironment.getRuntime, "-f"), RubyString.newString(vagrantEnvironment.getRuntime, vmConfig.name)).convertToString().toString
+      else
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "destroy"), RubyString.newString(vagrantEnvironment.getRuntime, "-f")).convertToString().toString
     catch {
+      case exception: RaiseException =>
+        throw new VagrantException(exception)
+    }
+  }
+
+  def halt(vmConfig: VagrantVmConfig = null): String = {
+    try
+      if (vmConfig != null)
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "halt"), RubyString.newString(vagrantEnvironment.getRuntime, vmConfig.name)).convertToString().toString
+      else
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "halt")).convertToString().toString
+    catch {
+      case exception: RaiseException =>
+        throw new VagrantException(exception)
+    }
+  }
+
+  def resume(vmConfig: VagrantVmConfig = null): String = {
+    try
+      if (vmConfig != null)
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "resume"), RubyString.newString(vagrantEnvironment.getRuntime, vmConfig.name)).convertToString().toString
+      else
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "resume")).convertToString().toString
+    catch {
+      case exception: RaiseException =>
+        throw new VagrantException(exception)
+    }
+  }
+
+  def reload(vmConfig: VagrantVmConfig = null): String = {
+    try
+      if (vmConfig != null)
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "reload"), RubyString.newString(vagrantEnvironment.getRuntime, vmConfig.name)).convertToString().toString
+      else
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "reload")).convertToString().toString
+    catch {
+      case exception: RaiseException =>
+        throw new VagrantException(exception)
+    }
+  }
+
+  def suspend(vmConfig: VagrantVmConfig = null): String = {
+    try
+        if (vmConfig != null)
+          vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "suspend"), RubyString.newString(vagrantEnvironment.getRuntime, vmConfig.name)).convertToString().toString
+        else
+          vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "suspend")).convertToString().toString
+    catch {
+      case exception: RaiseException =>
+        throw new VagrantException(exception)
+    }
+  }
+
+  def status(vmConfig: VagrantVmConfig = null): Iterator[(String, VmStatus.Value)] = {
+    try {
+      var output = ""
+      if (vmConfig != null)
+        output = vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "status"), RubyString.newString(vagrantEnvironment.getRuntime, vmConfig.name)).convertToString().toString
+      else
+        output = vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "status")).convertToString().toString
+      val pattern = s".*\\s(${VmStatus.notCreated.toString}|${VmStatus.poweroff.toString}|${VmStatus.running.toString})\\s\\(.*\\)".r
+      val regex = pattern.findAllMatchIn(output)
+      regex.map(d => {
+        val status = d.toString()
+        if (status.contains(VmStatus.running.toString)) (status.split("\\s"){0}, VmStatus.running)
+        else if (status.contains(VmStatus.poweroff.toString)) (status.split("\\s"){0}, VmStatus.running)
+        else if (status.contains(VmStatus.notCreated.toString)) (status.split("\\s"){0}, VmStatus.notCreated)
+      }).collect[(String, VmStatus.Value)]({case x: (String, VmStatus.Value) => x})
+    } catch {
       case exception: RaiseException =>
         throw new VagrantException(exception)
     }
@@ -57,7 +136,6 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
     }
   }
 
-
   /**
     * Creates a iterator for all available boxes in Vagrant.
     *
@@ -71,4 +149,74 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
       throw new VagrantException(exception)
   }
 
+  def addBoxe(boxName: String): String = try
+    vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "box"), RubyString.newString(vagrantEnvironment.getRuntime, "add"), RubyString.newString(vagrantEnvironment.getRuntime, boxName)).convertToString().toString
+  catch {
+    case exception: RaiseException =>
+      throw new VagrantException(exception)
+  }
+
+  def removeBoxes(boxName: String): String = try
+    vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "box"), RubyString.newString(vagrantEnvironment.getRuntime, "remove"), RubyString.newString(vagrantEnvironment.getRuntime, boxName)).convertToString().toString
+  catch {
+    case exception: RaiseException =>
+      throw new VagrantException(exception)
+  }
+  //TODO: Portmapping zurück in vmConfig \d+ \(guest\) => \d+ \(host\)
+  def getBoxePortMapping(box: VagrantVmConfig): VagrantVmConfig = try {
+    val output = vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "port"), RubyString.newString(vagrantEnvironment.getRuntime, box.name)).convertToString().toString
+    val pattern = s"\\d+ \\(guest\\) => \\d+ \\(host\\)".r
+    val regex = pattern.findAllMatchIn(output)
+    val mapping = regex.map(d => {val map = d.toString().split(" "); println(map.mkString("mapping: " , ";" , " :mapping end")); (map{0}.toInt, map{3}.toInt)}).collect({case x:(Int, Int) => x})
+    VagrantVmConfigUtil.updatePortMapping(box, mapping)
+  } catch {
+    case exception: RaiseException =>
+      throw new VagrantException(exception)
+  }
+
+  def provision(box: VagrantVmConfig = null): String = try
+    if (box == null)
+      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "provision")).convertToString().toString
+    else
+      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "provision"), RubyString.newString(vagrantEnvironment.getRuntime, box.name)).convertToString().toString
+  catch {
+    case exception: RaiseException =>
+      throw new VagrantException(exception)
+  }
+
+  def snapshotPush(box: VagrantVmConfig = null): String = try
+    if (box == null)
+      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "snapshot"), RubyString.newString(vagrantEnvironment.getRuntime, "push")).convertToString().toString
+    else
+      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "snapshot"), RubyString.newString(vagrantEnvironment.getRuntime, "push"), RubyString.newString(vagrantEnvironment.getRuntime, box.name)).convertToString().toString
+  catch {
+    case exception: RaiseException =>
+      throw new VagrantException(exception)
+  }
+
+  def snapshotPop(box: VagrantVmConfig = null): String = try
+      if (box == null)
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "snapshot"), RubyString.newString(vagrantEnvironment.getRuntime, "pop"), RubyString.newString(vagrantEnvironment.getRuntime, "--no-delete")).convertToString().toString
+      else
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "snapshot"), RubyString.newString(vagrantEnvironment.getRuntime, "pop"), RubyString.newString(vagrantEnvironment.getRuntime, "--no-delete"), RubyString.newString(vagrantEnvironment.getRuntime, box.name)).convertToString().toString
+  catch {
+    case exception: RaiseException =>
+      throw new VagrantException(exception)
+  }
+
+  def sshExecute(box: VagrantVmConfig, command: String): String = try {
+    var output = vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "ssh"), RubyString.newString(vagrantEnvironment.getRuntime, "-c"), RubyString.newString(vagrantEnvironment.getRuntime, s""""$command""""), RubyString.newString(vagrantEnvironment.getRuntime, box.name)).convertToString().toString
+    output.substring(0, output.lastIndexOf('\n'))
+  } catch {
+    case exception: RaiseException =>
+      throw new VagrantException(exception)
+  }
+
+}
+
+object VmStatus extends Enumeration {
+  type VmStatus = Value
+  val notCreated = Value("not created")
+  val poweroff = Value("poweroff")
+  val running = Value("running")
 }

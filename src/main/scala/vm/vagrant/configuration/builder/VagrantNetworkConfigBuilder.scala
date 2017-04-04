@@ -21,7 +21,7 @@ trait VagrantNetworkConfigBuilder {
 class VagrantPrivateNetworkConfigBuilder extends VagrantNetworkConfigBuilder{
   private var dhcp: Boolean = _
   private var ip: String = _
-  private var netmask: Int = _
+  private var netmask: String = _
   private var autoConfig: Boolean = true
 
   def withDhcp(dhcp: Boolean): VagrantPrivateNetworkConfigBuilder = {
@@ -34,7 +34,7 @@ class VagrantPrivateNetworkConfigBuilder extends VagrantNetworkConfigBuilder{
      this
   }
 
-  def withNetmask(netmask: Int): VagrantPrivateNetworkConfigBuilder = {
+  def withNetmask(netmask: String): VagrantPrivateNetworkConfigBuilder = {
     this.netmask = netmask
     this
   }

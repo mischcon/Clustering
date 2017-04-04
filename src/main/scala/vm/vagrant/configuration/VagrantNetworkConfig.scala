@@ -11,11 +11,11 @@ trait VagrantNetworkConfig {
 
 class VagrantPrivateNetworkConfig(var dhcp: Boolean,
                                   var ip: String,
-                                  var netmask: Int,
+                                  var netmask: String,
                                   var autoConfig: Boolean) extends VagrantNetworkConfig {
   override def mode: String = "private_network"
 
-  override def isComplete: Boolean = (dhcp || (ip != null && !ip.isEmpty && netmask > 0))
+  override def isComplete: Boolean = (dhcp || (ip != null && !ip.isEmpty && netmask != null && !netmask.isEmpty))
 }
 
 class VagrantPortForwardingConfig (var autoCorrect: Boolean,
@@ -34,7 +34,7 @@ class VagrantPublicNetworkConfig (var dhcp: Boolean,
                                   var useDhcpAssignedDefaultRoute: Boolean,
                                   var ip: String,
                                   var bridges: List[String],
-                                  var autoAonfig: Boolean ) extends VagrantNetworkConfig {
+                                  var autoConfig: Boolean ) extends VagrantNetworkConfig {
   override def mode: String = "public_network"
 
   override def isComplete: Boolean = true
