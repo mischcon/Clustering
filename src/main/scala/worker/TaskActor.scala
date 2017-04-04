@@ -42,7 +42,6 @@ class TaskActor(task : Task) extends WorkerTrait{
       Escalate
     }
     case t : TestFailException => {
-
       // TODO: check whether or not the VM has failed - in this case this TestFailException might not be caused by a "failed" test, but because of the failed VM
       log.debug("received TestFailException!")
       taskDone = true
