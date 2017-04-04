@@ -19,7 +19,7 @@ object ClusterMain extends App{
   parser.parser.parse(args, Config()) match {
     case Some(cli_config) => {
 
-      val config = ConfigFactory.load()
+      var config = ConfigFactory.load()
       val interfaces = NetworkInterface.getNetworkInterfaces
       println("Choose ip for listening:")
       var counter = 0
@@ -105,19 +105,28 @@ object ClusterMain extends App{
       }
       // CLIENT
       else {
-        val system : ActorSystem = ActorSystem("the-cluster", hostnameConfig
-          .withFallback(config.getConfig("client").withFallback(config)))
+
+        config = hostnameConfig.withFallback(config.getConfig("client").withFallback(config))
+
+        var roles : List[String] = List("executor", "vm")
+
+        if(!cli_config.withExecutor)
+          roles = roles.filter(x => x != "executor")
+
+        if(!cli_config.withVm)
+          roles = roles.filter(x => x != "vm")
+
+        if(roles.nonEmpty) {
+          println(s"Starting client with roles: ${roles.mkString(",")}")
+          config = ConfigFactory.parseString(s"akka.cluster.roles = [${roles.mkString(",")}]").withFallback(config)
+        }
+
+        val system : ActorSystem = ActorSystem("the-cluster", config)
 
         if(cli_config.seednode != null) {
           println(s"using ${cli_config.seednode} as seed-node")
           Cluster(system).join(Address("akka.tcp", "the-cluster", cli_config.seednode.split(":").head, cli_config.seednode.split(":").reverse.head.toInt))
         }
-
-        if(!cli_config.withExecutor)
-          println("TODO: Inform the cluster that this client cannot provide executors")
-
-        if(!cli_config.withVm)
-          println("TODO: Inform the cluster that this client cannot provide VMs")
 
         println("Press any key to gracefully stop the client...")
         StdIn.readLine()

@@ -16,7 +16,11 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
   override def receive: Receive = {
     case MemberJoined(member) => {
       log.debug(s"MEMBER JOINED! Hello my friend at ${member.address.toString}")
-      directory += (member.address -> null)
+      if(member.hasRole("executor")){
+        log.debug("Member has role EXECUTOR - adding it to the executor list")
+        directory += (member.address -> null)
+      }
+
     }
     case UnreachableMember(member) => {
       log.debug(s"MEMBER UNREACHABLE! Goodbye my friend at ${member.address.toString}")

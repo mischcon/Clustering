@@ -2,9 +2,7 @@ package worker
 
 import Exceptions._
 import akka.actor.SupervisorStrategy.{Escalate, Stop}
-import akka.actor.{ActorRef, DeathPactException, Deploy, OneForOneStrategy, PoisonPill, Props, SupervisorStrategy, Terminated}
-import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberExited, MemberJoined}
+import akka.actor.{ActorRef, Deploy, Kill, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.pattern._
 import akka.remote.RemoteScope
 import akka.util.Timeout
@@ -16,9 +14,6 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success}
 
-/**
-  * Created by mischcon on 21.03.17.
-  */
 class TaskActor(task : Task) extends WorkerTrait{
 
   var isTaken : Boolean = false
@@ -38,13 +33,6 @@ class TaskActor(task : Task) extends WorkerTrait{
     log.debug(s"Goodbye from ${self.path.name}")
   }
 
-  /*
-  * POSITIVE PATH: if the task has been done
-  *
-  * Success: Stop the ExecutorActor
-  * Failure: Inform the parent actor --> he should stop all other child actors
-  *
-  * */
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
     case t : TestSuccessException => {
       log.debug("received TestSuccessException!")
@@ -52,12 +40,14 @@ class TaskActor(task : Task) extends WorkerTrait{
       Escalate
     }
     case t : TestFailException => {
+
+      // TODO: check whether or not the VM has failed - in this case this TestFailException might not be caused by a "failed" test, but because of the failed VM
       log.debug("received TestFailException!")
       taskDone = true
       Escalate
     }
-    case a : Throwable => {
-      log.debug(s"received an unexpected exception - resetting: ${a.getMessage}")
+    case a => {
+      log.debug(s"received an unexpected exception - resetting: ${a}")
       taskDone = false
       Stop
     }
@@ -75,7 +65,7 @@ class TaskActor(task : Task) extends WorkerTrait{
   * */
   override def receive: Receive = {
     case p : GetTask if ! isTaken => handleGetTask()
-    case t : Terminated => handleTermianted()
+    case t : Terminated => handleTermianted(t)
     case a : PersistAndSuicide => {
       log.debug("received PersistAndSuicide")
       context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}")
@@ -83,17 +73,31 @@ class TaskActor(task : Task) extends WorkerTrait{
     }
   }
 
-  def handleTermianted() = {
+  def handleTermianted(t : Terminated) = {
     if(taskDone) {
       log.debug("Terminated + task done --> shutting down self")
       context.stop(self)
     } else {
       log.debug("Terminated + NOT task done --> isTaken = false + targetVm = null")
       isTaken = false
+
+      /* TODO: if the VM dies the test will fail probably because of an IO Exception or something like that.
+      * In this case the Test has not failed because of some assertation error or things like that, which means
+      * that the task is not done / the test needs to be rerun
+      *
+      * NEEDS TO BE IMPLEMENTED!
+      * */
+
+      // check what crashed - the targetVM or the executor
+      if(t.actor == targetVm){
+        // vm died - kill the executor, but unwatch it first
+        context.unwatch(executorActor)
+        executorActor ! Kill
+        executorActor = null
+      }
+
       context.unwatch(targetVm)
       targetVm = null
-      context.unwatch(executorActor)
-      executorActor = null
 
       // updating database
       context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED)
@@ -133,12 +137,7 @@ class TaskActor(task : Task) extends WorkerTrait{
             context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING)
           }
           case Failure(e) => {
-            /* IMPROVEMENT NEEDED
-            *
-            * If we are unable to get an executor just send a TERMINATED message to the target VM -
-            * currently this will destroy
-            * */
-            log.error("could not get an executor - sending TERMINATED to targetVm and goind back to isTaken = false")
+            log.error("could not get an executor - sending CannotGetExecutor to targetVm and goind back to isTaken = false")
             targetVm ! CannotGetExecutor
             isTaken = false
           }

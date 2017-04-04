@@ -1,13 +1,8 @@
 package worker
 
-
-
 import Exceptions.{TestFailException, TestSuccessException}
 import worker.messages.ExecuteTask
 
-/**
-  * Created by mischcon on 26.03.2017.
-  */
 class TaskExecutorActor extends WorkerTrait{
 
   override def preStart(): Unit = {
@@ -25,14 +20,12 @@ class TaskExecutorActor extends WorkerTrait{
   def run(msg : ExecuteTask): Unit ={
     log.debug(s"EXECUTING ${msg.task.method}")
     try {
-      println("Sleeping for 10 seconds...")
-      Thread.sleep(10000)
       val loader = new OwnLoader
       val cls : Class[_] = loader.getClassObject(msg.task.classname, msg.task.raw_cls)
       val obj = cls.newInstance()
       val method = cls.getMethod(msg.task.method)
       val res = method.invoke(obj)
-      throw TestSuccessException(msg.task, res)
+      throw new TestSuccessException(msg.task, res)
     } catch {
       case e : Exception => {
         log.debug(s"invocation failed - ${e.getCause.toString}")
