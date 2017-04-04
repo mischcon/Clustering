@@ -48,18 +48,15 @@ class VMProxyActor extends Actor {
       sender() ! s"got an Integer was sent : $d"
     case request : HttpsURLConnectionImpl =>
       val responseCode = request.getResponseCode
-
       println(s"sending '${request.getRequestMethod}' request to URL : ${request.getURL}")
       println(s"response code : $responseCode")
-
       var in : BufferedReader = null
-      if (200 <= request.getResponseCode && request.getResponseCode <= 299)
+      if (200 <= responseCode && responseCode <= 299)
         in = new BufferedReader(new InputStreamReader(request.getInputStream))
       else
         in = new BufferedReader(new InputStreamReader(request.getErrorStream))
       val output = Stream.continually(in.readLine()).takeWhile(_ != null).mkString("\n")
       in.close()
-
       sender() ! output
     case o =>
       sender() ! s"got an Object of class : ${o.getClass.getName}"
@@ -70,8 +67,10 @@ class VMProxyActor extends Actor {
 object TestActorSystem extends App {
   val system = ActorSystem("testActorSystem")
   val executor = system.actorOf(Props[TaskExecutorActor], name="testActor")
-
   executor ! new AnnotationTest()
+
+  val test : AnnotationTest = new AnnotationTest()
+  test.testPost()
 
   system.terminate()
 }
