@@ -61,6 +61,8 @@ object ClusterMain extends App{
         val loader : TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
         val testMethods = loader.getClassClusterMethods
 
+        val instanceId : String = "INSTANCE_ID_1"
+
         // Add Tasks
         for(a <- testMethods.asScala.toList){
           var singleInstance : Boolean = true
@@ -68,7 +70,7 @@ object ClusterMain extends App{
             singleInstance = false
 
           // Add Task to dependency tree
-          distributorActor ! AddTask(a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
+          distributorActor ! AddTask(instanceId, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
 
           // Add Task to Database
           dBActor ! CreateTask(s"${a.classname}.${a.methodname}")

@@ -1,6 +1,6 @@
 package worker
 import akka.actor.Props
-import worker.messages.{AddTask, GetTask, NoMoreTasks}
+import worker.messages.{AddTask, GetTask, HasTask, NoMoreTasks}
 
 class DistributorActor extends WorkerTrait{
 
@@ -17,7 +17,12 @@ class DistributorActor extends WorkerTrait{
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
+    case HasTask => hasTask()
     case a => log.warning(s"received unexpected message: $a")
+  }
+
+  def hasTask(): Unit ={
+    
   }
 
   def addTask(msg : AddTask) = {
