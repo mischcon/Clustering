@@ -33,6 +33,13 @@ object ClusterMain extends App{
           ips_list = ip :: ips_list
         }
       }
+
+      // logging
+      if(cli_config.verbose)
+        config = ConfigFactory.parseString("akka.loglevel = INFO").withFallback(config)
+      if(cli_config.debug)
+        config = ConfigFactory.parseString("akka.loglevel = DEBUG").withFallback(config)
+
       var localIp = ips_list.reverse(StdIn.readInt())
       val hostnameConfig = ConfigFactory.parseString(s"akka.remote.netty.tcp.hostname = $localIp")
 
