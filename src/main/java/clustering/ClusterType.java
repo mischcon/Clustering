@@ -1,7 +1,6 @@
 package clustering;
 
 /**
- *
  * <strong>Indicates cluster type</strong>
  * <ul>
  *     <li>

@@ -21,8 +21,7 @@ public enum EndState {
         this.result = result;
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return result;
     }
 }

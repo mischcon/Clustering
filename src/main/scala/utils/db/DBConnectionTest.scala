@@ -71,11 +71,11 @@ object DBConnectionTest extends App {
 
   val future5 = db ? CountTaskStatus
   val result5 = Await.result(future5, timeout.duration).asInstanceOf[CountedTaskStatus]
-//  println("[Future]: " + result5.result)
+  println("[Future]: " + result5.result)
 
   val future6 = db ? CountEndState
   val result6 = Await.result(future6, timeout.duration).asInstanceOf[CountedEndState]
-//  println("[Future]: " + result6.result)
+  println("[Future]: " + result6.result)
 
   db ! DeleteTask(method)
   db ! DeleteTasks(methods)

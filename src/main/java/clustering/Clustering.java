@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 
 /**
- *
  * <strong>Main clustering annotation</strong><br>
  * <ul>
  *     <li>

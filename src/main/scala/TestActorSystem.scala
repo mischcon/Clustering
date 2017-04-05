@@ -1,8 +1,7 @@
-import java.io.{BufferedReader, InputStreamReader}
-
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import communication.{ClusteringTask, ProxyRequest}
-import sun.net.www.protocol.https.HttpsURLConnectionImpl
+import clustering.ClusteringTask
+import communication.{HttpRequest, HttpResponse, ProxyRequest}
+import org.apache.http.impl.client.HttpClientBuilder
 
 
 class TaskExecutorActor extends Actor {
@@ -45,18 +44,11 @@ class VMProxyActor extends Actor {
     case s : String =>
       sender() ! s"got a String : $s"
     case d : Integer =>
-      sender() ! s"got an Integer was sent : $d"
-    case request : HttpsURLConnectionImpl =>
-      val responseCode = request.getResponseCode
-      println(s"sending '${request.getRequestMethod}' request to URL : ${request.getURL}")
-      println(s"response code : $responseCode")
-      var in : BufferedReader = null
-      if (200 <= responseCode && responseCode <= 299)
-        in = new BufferedReader(new InputStreamReader(request.getInputStream))
-      else
-        in = new BufferedReader(new InputStreamReader(request.getErrorStream))
-      val output = Stream.continually(in.readLine()).takeWhile(_ != null).mkString("\n")
-      in.close()
+      sender() ! s"got an Integer : $d"
+    case request : HttpRequest =>
+      val client = HttpClientBuilder.create.build
+      val response = client.execute(request.asInstanceOf[HttpRequest].getRequest)
+      val output = new HttpResponse(response)
       sender() ! output
     case o =>
       sender() ! s"got an Object of class : ${o.getClass.getName}"
@@ -67,10 +59,9 @@ class VMProxyActor extends Actor {
 object TestActorSystem extends App {
   val system = ActorSystem("testActorSystem")
   val executor = system.actorOf(Props[TaskExecutorActor], name="testActor")
-  executor ! new AnnotationTest()
 
-  val test : AnnotationTest = new AnnotationTest()
-  test.testPost()
+  val test : TestEnvironment = new TestEnvironment()
+  executor ! test
 
   system.terminate()
 }

@@ -3,23 +3,30 @@ package communication;
 import akka.actor.ActorRef;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
-import sun.net.www.protocol.https.HttpsURLConnectionImpl;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
+/**
+ * <strong>Java & Scala marriage happens w/ help of this class</strong>
+ * @param <T> request type - Object in {@link clustering.ClusteringTask}
+ */
 public class ProxyRequest<T> {
+    /**
+     * If executed in cluster, this field will be <i>post-injected</i> w/ instance of
+     * <code>vmProxyActor</code> by executing actor
+     */
     private ActorRef vmProxy;
     private Timeout timeout;
     private Future<Object> future;
     private Object response;
 
-    ProxyRequest() {
+    public ProxyRequest() {
         this.timeout = new Timeout(Duration.create(5, "seconds"));
     }
 
@@ -28,36 +35,35 @@ public class ProxyRequest<T> {
     }
 
     private void send(T request) {
+        /*
+            vmProxy == null : task is executed locally
+            vmProxy != null : task is executed in cluster
+        */
         if (vmProxy != null)
             this.future = Patterns.ask(vmProxy, request, timeout);
         else {
-            if (request instanceof HttpsURLConnectionImpl) {
+            if (request instanceof HttpRequest) {
+                CloseableHttpClient client;
+                CloseableHttpResponse response;
                 try {
-                    HttpURLConnection httpRequest = (HttpURLConnection) request;
-                    int responseCode = httpRequest.getResponseCode();
-                    System.out.println(
-                            "sending '" + httpRequest.getRequestMethod() + "' request to URL : " + httpRequest.getURL());
-                    System.out.println("response code : " + responseCode);
-                    BufferedReader in = null;
-                    if (200 <= responseCode && responseCode <= 299)
-                        in = new BufferedReader(new InputStreamReader(httpRequest.getInputStream()));
-                    else
-                        in = new BufferedReader(new InputStreamReader(httpRequest.getErrorStream()));
-                    String inputLine;
-                    StringBuilder response = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null)
-                        response.append(inputLine + "\n");
-                    this.response = response.toString();
-                    in.close();
+                    client = HttpClientBuilder.create().build();
+                    response = client.execute(((HttpRequest) request).getRequest());
+                    this.response = new communication.HttpResponse(response);
+                    response.close();
+                    client.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
+            /* expand if needed
+            else if (request instanceof ...) {
+                ...
+            }
+            */
             else {
                 System.out.println("unsupported request type : " + request.getClass());
             }
         }
-
     }
 
     private Object receive() {
@@ -65,8 +71,7 @@ public class ProxyRequest<T> {
             try {
                 this.response = Await.result(future, timeout.duration());
                 return response;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
