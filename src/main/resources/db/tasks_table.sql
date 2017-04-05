@@ -6,6 +6,6 @@ CREATE TABLE clustering.tasks (
   task_result   VARCHAR(2048),
   PRIMARY KEY (id),
   UNIQUE KEY method_UQ (method),
-  CONSTRAINT check_status CHECK (task_status IN ('NOT_STARTED', 'IN_PROCESS', 'DONE')),
-  CONSTRAINT check_result CHECK (task_result IN ('SUCCESS', 'FAILURE', 'ERROR'))
+  CONSTRAINT check_task_status CHECK (task_status IN ('NOT_STARTED', 'IN_PROCESS', 'DONE')),
+  CONSTRAINT check_end_state CHECK (end_state IN (NULL, 'SUCCESS', 'FAILURE', 'ABANDONED', 'ERROR'))
 )

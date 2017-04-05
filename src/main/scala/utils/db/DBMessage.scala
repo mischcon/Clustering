@@ -24,10 +24,11 @@ case object CountTaskStatus extends DBMessage
   * = Request ''end_state - amount'' relation =
   * __Example__:
   * {{{
-  * NONE    #
-  * SUCCESS #
-  * FAILURE #
-  * ERROR   #
+  * NONE      #
+  * SUCCESS   #
+  * FAILURE   #
+  * ABANDONED #
+  * ERROR     #
   * }}}
   */
 case object CountEndState extends DBMessage

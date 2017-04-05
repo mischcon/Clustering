@@ -37,6 +37,8 @@ class DBCountEndState extends DBQuery {
       s"FROM tasks WHERE end_state = '${EndState.SUCCESS}' UNION ALL " +
       s"SELECT '${EndState.FAILURE}' AS end_state, COALESCE(COUNT(*), 0) AS amount " +
       s"FROM tasks WHERE end_state = '${EndState.FAILURE}' UNION ALL " +
+      s"SELECT '${EndState.ABANDONED}' AS end_state, COALESCE(COUNT(*), 0) AS amount " +
+      s"FROM tasks WHERE end_state = '${EndState.ABANDONED}' UNION ALL " +
       s"SELECT '${EndState.ERROR}' AS end_state, COALESCE(COUNT(*), 0) AS amount " +
       s"FROM tasks WHERE end_state = '${EndState.ERROR}';"
     val statement : PreparedStatement = connection.prepareStatement(sql)
