@@ -64,10 +64,10 @@ object ClusterMain extends App{
         val testMethods = loader.getClassClusterMethods
 
         val instanceIds : List[String] = List("INSTANCE_ID_1", "INSTANCE_ID_2")
-
         // Add Tasks
         for(id <- instanceIds) {
           for (a <- testMethods.asScala.toList) {
+            println(s"adding task ${a.classname}.${a.methodname} to table $id")
             var singleInstance: Boolean = true
             if (a.annotation.clusterType() == ClusterType.GROUPING)
               singleInstance = false
@@ -76,7 +76,7 @@ object ClusterMain extends App{
             instanceActor ! AddTask(id, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
 
             // Add Task to Database
-            dBActor ! CreateTask(s"${a.classname}.${a.methodname}")
+            dBActor ! CreateTask(s"${a.classname}.${a.methodname}", id)
           }
         }
 

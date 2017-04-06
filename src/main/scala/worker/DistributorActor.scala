@@ -2,7 +2,7 @@ package worker
 import akka.actor.Props
 import worker.messages.{AddTask, GetTask, HasTask, NoMoreTasks}
 
-class DistributorActor extends WorkerTrait{
+class DistributorActor(tablename : String) extends WorkerTrait{
 
   override def preStart(): Unit = {
     super.preStart()
@@ -31,8 +31,8 @@ class DistributorActor extends WorkerTrait{
       case Some(child) => child ! msg
       case None => {
         msg.task.singleInstance match {
-          case false => context.actorOf(Props(classOf[GroupActor], msg.group.take(1)), api) ! msg
-          case true => context.actorOf(Props(classOf[SingleInstanceActor], msg.group.take(1)), api) ! msg
+          case false => context.actorOf(Props(classOf[GroupActor], msg.group.take(1), tablename), api) ! msg
+          case true => context.actorOf(Props(classOf[SingleInstanceActor], msg.group.take(1), tablename), api) ! msg
         }
       }
     }

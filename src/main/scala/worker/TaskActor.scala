@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success}
 
-class TaskActor(task : Task) extends WorkerTrait{
+class TaskActor(task : Task, tablename : String) extends WorkerTrait{
 
   var isTaken : Boolean = false
   var taskDone : Boolean = false
@@ -60,7 +60,7 @@ class TaskActor(task : Task) extends WorkerTrait{
     case t : Terminated => handleTermianted(t)
     case a : PersistAndSuicide => {
       log.debug("received PersistAndSuicide")
-      // TODO: tableName context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}")
+      context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}", tablename)
       context.stop(self)
     }
   }
@@ -92,7 +92,7 @@ class TaskActor(task : Task) extends WorkerTrait{
       targetVm = null
 
       // updating database
-      // TODO: tableName context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED)
+      context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, tablename)
     }
   }
 
@@ -126,7 +126,7 @@ class TaskActor(task : Task) extends WorkerTrait{
             executorActor ! ExecuteTask(task, target.vmInfo)
 
             // updating database
-            // TODO: tableName context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING)
+            context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING, tablename)
           }
           case Failure(_) => {
             log.error("could not get an executor - sending CannotGetExecutor to targetVm and goind back to isTaken = false")

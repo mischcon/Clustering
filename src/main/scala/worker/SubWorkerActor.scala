@@ -12,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.Random
 
-abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
+abstract class SubWorkerActor(var group : List[String], tablename : String) extends WorkerTrait{
 
   implicit val timeout = Timeout(1 seconds)
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
@@ -47,7 +47,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   def handleSuccess(task : Task, result : Object, source : ActorRef): Unit ={
     /* DB Actor + write */
     log.debug("writing SUCCESS result to db")
-    // TODO: tableName dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null)
+    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null, tablename)
 
     taskActors = taskActors.filter(x => x != source)
   }
@@ -55,7 +55,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   def handleFailure(task : Task, result : Throwable, source : ActorRef): Unit = {
     /* DB Actor + write */
     log.debug(s"writing FAILURE result to db")
-    // TODO: tableName dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.FAILURE, result.getCause.toString)
+    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.FAILURE, result.getCause.toString, tablename)
 
     taskActors = taskActors.filter(x => x != source)
 
@@ -82,12 +82,12 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
         case None => {
           msg.task.singleInstance match {
             case false => {
-              val ref = context.actorOf(Props(classOf[GroupActor], name), name.mkString("."))
+              val ref = context.actorOf(Props(classOf[GroupActor], name, tablename), name.mkString("."))
               ref ! msg
               context.watch(ref)
             }
             case true => {
-              val ref = context.actorOf(Props(classOf[SingleInstanceActor], name), name.mkString("."))
+              val ref = context.actorOf(Props(classOf[SingleInstanceActor], name, tablename), name.mkString("."))
               ref ! msg
               context.watch(ref)
             }
@@ -98,7 +98,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
     // or create new TaskActor
     else {
       log.debug(s"task was added to ${self.path.name}")
-      val ref = context.actorOf(Props(classOf[TaskActor], msg.task), s"TASK-${msg.task.method}-${new Random().nextLong()}")
+      val ref = context.actorOf(Props(classOf[TaskActor], msg.task, tablename), s"TASK-${msg.task.method}-${new Random().nextLong()}")
       context.watch(ref)
       taskActors = ref :: taskActors
     }
@@ -128,5 +128,5 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   }
 }
 
-class GroupActor(group : List[String]) extends SubWorkerActor(group)
-class SingleInstanceActor(group : List[String]) extends SubWorkerActor(group)
+class GroupActor(group : List[String], tablename : String) extends SubWorkerActor(group, tablename)
+class SingleInstanceActor(group : List[String], tablename : String) extends SubWorkerActor(group, tablename)

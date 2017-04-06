@@ -8,6 +8,14 @@ class InstanceActor extends Actor with ActorLogging{
 
   var instances : List[(String, ActorRef, String)] = List.empty
 
+  override def preStart(): Unit = {
+    log.debug(s"Hello from ${self.path.name}")
+  }
+
+  override def postStop(): Unit = {
+    log.debug(s"Goodbye from ${self.path.name}")
+  }
+
   override def receive: Receive = {
     case p : AddTask => handleAddTask(p)
     case p : GetTask => handleGetTask(p)
@@ -15,6 +23,7 @@ class InstanceActor extends Actor with ActorLogging{
   }
 
   def handleAddTask(msg : AddTask): Unit ={
+    log.debug("add task")
     context.child(msg.instanceId) match {
       case Some(child) => child ! msg
       case None => {
