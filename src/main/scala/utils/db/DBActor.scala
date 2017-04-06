@@ -31,7 +31,7 @@ class DBActor extends Actor {
     * @return [[java.sql.Connection]] Object or [[scala.None]]
     */
   def connect: Option[Connection] = try {
-    val config = ConfigFactory.load()
+    val config = ConfigFactory.load("db.conf")
     Class.forName(config.getString("db.driver"))
     Some(DriverManager.getConnection(
       config.getString("db.url"),
