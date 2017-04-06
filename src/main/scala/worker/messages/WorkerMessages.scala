@@ -10,7 +10,7 @@ case class GetTask(version : String = "DEFAULT") extends WorkerMessagesTrait
 case object HasTask extends WorkerMessagesTrait
 
 /* TASK SENDING AND RECEIVING */
-case class SendTask(task : Task)
+case class SendTask(task : Task, source : ActorRef)
 case class Task(raw_cls : Array[Byte], classname : String, method : String, singleInstance: Boolean) extends WorkerMessagesTrait
 case object NoMoreTasks extends WorkerMessagesTrait
 case object InUse extends WorkerMessagesTrait
@@ -23,6 +23,7 @@ case object CannotGetExecutor extends WorkerMessagesTrait
 
 /* UTILITIES */
 case class PersistAndSuicide(reason : String) extends WorkerMessagesTrait
+case object TimedOut extends WorkerMessagesTrait
 
 
 

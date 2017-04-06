@@ -22,17 +22,18 @@ class TestVMNodesActor(vmInfo : Object) extends WorkerTrait{
   override def receive: Receive = {
     case "get" => {
       log.debug("sent GetTask to distributor")
-      context.system.actorSelection("/user/distributor") ! GetTask()
+      context.system.actorSelection("/user/instances") ! GetTask()
     }
     case t : SendTask if haveSpaceForTasks => {
       log.debug("received SendTask and I still have space for tasks!")
       haveSpaceForTasks = false
 
-      sender() ! AcquireExecutor(vmInfo, self)
+      log.debug(s"sending AquireExecutor to ${t.source}")
+      t.source ! AcquireExecutor(vmInfo, self)
     }
     case t : SendTask if ! haveSpaceForTasks => {
       log.debug("received SendTask but I dont have any more space :(")
-      sender() ! Failure(new Exception)
+      t.source ! Failure(new Exception)
     }
     case t : Executor => {
       log.debug("received an ActorRef, which means that this is an executor - monitoring it now")

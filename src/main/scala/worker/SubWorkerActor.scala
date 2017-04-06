@@ -23,7 +23,6 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
-    case HasTask => taskActors.foreach(t => t forward HasTask)
     case t : Terminated => check_suicide()
     case x : PersistAndSuicide => {
       taskActors = List.empty

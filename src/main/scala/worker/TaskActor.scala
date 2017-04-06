@@ -1,6 +1,7 @@
 package worker
 
 import Exceptions._
+import akka.actor.Status.Failure
 import akka.actor.SupervisorStrategy.{Escalate, Stop}
 import akka.actor.{ActorRef, Deploy, Kill, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.pattern._
@@ -22,7 +23,7 @@ class TaskActor(task : Task) extends WorkerTrait{
   var targetVm : ActorRef = null
   var executorActor : ActorRef = null
 
-  implicit val timeout = Timeout(1 seconds)
+  implicit val timeout = Timeout(8 seconds)
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
 
   override def preStart(): Unit = {
@@ -56,13 +57,14 @@ class TaskActor(task : Task) extends WorkerTrait{
 
   override def receive: Receive = {
     case p : GetTask if ! isTaken => handleGetTask()
-    case p : GetTask if isTaken => sender() ! InUse
+    case p : GetTask if isTaken => sender() ! akka.actor.Status.Failure(new Exception)
     case t : Terminated => handleTermianted(t)
     case a : PersistAndSuicide => {
       log.debug("received PersistAndSuicide")
       context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}")
       context.stop(self)
     }
+    case t => log.debug(s"received something unexpected $t")
   }
 
   def handleTermianted(t : Terminated) = {
@@ -99,7 +101,7 @@ class TaskActor(task : Task) extends WorkerTrait{
   def handleGetTask() = {
     log.debug(s"received GetTask and I am not taken! - sending SendTask to ${sender().path.toString}")
     isTaken = true
-    val executor = sender() ? SendTask(task)
+    val executor = sender() ? SendTask(task, self)
     executor.onComplete{
       case Success(target : AcquireExecutor) => {
         log.debug("received vmInfo - now creating Executor")
@@ -128,14 +130,14 @@ class TaskActor(task : Task) extends WorkerTrait{
             // updating database
             context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING)
           }
-          case Failure(_) => {
+          case scala.util.Failure(_) => {
             log.error("could not get an executor - sending CannotGetExecutor to targetVm and goind back to isTaken = false")
             targetVm ! CannotGetExecutor
             isTaken = false
           }
         }
       }
-      case Failure(exception) => {
+      case scala.util.Failure(exception) => {
         log.error("did not receive vmInfos - going back to isTaken = false")
         isTaken = false
       }

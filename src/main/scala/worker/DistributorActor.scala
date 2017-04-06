@@ -1,8 +1,11 @@
 package worker
-import akka.actor.Props
+import akka.actor.{ActorRef, Props, Terminated}
 import worker.messages.{AddTask, GetTask, HasTask, NoMoreTasks}
+import scala.concurrent.duration._
 
 class DistributorActor extends WorkerTrait{
+
+  var childrenTuple : List[(ActorRef, Class[_])] = List.empty
 
   override def preStart(): Unit = {
     super.preStart()
@@ -17,12 +20,8 @@ class DistributorActor extends WorkerTrait{
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
-    case HasTask => hasTask()
+    case t : Terminated => childrenTuple = childrenTuple.filter(a => a._1 != t.actor)
     case a => log.warning(s"received unexpected message: $a")
-  }
-
-  def hasTask(): Unit ={
-    
   }
 
   def addTask(msg : AddTask) = {
@@ -31,11 +30,18 @@ class DistributorActor extends WorkerTrait{
       case Some(child) => child ! msg
       case None => {
         msg.task.singleInstance match {
-          case false => context.actorOf(Props(classOf[GroupActor], msg.group.take(1)), api) ! msg
-          case true => context.actorOf(Props(classOf[SingleInstanceActor], msg.group.take(1)), api) ! msg
+          case false => createChild(classOf[GroupActor], msg.group.take(1), api) ! msg
+          case true => createChild(classOf[SingleInstanceActor], msg.group.take(1), api) ! msg
         }
       }
     }
+  }
+
+  def createChild(classToCreate : Class[_], group : List[String], name : String) : ActorRef = {
+    val ref : ActorRef = context.actorOf(Props(classToCreate, group), name)
+    childrenTuple = (ref, classToCreate) :: childrenTuple
+    context.watch(ref)
+    ref
   }
 
   def getTask(msg : GetTask) = {
@@ -44,6 +50,7 @@ class DistributorActor extends WorkerTrait{
       sender() ! NoMoreTasks
     }
     log.debug(s"received getTask - forwarding (have children: ${context.children.size})")
-    context.children.foreach(u => u forward msg)
+    context.actorOf(Props(classOf[TaskAggregator], childrenTuple.sortBy(a => a._2 == classOf[SingleInstanceActor]).map(a => a._1), 1.second), s"FROM_DISTRIBUTOR-${new java.util.Random().nextLong()}") forward msg
+    //context.children.foreach(u => u forward msg)
   }
 }

@@ -6,7 +6,7 @@ import com.typesafe.config.ConfigFactory
 import utils.db.{CreateTask, DBActor}
 import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor, PrivateMethodExposer}
 import worker.messages.{AddTask, Task}
-import worker.{DistributorActor, TestVMNodesActor}
+import worker.{DistributorActor, InstanceActor, TestVMNodesActor}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
@@ -51,7 +51,8 @@ object ClusterMain extends App{
         Cluster(system).join(Address("akka.tcp", "the-cluster", localIp, 2550))
         println(s"Cluster created! Seed node IP is $localIp")
 
-        val distributorActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
+        //val distributorActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
+        val instanceActor : ActorRef = system.actorOf(Props[InstanceActor], "instances")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
         val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
 
@@ -70,7 +71,7 @@ object ClusterMain extends App{
             singleInstance = false
 
           // Add Task to dependency tree
-          distributorActor ! AddTask(instanceId, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
+          instanceActor ! AddTask(instanceId, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
 
           // Add Task to Database
           dBActor ! CreateTask(s"${a.classname}.${a.methodname}")
