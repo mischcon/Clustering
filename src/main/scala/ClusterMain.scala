@@ -65,7 +65,7 @@ object ClusterMain extends App{
           distributorActor ! AddTask(a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
 
           // Add Task to Database
-          dBActor ! CreateTask(s"${a.classname}.${a.methodname}")
+          // TODO: tableName dBActor ! CreateTask(s"${a.classname}.${a.methodname}")
         }
 
         val testVMNodesActor : ActorRef = system.actorOf(Props(classOf[TestVMNodesActor], null), "vmActor")

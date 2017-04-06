@@ -45,7 +45,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   def handleSuccess(task : Task, result : Object, source : ActorRef): Unit ={
     /* DB Actor + write */
     log.debug("writing SUCCESS result to db")
-    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null)
+    // TODO: tableName dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null)
 
     taskActors = taskActors.filter(x => x != source)
   }
@@ -53,7 +53,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   def handleFailure(task : Task, result : Throwable, source : ActorRef): Unit = {
     /* DB Actor + write */
     log.debug(s"writing FAILURE result to db")
-    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.FAILURE, result.getCause.toString)
+    // TODO: tableName dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.FAILURE, result.getCause.toString)
 
     taskActors = taskActors.filter(x => x != source)
 
