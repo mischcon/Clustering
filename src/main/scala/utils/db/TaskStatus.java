@@ -19,8 +19,7 @@ public enum TaskStatus {
         this.status = status;
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return status;
     }
 }

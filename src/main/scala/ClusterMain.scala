@@ -2,6 +2,7 @@ import java.net.NetworkInterface
 
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster
+import clustering.ClusterType
 import com.typesafe.config.ConfigFactory
 import utils.db.{CreateTask, DBActor}
 import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor, PrivateMethodExposer}

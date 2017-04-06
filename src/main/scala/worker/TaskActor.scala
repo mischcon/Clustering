@@ -60,7 +60,7 @@ class TaskActor(task : Task) extends WorkerTrait{
     case t : Terminated => handleTermianted(t)
     case a : PersistAndSuicide => {
       log.debug("received PersistAndSuicide")
-      context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}")
+      // TODO: tableName context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}")
       context.stop(self)
     }
   }
@@ -92,7 +92,7 @@ class TaskActor(task : Task) extends WorkerTrait{
       targetVm = null
 
       // updating database
-      context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED)
+      // TODO: tableName context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED)
     }
   }
 
@@ -126,7 +126,7 @@ class TaskActor(task : Task) extends WorkerTrait{
             executorActor ! ExecuteTask(task, target.vmInfo)
 
             // updating database
-            context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING)
+            // TODO: tableName context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING)
           }
           case Failure(_) => {
             log.error("could not get an executor - sending CannotGetExecutor to targetVm and goind back to isTaken = false")

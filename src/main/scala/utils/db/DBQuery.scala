@@ -3,18 +3,42 @@ package utils.db
 import java.sql.{Connection, PreparedStatement, Types}
 
 trait DBQuery {
+  val table : String
   def perform(connection: Connection) : Any
 }
 
-class DBCountTaskStatus extends DBQuery {
+class DBCreateTasksTable(tableName : String) extends DBQuery {
+  override val table: String = tableName
+  override def perform(connection: Connection): Unit = {
+    val sql =
+      s"CREATE TABLE $tableName ( " +
+       "id            INT(11)      NOT NULL AUTO_INCREMENT, " +
+       "method        VARCHAR(128) NOT NULL, " +
+      s"task_status   VARCHAR(16)  NOT NULL DEFAULT '${TaskStatus.NOT_STARTED}', " +
+       "end_state     VARCHAR(16), " +
+       "task_result   VARCHAR(2048), " +
+       "PRIMARY KEY (id), " +
+       "UNIQUE KEY method_UQ (method), " +
+       "CONSTRAINT check_task_status CHECK (task_status IN (" +
+      s"'${TaskStatus.NOT_STARTED}', '${TaskStatus.RUNNING}', '${TaskStatus.DONE}')), " +
+       "CONSTRAINT check_end_state CHECK (end_state IN (" +
+      s"NULL, '${EndState.SUCCESS}', '${EndState.FAILURE}', '${EndState.ABANDONED}', '${EndState.ERROR}')));"
+    val statement : PreparedStatement = connection.prepareStatement(sql)
+    val result = statement.executeUpdate()
+    println(s"[DB]: '$tableName' table created")
+  }
+}
+
+class DBCountTaskStatus(tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection: Connection): CountedTaskStatus = {
     val sql =
       s"SELECT '${TaskStatus.NOT_STARTED}' AS task_status, COALESCE(COUNT(*), 0) AS amount " +
-      s"FROM tasks WHERE task_status = '${TaskStatus.NOT_STARTED}' UNION ALL " +
+      s"FROM $tableName WHERE task_status = '${TaskStatus.NOT_STARTED}' UNION ALL " +
       s"SELECT '${TaskStatus.RUNNING}' AS task_status, COALESCE(COUNT(*), 0) AS amount " +
-      s"FROM tasks WHERE task_status = '${TaskStatus.RUNNING}' UNION ALL " +
+      s"FROM $tableName WHERE task_status = '${TaskStatus.RUNNING}' UNION ALL " +
       s"SELECT '${TaskStatus.DONE}' AS task_status, COALESCE(COUNT(*), 0) AS amount " +
-      s"FROM tasks WHERE task_status = '${TaskStatus.DONE}';"
+      s"FROM $tableName WHERE task_status = '${TaskStatus.DONE}';"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     val resultSet = statement.executeQuery()
     var result = Map[TaskStatus, Int]()
@@ -23,40 +47,48 @@ class DBCountTaskStatus extends DBQuery {
       val amount = resultSet.getInt("amount")
       result += (task_status -> amount)
     }
-    for ((task_status, amount) <- result) println(s"[DB]: $task_status - $amount")
+    for ((task_status, amount) <- result)
+      println(s"[DB]: $task_status - $amount")
     CountedTaskStatus(result)
   }
 }
 
-class DBCountEndState extends DBQuery {
+class DBCountEndState(tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection: Connection): CountedEndState = {
     val sql =
       "SELECT end_state, COALESCE(COUNT(*), 0) AS amount " +
-      s"FROM tasks WHERE end_state IS NULL UNION ALL " +
+      s"FROM $tableName WHERE end_state IS NULL UNION ALL " +
       s"SELECT '${EndState.SUCCESS}' AS end_state, COALESCE(COUNT(*), 0) AS amount " +
-      s"FROM tasks WHERE end_state = '${EndState.SUCCESS}' UNION ALL " +
+      s"FROM $tableName WHERE end_state = '${EndState.SUCCESS}' UNION ALL " +
       s"SELECT '${EndState.FAILURE}' AS end_state, COALESCE(COUNT(*), 0) AS amount " +
-      s"FROM tasks WHERE end_state = '${EndState.FAILURE}' UNION ALL " +
+      s"FROM $tableName WHERE end_state = '${EndState.FAILURE}' UNION ALL " +
+      s"SELECT '${EndState.ABANDONED}' AS end_state, COALESCE(COUNT(*), 0) AS amount " +
+      s"FROM $tableName WHERE end_state = '${EndState.ABANDONED}' UNION ALL " +
       s"SELECT '${EndState.ERROR}' AS end_state, COALESCE(COUNT(*), 0) AS amount " +
-      s"FROM tasks WHERE end_state = '${EndState.ERROR}';"
+      s"FROM $tableName WHERE end_state = '${EndState.ERROR}';"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     val resultSet = statement.executeQuery()
     var result = Map[EndState, Int]()
     while (resultSet.next()) {
       val end_state =
-        if (resultSet.getString("end_state") == null) EndState.NONE
-        else EndState.valueOf(resultSet.getString("end_state"))
+        if (resultSet.getString("end_state") == null)
+          EndState.NONE
+        else
+          EndState.valueOf(resultSet.getString("end_state"))
       val amount = resultSet.getInt("amount")
       result += (end_state -> amount)
     }
-    for ((end_state, amount) <- result) println(s"[DB]: $end_state - $amount")
+    for ((end_state, amount) <- result)
+      println(s"[DB]: $end_state - $amount")
     CountedEndState(result)
   }
 }
 
-class DBCreateTask(method : String) extends DBQuery {
+class DBCreateTask(method : String, tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
-    val sql = "INSERT INTO tasks (method) VALUES (?);"
+    val sql = s"INSERT INTO $tableName (method) VALUES (?);"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     statement.setString(1, method)
     val result = statement.executeUpdate()
@@ -65,22 +97,25 @@ class DBCreateTask(method : String) extends DBQuery {
   }
 }
 
-class DBCreateTasks(methods : List[String]) extends DBQuery {
+class DBCreateTasks(methods : List[String], tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
-    var sql = "INSERT INTO tasks (method) VALUES ("
+    var sql = s"INSERT INTO $tableName (method) VALUES ("
     for (i <- 1 to methods.size) sql += "?), ("
     sql = sql.dropRight(3) + ";"
     val statement : PreparedStatement = connection.prepareStatement(sql)
-    for (i <- 1 to methods.size) statement.setString(i, methods(i - 1))
+    for (i <- 1 to methods.size)
+      statement.setString(i, methods(i - 1))
     val result = statement.executeUpdate()
     assert(result equals methods.size)
     println(s"[DB]: ${methods.size} tasks created")
   }
 }
 
-class DBGetTask(method : String) extends DBQuery {
+class DBGetTask(method : String, tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Option[RequestedTask] = {
-    val sql = "SELECT * FROM tasks WHERE method = ?;"
+    val sql = s"SELECT * FROM $tableName WHERE method = ?;"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     statement.setString(1, method)
     val resultSet = statement.executeQuery()
@@ -93,8 +128,10 @@ class DBGetTask(method : String) extends DBQuery {
       while (resultSet.next()) {
         val task_status = TaskStatus.valueOf(resultSet.getString("task_status"))
         val end_state =
-          if (resultSet.getString("end_state") == null) EndState.NONE
-          else EndState.valueOf(resultSet.getString("end_state"))
+          if (resultSet.getString("end_state") == null)
+            EndState.NONE
+          else
+            EndState.valueOf(resultSet.getString("end_state"))
         val task_result = resultSet.getString("task_result")
         task = RequestedTask(method, task_status, end_state, task_result)
       }
@@ -104,13 +141,16 @@ class DBGetTask(method : String) extends DBQuery {
   }
 }
 
-class DBGetTasks(methods : List[String]) extends DBQuery {
+class DBGetTasks(methods : List[String], tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Option[List[RequestedTask]] = {
-    var sql = "SELECT * FROM tasks WHERE method IN ("
-    for (i <- 1 to methods.size) sql += "?, "
+    var sql = s"SELECT * FROM $tableName WHERE method IN ("
+    for (i <- 1 to methods.size)
+      sql += "?, "
     sql = sql.dropRight(2) + ");"
     val statement : PreparedStatement = connection.prepareStatement(sql)
-    for (i <- 1 to methods.size) statement.setString(i, methods(i - 1))
+    for (i <- 1 to methods.size)
+      statement.setString(i, methods(i - 1))
     val resultSet = statement.executeQuery()
     if (!resultSet.isBeforeFirst) {
       println(s"[DB]: no tasks found")
@@ -122,8 +162,10 @@ class DBGetTasks(methods : List[String]) extends DBQuery {
         val method = resultSet.getString("method")
         val task_status = TaskStatus.valueOf(resultSet.getString("task_status"))
         val end_state =
-          if (resultSet.getString("end_state") == null) EndState.NONE
-          else EndState.valueOf(resultSet.getString("end_state"))
+          if (resultSet.getString("end_state") == null)
+            EndState.NONE
+          else
+            EndState.valueOf(resultSet.getString("end_state"))
         val task_result = resultSet.getString("task_result")
         taskList = RequestedTask(method, task_status, end_state, task_result) :: taskList
       }
@@ -134,9 +176,10 @@ class DBGetTasks(methods : List[String]) extends DBQuery {
   }
 }
 
-class DBGetTasksWithStatus(task_status : TaskStatus) extends DBQuery {
+class DBGetTasksWithStatus(task_status : TaskStatus, tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Option[List[RequestedTask]] = {
-    val sql = s"SELECT * FROM tasks WHERE task_status = ?;"
+    val sql = s"SELECT * FROM $tableName WHERE task_status = ?;"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     statement.setString(1, task_status.toString)
     val resultSet = statement.executeQuery()
@@ -149,8 +192,10 @@ class DBGetTasksWithStatus(task_status : TaskStatus) extends DBQuery {
       while (resultSet.next()) {
         val method = resultSet.getString("method")
         val end_state =
-          if (resultSet.getString("end_state") == null) EndState.NONE
-          else EndState.valueOf(resultSet.getString("end_state"))
+          if (resultSet.getString("end_state") == null)
+            EndState.NONE
+          else
+            EndState.valueOf(resultSet.getString("end_state"))
         val task_result = resultSet.getString("task_result")
         taskList = RequestedTask(method, task_status, end_state, task_result) :: taskList
       }
@@ -161,13 +206,17 @@ class DBGetTasksWithStatus(task_status : TaskStatus) extends DBQuery {
   }
 }
 
-class DBUpdateTask(method : String, task_status: TaskStatus, end_state: EndState, task_result : String)
-  extends DBQuery {
+class DBUpdateTask(method : String, task_status: TaskStatus, end_state: EndState, task_result : String,
+                   tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
-    val sql : String = "UPDATE tasks SET task_status = ?, end_state = ?, task_result = ? WHERE method = ?;"
+    val sql = s"UPDATE $tableName SET task_status = ?, end_state = ?, task_result = ? WHERE method = ?;"
     val statement : PreparedStatement  = connection.prepareStatement(sql)
     statement.setString(1, task_status.toString)
-    if (end_state == EndState.NONE) statement.setNull(2, Types.VARCHAR) else statement.setString(2, end_state.toString)
+    if (end_state == EndState.NONE)
+      statement.setNull(2, Types.VARCHAR)
+    else
+      statement.setString(2, end_state.toString)
     statement.setString(3, task_result)
     statement.setString(4, method)
     val result = statement.executeUpdate()
@@ -176,26 +225,33 @@ class DBUpdateTask(method : String, task_status: TaskStatus, end_state: EndState
   }
 }
 
-class DBUpdateTasks(methods : List[String], task_status: TaskStatus, end_state: EndState, task_result : String)
-  extends DBQuery {
+class DBUpdateTasks(methods : List[String], task_status: TaskStatus, end_state: EndState, task_result : String,
+                    tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
-    var sql = "UPDATE tasks SET task_status = ?, end_state = ?, task_result = ? WHERE method IN ("
-    for (i <- 1 to methods.size) sql += "?, "
+    var sql = s"UPDATE $tableName SET task_status = ?, end_state = ?, task_result = ? WHERE method IN ("
+    for (i <- 1 to methods.size)
+      sql += "?, "
     sql = sql.dropRight(2) + ");"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     statement.setString(1, task_status.toString)
-    if (end_state == EndState.NONE) statement.setNull(2, Types.VARCHAR) else statement.setString(2, end_state.toString)
+    if (end_state == EndState.NONE)
+      statement.setNull(2, Types.VARCHAR)
+    else
+      statement.setString(2, end_state.toString)
     statement.setString(3, task_result)
-    for (i <- 1 to methods.size) statement.setString(3 + i, methods(i - 1))
+    for (i <- 1 to methods.size)
+      statement.setString(3 + i, methods(i - 1))
     val result = statement.executeUpdate()
     assert(result equals methods.size)
     println(s"[DB]: ${methods.size} tasks updated")
   }
 }
 
-class DBUpdateTaskStatus(method : String, task_status: TaskStatus) extends DBQuery {
+class DBUpdateTaskStatus(method : String, task_status: TaskStatus, tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
-    val sql = "UPDATE tasks SET task_status = ? WHERE method = ?;"
+    val sql = s"UPDATE $tableName SET task_status = ? WHERE method = ?;"
     val statement : PreparedStatement  = connection.prepareStatement(sql)
     statement.setString(1, task_status.toString)
     statement.setString(2, method)
@@ -205,23 +261,27 @@ class DBUpdateTaskStatus(method : String, task_status: TaskStatus) extends DBQue
   }
 }
 
-class DBUpdateTasksStatus(methods : List[String], task_status: TaskStatus) extends DBQuery {
+class DBUpdateTasksStatus(methods : List[String], task_status: TaskStatus, tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
-    var sql = "UPDATE tasks SET task_status = ? WHERE method IN ("
-    for (i <- 1 to methods.size) sql += "?, "
+    var sql = s"UPDATE $tableName SET task_status = ? WHERE method IN ("
+    for (i <- 1 to methods.size)
+      sql += "?, "
     sql = sql.dropRight(2) + ");"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     statement.setString(1, task_status.toString)
-    for (i <- 1 to methods.size) statement.setString(1 + i, methods(i - 1))
+    for (i <- 1 to methods.size)
+      statement.setString(1 + i, methods(i - 1))
     val result = statement.executeUpdate()
     assert(result equals methods.size)
     println(s"[DB]: ${methods.size} tasks updated")
   }
 }
 
-class DBDeleteTask(method : String) extends DBQuery {
+class DBDeleteTask(method : String, tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
-    val sql = "DELETE FROM tasks WHERE method = ?;"
+    val sql = s"DELETE FROM $tableName WHERE method = ?;"
     val statement : PreparedStatement  = connection.prepareStatement(sql)
     statement.setString(1, method.toString)
     val result = statement.executeUpdate()
@@ -230,13 +290,16 @@ class DBDeleteTask(method : String) extends DBQuery {
   }
 }
 
-class DBDeleteTasks(methods : List[String]) extends DBQuery {
+class DBDeleteTasks(methods : List[String], tableName : String) extends DBQuery {
+  override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
-    var sql = "DELETE FROM tasks WHERE method IN ("
-    for (i <- 1 to methods.size) sql += "?, "
+    var sql = s"DELETE FROM $tableName WHERE method IN ("
+    for (i <- 1 to methods.size)
+      sql += "?, "
     sql = sql.dropRight(2) + ");"
     val statement : PreparedStatement = connection.prepareStatement(sql)
-    for (i <- 1 to methods.size) statement.setString(i, methods(i - 1))
+    for (i <- 1 to methods.size)
+      statement.setString(i, methods(i - 1))
     val result = statement.executeUpdate()
     assert(result equals methods.size)
     println(s"[DB]: ${methods.size} tasks deleted")
