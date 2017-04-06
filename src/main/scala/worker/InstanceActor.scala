@@ -29,10 +29,6 @@ class InstanceActor extends Actor with ActorLogging{
 
   def handleGetTask(msg : GetTask): Unit = {
     // filter for version, then sort for instanceId
-    val candidates = instances.filter(a => a._3 == msg.version).sortBy(a => a._1)
-
-    for(a <- candidates){
-      // ask the instance if it still has tasks
-    }
+    instances.filter(a => a._3 == msg.version).sortBy(a => a._1).head._2 forward msg
   }
 }

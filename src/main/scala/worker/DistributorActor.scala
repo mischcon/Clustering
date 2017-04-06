@@ -40,8 +40,8 @@ class DistributorActor extends WorkerTrait{
 
   def getTask(msg : GetTask) = {
     if(context.children.isEmpty){
-      log.debug("No children present")
-      sender() ! NoMoreTasks
+      log.debug("No children present - stopping self")
+      context.stop(self)
     }
     log.debug(s"received getTask - forwarding (have children: ${context.children.size})")
     context.children.foreach(u => u forward msg)
