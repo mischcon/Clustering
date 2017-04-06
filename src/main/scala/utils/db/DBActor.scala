@@ -2,7 +2,7 @@ package utils.db
 
 import java.sql.{Connection, DatabaseMetaData, DriverManager, ResultSet}
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorLogging}
 import com.typesafe.config.ConfigFactory
 
 /**
@@ -23,25 +23,27 @@ import com.typesafe.config.ConfigFactory
   * }}}
   * All messages that are meant to be sent to this actor are of type [[utils.db.DBMessage]].
   */
-class DBActor extends Actor {
+class DBActor extends Actor with ActorLogging {
 
   /**
     * = Connects to the configured database =
     * Configuration is found @ ''application.conf'' @ section ''db''
     * @return [[java.sql.Connection]] Object or [[scala.None]]
     */
-  def connect: Option[Connection] = try {
-    val config = ConfigFactory.load("db.conf")
-    Class.forName(config.getString("db.driver"))
-    Some(DriverManager.getConnection(
-      config.getString("db.url"),
-      config.getString("db.username"),
-      config.getString("db.password")))
-  }
-  catch {
-    case e: Exception =>
-      println("[DBActor]: " + e.getMessage)
-      None
+  def connect: Option[Connection] = {
+    try {
+      val config = ConfigFactory.load("db.conf")
+      Class.forName(config.getString("db.driver"))
+      Some(DriverManager.getConnection(
+        config.getString("db.url"),
+        config.getString("db.username"),
+        config.getString("db.password")))
+    }
+    catch {
+      case e: Exception =>
+        log.error(e, "check db.conf")
+        None
+    }
   }
 
   /**
@@ -68,21 +70,15 @@ class DBActor extends Actor {
   def performQuery(query : DBQuery): Unit = {
     connect match {
       case Some(connection) =>
-        try {
-          if (!checkTableExistence(connection, query.table))
-            new DBCreateTasksTable(query.table).perform(connection)
-          query.perform(connection) match {
-            case ()  =>
-            case msg => sender() ! msg
-          }
+        if (!checkTableExistence(connection, query.table))
+          new DBCreateTasksTable(query.table).perform(connection)
+        query.perform(connection) match {
+          case ()  =>
+          case msg => sender() ! msg
         }
-        catch {
-          case e: Exception =>
-            println("[DBActor]: " + e.getMessage)
-        }
-        finally connection.close()
+        connection.close()
       case None =>
-        println("[DBActor]: could not connect")
+        log.info("could not connect")
     }
   }
 
@@ -242,6 +238,6 @@ class DBActor extends Actor {
     case DeleteTasks(methods, tableName) =>
       deleteTasks(methods, tableName)
     case msg =>
-      println(s"[DBActor]: I do not process messages of type $msg")
+      log.info(s"unknown message type : $msg")
   }
 }

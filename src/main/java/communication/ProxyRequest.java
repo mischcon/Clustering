@@ -61,7 +61,7 @@ public class ProxyRequest<T> {
             }
             */
             else {
-                System.out.println("unsupported request type : " + request.getClass());
+                System.err.println("[ProxyRequest]: unsupported request type : " + request.getClass());
             }
         }
     }
