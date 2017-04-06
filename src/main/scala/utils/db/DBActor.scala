@@ -57,8 +57,6 @@ class DBActor extends Actor {
     while (resultSet.next()) {
       if (resultSet.getString(3).equals(tableName))
         tableExists = true
-      else
-        tableExists = false
     }
     tableExists
   }
@@ -72,7 +70,7 @@ class DBActor extends Actor {
       case Some(connection) =>
         try {
           if (!checkTableExistence(connection, query.table))
-            //TODO: performQuery(new DBCreateTasksTable(query.table))
+            new DBCreateTasksTable(query.table).perform(connection)
           query.perform(connection) match {
             case ()  =>
             case msg => sender() ! msg

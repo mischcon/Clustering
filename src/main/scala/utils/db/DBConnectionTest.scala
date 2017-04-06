@@ -18,7 +18,7 @@ object DBConnectionTest extends App {
 
   val sys = ActorSystem("actor-system")
   val db = sys.actorOf(Props[DBActor], name="db-actor")
-  val tableName = "tasks_6"
+  val tableName = "tasks_8"
   val method = uuid
   db ! CreateTask(method, tableName)
 
@@ -77,8 +77,8 @@ object DBConnectionTest extends App {
   val result6 = Await.result(future6, timeout.duration).asInstanceOf[CountedEndState]
   println("[Future]: " + result6.result)
 
-//  db ! DeleteTask(method, tableName)
-//  db ! DeleteTasks(methods, tableName)
+  db ! DeleteTask(method, tableName)
+  db ! DeleteTasks(methods, tableName)
 
   db ! "TEST"
 }
