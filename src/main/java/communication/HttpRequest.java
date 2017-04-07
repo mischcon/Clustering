@@ -3,10 +3,12 @@ package communication;
 import com.google.gson.JsonObject;
 import org.apache.http.client.methods.HttpRequestBase;
 
+import java.io.Serializable;
+
 /**
  * <strong>Blueprint for CRUD requests</strong>
  */
-public abstract class HttpRequest {
+public abstract class HttpRequest implements Serializable{
     HttpRequestBase request;
     RequestMethod method;
     String url;

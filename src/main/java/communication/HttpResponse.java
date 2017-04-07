@@ -3,11 +3,12 @@ package communication;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 
 /**
  * <strong>Simplified wrapper class for {@link org.apache.http.HttpResponse}</strong>
  */
-public class HttpResponse {
+public class HttpResponse implements Serializable{
     /**
      * Original response class from {@link org.apache.http.impl.client.HttpClients}
      */

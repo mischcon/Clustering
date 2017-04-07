@@ -114,7 +114,7 @@ class VagrantPublicNetworkConfigBuilder extends VagrantNetworkConfigBuilder {
   private var useDhcpAssignedDefaultRoute: Boolean = _
   private var ip: String = _
   private var bridges: List[String] = List()
-  private var autoAonfig: Boolean = true
+  private var autoConfig: Boolean = true
 
   def withDhcp(dhcp: Boolean): VagrantPublicNetworkConfigBuilder = {
     this.dhcp = dhcp
@@ -136,8 +136,8 @@ class VagrantPublicNetworkConfigBuilder extends VagrantNetworkConfigBuilder {
     this
   }
 
-  def withAutoAonfig(autoAonfig: Boolean): VagrantPublicNetworkConfigBuilder = {
-    this.autoAonfig = autoAonfig
+  def withAutoConfig(autoConfig: Boolean): VagrantPublicNetworkConfigBuilder = {
+    this.autoConfig = autoConfig
     this
   }
   override def build: VagrantNetworkConfig = {
@@ -145,6 +145,6 @@ class VagrantPublicNetworkConfigBuilder extends VagrantNetworkConfigBuilder {
                                    useDhcpAssignedDefaultRoute = useDhcpAssignedDefaultRoute,
                                    ip = ip,
                                    bridges = bridges,
-                                   autoAonfig = autoAonfig)
+                                   autoConfig = autoConfig)
   }
 }

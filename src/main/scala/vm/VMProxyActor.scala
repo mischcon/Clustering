@@ -54,9 +54,15 @@ class VMProxyActor extends Actor with ActorLogging{
     case d : Integer =>
       sender() ! s"got an Integer : $d"
     case request : HttpRequest =>
+      log.debug("creating HttpClient")
       val client = HttpClientBuilder.create.build
-      val response = client.execute(request.asInstanceOf[HttpRequest].getRequest)
+      log.debug("getting response")
+      val req = request.getRequest
+      log.debug(s"request: $req")
+      val response = client.execute(req)
+      log.debug("parsing")
       val output = new HttpResponse(response)
+      log.debug("sending")
       sender() ! output
     case o =>
       sender() ! s"got an Object of class : ${o.getClass.getName}"

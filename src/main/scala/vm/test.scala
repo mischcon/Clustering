@@ -42,7 +42,7 @@ class test {
       .build)
     .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
       .createPublicNetworkConfig
-      .withAutoAonfig(true)
+      .withAutoConfig(true)
       .withDhcp(true)
       .withBridge("en0: Ethernet")
       .build)
@@ -95,7 +95,7 @@ class test {
       .build)
     .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
       .createPublicNetworkConfig
-      .withAutoAonfig(true)
+      .withAutoConfig(true)
       .withDhcp(true)
       .withBridge("en0: Ethernet")
       .build)
