@@ -2,7 +2,7 @@ package worker
 
 import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
-import worker.messages.{AddTask, GetTask, NoMoreTasks}
+import worker.messages._
 
 class InstanceActor extends Actor with ActorLogging{
 
@@ -20,6 +20,7 @@ class InstanceActor extends Actor with ActorLogging{
   override def receive: Receive = {
     case p : AddTask => handleAddTask(p)
     case p : GetTask => handleGetTask(p)
+    case GetDeployInfo => handleGetDeployInfo()
     case t : Terminated => instances = instances.filter(a => a._2 != t.actor)
   }
 
@@ -43,6 +44,15 @@ class InstanceActor extends Actor with ActorLogging{
       sender() ! NoMoreTasks
     } else {
       instances.filter(a => a._3 == msg.version).sortBy(a => a._1).head._2 forward msg
+    }
+  }
+
+  def handleGetDeployInfo() : Unit = {
+    if(instances.nonEmpty){
+      val info = instances.sortBy(a => a._1).head._3
+      sender() ! DeployInfo(info)
+    } else {
+      sender() ! NoDeployInfo
     }
   }
 }

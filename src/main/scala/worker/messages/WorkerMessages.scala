@@ -24,6 +24,11 @@ case object CannotGetExecutor extends WorkerMessagesTrait
 /* UTILITIES */
 case class PersistAndSuicide(reason : String) extends WorkerMessagesTrait
 
+/* DEPLOYMENT */
+case object GetDeployInfo extends WorkerMessagesTrait
+case class DeployInfo(deployInfo : Object) extends WorkerMessagesTrait
+case object NoDeployInfo extends WorkerMessagesTrait
+
 
 
 
