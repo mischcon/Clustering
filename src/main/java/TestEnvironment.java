@@ -19,7 +19,7 @@ public class TestEnvironment implements ClusteringTask {
             durationUnit= DurationUnit.SEC,
             expectedTraffic= TrafficLoad.MINOR)
     void testGet() {
-        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("[TestEnvironment]: " + new Object(){}.getClass().getEnclosingMethod().getName());
         JsonObject json = new JsonObject();
         json.addProperty("test", "get");
         HttpResponse response = (HttpResponse) request.getResponse(
@@ -27,7 +27,7 @@ public class TestEnvironment implements ClusteringTask {
                         .addParam("param_1", "1")
                         .addBody(json)
                         .addHeader("Content-Type", "application/json"));
-        System.out.println("response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println("[TestEnvironment]: response: " + response.getStatusCode() + "\n" + response.getBody());
     }
 
     @Clustering(
@@ -37,10 +37,10 @@ public class TestEnvironment implements ClusteringTask {
             durationUnit= DurationUnit.SEC,
             expectedTraffic= TrafficLoad.MINOR)
     void testUTF8() {
-        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("[TestEnvironment]: " + new Object(){}.getClass().getEnclosingMethod().getName());
         HttpResponse response = (HttpResponse) request.getResponse(
                 new GetRequest("https://httpbin.org/encoding/utf8"));
-        System.out.println("response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println("[TestEnvironment]: response: " + response.getStatusCode() + "\n" + response.getBody());
     }
 
     @Clustering(
@@ -50,22 +50,22 @@ public class TestEnvironment implements ClusteringTask {
             durationUnit= DurationUnit.SEC,
             expectedTraffic= TrafficLoad.MINOR)
     void testStatusCode() {
-        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("[TestEnvironment]: " + new Object(){}.getClass().getEnclosingMethod().getName());
         HttpResponse response = (HttpResponse) request.getResponse(
                 new GetRequest("https://httpbin.org/status/201"));
-        System.out.println("response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println("[TestEnvironment]: response: " + response.getStatusCode() + "\n" + response.getBody());
         response = (HttpResponse) request.getResponse(
                 new GetRequest("https://httpbin.org/status/204"));
-        System.out.println("response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println("[TestEnvironment]: response: " + response.getStatusCode() + "\n" + response.getBody());
         response = (HttpResponse) request.getResponse(
                 new GetRequest("https://httpbin.org/status/400"));
-        System.out.println("response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println("[TestEnvironment]: response: " + response.getStatusCode() + "\n" + response.getBody());
         response = (HttpResponse) request.getResponse(
                 new GetRequest("https://httpbin.org/status/418"));
-        System.out.println("response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println("[TestEnvironment]: response: " + response.getStatusCode() + "\n" + response.getBody());
         response = (HttpResponse) request.getResponse(
                 new GetRequest("https://httpbin.org/status/500"));
-        System.out.println("response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println("[TestEnvironment]: response: " + response.getStatusCode() + "\n" + response.getBody());
     }
 
     @Clustering(
@@ -75,7 +75,7 @@ public class TestEnvironment implements ClusteringTask {
             durationUnit= DurationUnit.SEC,
             expectedTraffic= TrafficLoad.MINOR)
     void testPost() {
-        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("[TestEnvironment]: " + new Object(){}.getClass().getEnclosingMethod().getName());
         JsonObject json = new JsonObject();
         json.addProperty("test", "post");
         HttpResponse response = (HttpResponse) request.getResponse(
@@ -83,7 +83,7 @@ public class TestEnvironment implements ClusteringTask {
                         .addParam("param_1", "1")
                         .addBody(json)
                         .addHeader("Content-Type", "application/json"));
-        System.out.println("response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println("[TestEnvironment]: response: " + response.getStatusCode() + "\n" + response.getBody());
     }
 
     @Clustering(
@@ -93,7 +93,7 @@ public class TestEnvironment implements ClusteringTask {
             durationUnit= DurationUnit.SEC,
             expectedTraffic= TrafficLoad.MINOR)
     void testPut() {
-        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("[TestEnvironment]: " + new Object(){}.getClass().getEnclosingMethod().getName());
         JsonObject json = new JsonObject();
         json.addProperty("test", "put");
         HttpResponse response = (HttpResponse) request.getResponse(
@@ -101,7 +101,7 @@ public class TestEnvironment implements ClusteringTask {
                         .addParam("param_1", "1")
                         .addBody(json)
                         .addHeader("Content-Type", "application/json"));
-        System.out.println("response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println("[TestEnvironment]: response: " + response.getStatusCode() + "\n" + response.getBody());
     }
 
     @Clustering(
@@ -112,7 +112,7 @@ public class TestEnvironment implements ClusteringTask {
             durationUnit= DurationUnit.SEC,
             expectedTraffic= TrafficLoad.MINOR)
     void testDelete() {
-        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("[TestEnvironment]: " + new Object(){}.getClass().getEnclosingMethod().getName());
         JsonObject json = new JsonObject();
         json.addProperty("test", "delete");
         HttpResponse response = (HttpResponse) request.getResponse(
@@ -120,7 +120,7 @@ public class TestEnvironment implements ClusteringTask {
                         .addParam("param_1", "1")
                         .addBody(json)
                         .addHeader("Content-Type", "application/json"));
-        System.out.println("response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println("[TestEnvironment]: response: " + response.getStatusCode() + "\n" + response.getBody());
     }
 
     @Clustering(
@@ -131,8 +131,8 @@ public class TestEnvironment implements ClusteringTask {
             durationUnit=DurationUnit.SEC,
             expectedTraffic=TrafficLoad.MINOR)
     void testCreateFile() {
-        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
-        System.out.println("response: " + request.getResponse("POST /nodes/files"));
+        System.out.println("[TestEnvironment]: " + new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("[TestEnvironment]: response: " + request.getResponse("POST /nodes/files"));
     }
 
     @Clustering(
@@ -143,8 +143,8 @@ public class TestEnvironment implements ClusteringTask {
             durationUnit=DurationUnit.MIN,
             expectedTraffic=TrafficLoad.MAJOR)
     void testUploadFile() {
-        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
-        System.out.println("response: " + request.getResponse("PUT /nodes/files/uploads"));
+        System.out.println("[TestEnvironment]: " + new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("[TestEnvironment]: response: " + request.getResponse("PUT /nodes/files/uploads"));
     }
 
     @Clustering(
@@ -155,8 +155,8 @@ public class TestEnvironment implements ClusteringTask {
             durationUnit=DurationUnit.MIN,
             expectedTraffic=TrafficLoad.MINOR)
     void testGetConfig() {
-        System.out.println(new Object(){}.getClass().getEnclosingMethod().getName());
-        System.out.println("response: " + request.getResponse("GET /config"));
+        System.out.println("[TestEnvironment]: " + new Object(){}.getClass().getEnclosingMethod().getName());
+        System.out.println("[TestEnvironment]: response: " + request.getResponse("GET /config"));
     }
 
     /**
@@ -172,10 +172,10 @@ public class TestEnvironment implements ClusteringTask {
             expectedTraffic=TrafficLoad.MINOR
     )
     public static class TestGroups {
-        void setup() { System.out.println("setup"); }
-        void teardown() { System.out.println("teardown"); }
-        void testGetGroup() { System.out.println("testGetGroup"); }
-        void testCreateGroup() { System.out.println("testCreateGroup"); }
-        void testDeleteGroup() { System.out.println("testDeleteGroup"); }
+        void setup() {}
+        void teardown() {}
+        void testGetGroup() {}
+        void testCreateGroup() {}
+        void testDeleteGroup() {}
     }
 }
