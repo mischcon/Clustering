@@ -55,7 +55,13 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
   def handleFailure(task : Task, result : Throwable, source : ActorRef): Unit = {
     /* DB Actor + write */
     log.debug(s"writing FAILURE result to db")
-    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.FAILURE, result.getCause.toString, tablename)
+    var res = result
+    var toWrite = null.asInstanceOf[String]
+    if(res.getCause != null)
+      res = res.getCause
+    if(res != null)
+      toWrite = res.toString
+    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.FAILURE, toWrite, tablename)
 
     taskActors = taskActors.filter(x => x != source)
 

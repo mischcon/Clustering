@@ -58,7 +58,7 @@ class VMProxyActor extends Actor with ActorLogging{
       val client = HttpClientBuilder.create.build
       log.debug("getting response")
       val req = request.getRequest
-      log.debug(s"request: $req")
+      log.debug(s"request: ${request.getUrl}")
       val response = client.execute(req)
       log.debug("parsing")
       val output = new HttpResponse(response)
