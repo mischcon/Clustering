@@ -7,6 +7,9 @@ scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits")
 javacOptions  in (Compile,doc) ++= Seq("-notimestamp", "-linksource")
 autoAPIMappings := true
 
+// The Typesafe repository
+resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+
 val akkaVersion = "2.4.17"
 val akkaHttpVersion = "10.0.5"
 val jrubyVersion = "9.1.8.+"
@@ -28,6 +31,9 @@ libraryDependencies ++= Seq(
 
   // logger
   "ch.qos.logback" % "logback-classic" % "1.2.2",
+
+  // play
+  "com.typesafe.play" %% "play" % "2.6.0-+",
 
   // akka
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
