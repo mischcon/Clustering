@@ -22,7 +22,7 @@ class TestVMNodesActor(vmInfo : Object) extends WorkerTrait{
   override def receive: Receive = {
     case "get" => {
       log.debug("sent GetTask to distributor")
-      context.system.actorSelection("/user/distributor") ! GetTask()
+      context.system.actorSelection("/user/instances") ! GetTask()
     }
     case t : SendTask if haveSpaceForTasks => {
       log.debug("received SendTask and I still have space for tasks!")
@@ -43,10 +43,10 @@ class TestVMNodesActor(vmInfo : Object) extends WorkerTrait{
       handleFailure()
     }
     case CannotGetExecutor => handleFailure()
-    case NoMoreTasks => {
-      log.debug("it seems as if there are no more tasks - shutting down self")
-      context.stop(self)
-    }
+//    case NoMoreTasks => {
+//      log.debug("it seems as if there are no more tasks - shutting down self")
+//      context.stop(self)
+//    }
     case a => log.error(s"received something unexpected: ${a}")
   }
 
