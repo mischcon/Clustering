@@ -1,8 +1,8 @@
 package worker
-import akka.actor.Props
+import akka.actor.{Props, Terminated}
 import worker.messages.{AddTask, GetTask, HasTask, NoMoreTasks}
 
-class DistributorActor(tablename : String) extends WorkerTrait{
+class DistributorActor extends WorkerTrait{
 
   override def preStart(): Unit = {
     super.preStart()
@@ -17,12 +17,8 @@ class DistributorActor(tablename : String) extends WorkerTrait{
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
-    case HasTask => hasTask()
+    case t : Terminated => if(context.children.isEmpty) context.stop(self)
     case a => log.warning(s"received unexpected message: $a")
-  }
-
-  def hasTask(): Unit ={
-    
   }
 
   def addTask(msg : AddTask) = {
@@ -31,11 +27,12 @@ class DistributorActor(tablename : String) extends WorkerTrait{
       case Some(child) => child ! msg
       case None => {
         msg.task.singleInstance match {
-          case false => context.actorOf(Props(classOf[GroupActor], msg.group.take(1), tablename), api) ! msg
-          case true => context.actorOf(Props(classOf[SingleInstanceActor], msg.group.take(1), tablename), api) ! msg
+          case false => context.actorOf(Props(classOf[GroupActor], msg.group.take(1), self.path.name), api) ! msg
+          case true => context.actorOf(Props(classOf[SingleInstanceActor], msg.group.take(1), self.path.name), api) ! msg
         }
       }
     }
+    context.children.foreach(x => context.watch(x))
   }
 
   def getTask(msg : GetTask) = {

@@ -2,10 +2,11 @@ package worker
 
 import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
-import worker.messages.{AddTask, GetTask}
+import worker.messages.{AddTask, GetTask, NoMoreTasks}
 
 class InstanceActor extends Actor with ActorLogging{
 
+  // InstanceID + Ref of child + Version
   var instances : List[(String, ActorRef, String)] = List.empty
 
   override def preStart(): Unit = {
@@ -27,7 +28,7 @@ class InstanceActor extends Actor with ActorLogging{
     context.child(msg.instanceId) match {
       case Some(child) => child ! msg
       case None => {
-        val ref = context.actorOf(Props[DistributorActor], msg.instanceId)
+        val ref = context.actorOf(Props(classOf[DistributorActor]), msg.instanceId)
         instances = (msg.instanceId, ref, msg.version) :: instances
         ref ! msg
 
@@ -37,7 +38,11 @@ class InstanceActor extends Actor with ActorLogging{
   }
 
   def handleGetTask(msg : GetTask): Unit = {
-    // filter for version, then sort for instanceId
-    instances.filter(a => a._3 == msg.version).sortBy(a => a._1).head._2 forward msg
+    if(!instances.exists(a => a._3 == msg.version)){
+      log.debug("No more tasks available")
+      sender() ! NoMoreTasks
+    } else {
+      instances.filter(a => a._3 == msg.version).sortBy(a => a._1).head._2 forward msg
+    }
   }
 }

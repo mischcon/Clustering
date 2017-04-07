@@ -90,8 +90,6 @@ object ClusterMain extends App{
 
         testVMNodesActor ! "get"
 
-        /* END TEST PURPOSE */
-
         println("Press any key to stop...")
         StdIn.readLine()
         println("Shutting down the Cluster...")
