@@ -63,7 +63,7 @@ object ClusterMain extends App{
         val loader : TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
         val testMethods = loader.getClassClusterMethods
 
-        val instanceIds : List[String] = List("INSTANCE_ID_1", "INSTANCE_ID_2")
+        val instanceIds : List[String] = List("INSTANCE_ID_1")//, "INSTANCE_ID_2")
         // Add Tasks
         for(id <- instanceIds) {
           for (a <- testMethods.asScala.toList) {
@@ -80,7 +80,7 @@ object ClusterMain extends App{
           }
         }
 
-        val testVMNodesActor : ActorRef = system.actorOf(Props(classOf[TestVMNodesActor], null), "vmActor")
+        val testVMNodesActor : ActorRef = system.actorOf(Props[vm.VMProxyActor], "vmActor")
 
         Thread.sleep(500)
         println(new PrivateMethodExposer(system)('printTree)())

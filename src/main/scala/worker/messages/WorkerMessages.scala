@@ -18,7 +18,7 @@ case object InUse extends WorkerMessagesTrait
 /* EXECUTORS */
 case class AcquireExecutor(vmInfo : Object, vmActorRef : ActorRef) extends WorkerMessagesTrait
 case class Executor(ref : ActorRef) extends WorkerMessagesTrait
-case class ExecuteTask(task : Task, vmInfo : Object) extends WorkerMessagesTrait
+case class ExecuteTask(task: Task, targetVM: ActorRef) extends WorkerMessagesTrait
 case object CannotGetExecutor extends WorkerMessagesTrait
 
 /* UTILITIES */

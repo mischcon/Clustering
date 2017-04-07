@@ -123,7 +123,7 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
             targetVm ! Executor(executorActor)
 
             log.debug("sending ExecuteTask to EXECUTOR")
-            executorActor ! ExecuteTask(task, target.vmInfo)
+            executorActor ! ExecuteTask(task, target.vmActorRef)
 
             // updating database
             context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING, tablename)
