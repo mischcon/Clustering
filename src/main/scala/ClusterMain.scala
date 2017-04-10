@@ -1,4 +1,5 @@
 import java.net.NetworkInterface
+import de.oth.clustering.java._
 
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster

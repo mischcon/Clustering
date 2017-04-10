@@ -1,3 +1,5 @@
+package de.oth.clustering.java;
+
 import clustering.Clustering;
 
 import java.io.ByteArrayInputStream;
