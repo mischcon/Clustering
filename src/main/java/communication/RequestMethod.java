@@ -1,5 +1,7 @@
 package communication;
 
+import java.io.Serializable;
+
 /**
  * <strong>HTTP request methods</strong>
  * <ul>
@@ -17,7 +19,7 @@ package communication;
  *     </li>
  * </ul>
  */
-public enum RequestMethod {
+public enum RequestMethod implements Serializable {
     GET("GET"),
     POST("POST"),
     PUT("PUT"),

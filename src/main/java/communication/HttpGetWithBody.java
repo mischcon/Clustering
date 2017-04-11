@@ -1,12 +1,14 @@
 package communication;
 
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+
+import java.io.Serializable;
 import java.net.URI;
 
 /**
  * <strong>HTTP GET request w/ the opportunity of setting body</strong>
  */
-class HttpGetWithBody extends HttpEntityEnclosingRequestBase {
+class HttpGetWithBody extends HttpEntityEnclosingRequestBase implements Serializable{
     public static final String METHOD_NAME = RequestMethod.GET.toString();
 
     public String getMethod() {

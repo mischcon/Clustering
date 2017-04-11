@@ -12,7 +12,6 @@ import vm.vagrant.configuration.Service
 import vm.vagrant.configuration.Service.Service
 
 import scala.concurrent.Future
-
 /**
   * Created by mischcon on 3/20/17.
   */

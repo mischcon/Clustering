@@ -18,14 +18,14 @@ object DBConnectionTest extends App {
 
   val sys = ActorSystem("actor-system")
   val db = sys.actorOf(Props[DBActor], name="db-actor")
-
+  val tableName = "tasks"
   val method = uuid
-  db ! CreateTask(method)
+  db ! CreateTask(method, tableName)
 
   val methods = List(uuid, uuid, uuid)
-  db ! CreateTasks(methods)
+  db ! CreateTasks(methods, tableName)
 
-  val future1 = db ? GetTask(method)
+  val future1 = db ? GetTask(method, tableName)
   val result1 = Await.result(future1, timeout.duration).asInstanceOf[Option[RequestedTask]]
   result1 match {
     case Some(task) =>
@@ -34,7 +34,7 @@ object DBConnectionTest extends App {
       println("[Future]: no result")
   }
 
-  val future2 = db ? GetTasks(methods)
+  val future2 = db ? GetTasks(methods, tableName)
   val result2 = Await.result(future2, timeout.duration).asInstanceOf[Option[List[RequestedTask]]]
   result2 match {
     case Some(tasks) =>
@@ -44,7 +44,7 @@ object DBConnectionTest extends App {
       println("[Future]: no result")
   }
 
-  val future3 = db ? GetTasksWithStatus(TaskStatus.NOT_STARTED)
+  val future3 = db ? GetTasksWithStatus(TaskStatus.NOT_STARTED, tableName)
   val result3 = Await.result(future3, timeout.duration).asInstanceOf[Option[List[RequestedTask]]]
   result3 match {
     case Some(tasks) =>
@@ -54,12 +54,12 @@ object DBConnectionTest extends App {
       println("[Future]: no result")
   }
 
-  db ! UpdateTask(method, TaskStatus.DONE, EndState.SUCCESS, "HTTP Response 200")
-  db ! UpdateTasks(methods, TaskStatus.DONE, EndState.SUCCESS, "HTTP Response 201")
-  db ! UpdateTaskStatus(method, TaskStatus.RUNNING)
-  db ! UpdateTasksStatus(methods, TaskStatus.RUNNING)
+  db ! UpdateTask(method, TaskStatus.DONE, EndState.SUCCESS, "HTTP Response 200", tableName)
+  db ! UpdateTasks(methods, TaskStatus.DONE, EndState.SUCCESS, "HTTP Response 201", tableName)
+  db ! UpdateTaskStatus(method, TaskStatus.RUNNING, tableName)
+  db ! UpdateTasksStatus(methods, TaskStatus.RUNNING, tableName)
 
-  val future4 = db ? GetTasks(method :: methods)
+  val future4 = db ? GetTasks(method :: methods, tableName)
   val result4 = Await.result(future4, timeout.duration).asInstanceOf[Option[List[RequestedTask]]]
   result4 match {
     case Some(tasks) =>
@@ -69,16 +69,16 @@ object DBConnectionTest extends App {
       println("[Future]: no result")
   }
 
-  val future5 = db ? CountTaskStatus
+  val future5 = db ? CountTaskStatus(tableName)
   val result5 = Await.result(future5, timeout.duration).asInstanceOf[CountedTaskStatus]
   println("[Future]: " + result5.result)
 
-  val future6 = db ? CountEndState
+  val future6 = db ? CountEndState(tableName)
   val result6 = Await.result(future6, timeout.duration).asInstanceOf[CountedEndState]
   println("[Future]: " + result6.result)
 
-  db ! DeleteTask(method)
-  db ! DeleteTasks(methods)
+  db ! DeleteTask(method, tableName)
+  db ! DeleteTasks(methods, tableName)
 
   db ! "TEST"
 }

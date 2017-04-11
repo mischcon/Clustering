@@ -4,14 +4,15 @@ import Exceptions.{TestFailException, TestSuccessException}
 import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{ActorRef, ActorSelection, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.util.Timeout
+import akka.pattern._
 import utils.db.{EndState, TaskStatus, UpdateTask}
 import worker.messages._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.Random
 
-abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
+abstract class SubWorkerActor(var group : List[String], tablename : String) extends WorkerTrait{
 
   implicit val timeout = Timeout(1 seconds)
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
@@ -22,6 +23,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
+    case HasTask => taskActors.foreach(t => t forward HasTask)
     case t : Terminated => check_suicide()
     case x : PersistAndSuicide => {
       taskActors = List.empty
@@ -45,7 +47,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   def handleSuccess(task : Task, result : Object, source : ActorRef): Unit ={
     /* DB Actor + write */
     log.debug("writing SUCCESS result to db")
-    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null)
+    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null, tablename)
 
     taskActors = taskActors.filter(x => x != source)
   }
@@ -53,7 +55,13 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   def handleFailure(task : Task, result : Throwable, source : ActorRef): Unit = {
     /* DB Actor + write */
     log.debug(s"writing FAILURE result to db")
-    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.FAILURE, result.getCause.toString)
+    var res = result
+    var toWrite = null.asInstanceOf[String]
+    if(res.getCause != null)
+      res = res.getCause
+    if(res != null)
+      toWrite = res.toString
+    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.FAILURE, toWrite, tablename)
 
     taskActors = taskActors.filter(x => x != source)
 
@@ -80,12 +88,12 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
         case None => {
           msg.task.singleInstance match {
             case false => {
-              val ref = context.actorOf(Props(classOf[GroupActor], name), name.mkString("."))
+              val ref = context.actorOf(Props(classOf[GroupActor], name, tablename), name.mkString("."))
               ref ! msg
               context.watch(ref)
             }
             case true => {
-              val ref = context.actorOf(Props(classOf[SingleInstanceActor], name), name.mkString("."))
+              val ref = context.actorOf(Props(classOf[SingleInstanceActor], name, tablename), name.mkString("."))
               ref ! msg
               context.watch(ref)
             }
@@ -96,7 +104,7 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
     // or create new TaskActor
     else {
       log.debug(s"task was added to ${self.path.name}")
-      val ref = context.actorOf(Props(classOf[TaskActor], msg.task), s"TASK-${msg.task.method}-${new Random().nextLong()}")
+      val ref = context.actorOf(Props(classOf[TaskActor], msg.task, tablename), s"TASK-${msg.task.method}-${new Random().nextLong()}")
       context.watch(ref)
       taskActors = ref :: taskActors
     }
@@ -126,5 +134,5 @@ abstract class SubWorkerActor(var group : List[String]) extends WorkerTrait{
   }
 }
 
-class GroupActor(group : List[String]) extends SubWorkerActor(group)
-class SingleInstanceActor(group : List[String]) extends SubWorkerActor(group)
+class GroupActor(group : List[String], tablename : String) extends SubWorkerActor(group, tablename)
+class SingleInstanceActor(group : List[String], tablename : String) extends SubWorkerActor(group, tablename)

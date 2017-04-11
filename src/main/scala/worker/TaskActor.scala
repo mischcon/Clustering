@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success}
 
-class TaskActor(task : Task) extends WorkerTrait{
+class TaskActor(task : Task, tablename : String) extends WorkerTrait{
 
   var isTaken : Boolean = false
   var taskDone : Boolean = false
@@ -56,10 +56,11 @@ class TaskActor(task : Task) extends WorkerTrait{
 
   override def receive: Receive = {
     case p : GetTask if ! isTaken => handleGetTask()
+    case p : GetTask if isTaken => sender() ! InUse
     case t : Terminated => handleTermianted(t)
     case a : PersistAndSuicide => {
       log.debug("received PersistAndSuicide")
-      context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}")
+      context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}", tablename)
       context.stop(self)
     }
   }
@@ -91,7 +92,7 @@ class TaskActor(task : Task) extends WorkerTrait{
       targetVm = null
 
       // updating database
-      context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED)
+      context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, tablename)
     }
   }
 
@@ -122,10 +123,10 @@ class TaskActor(task : Task) extends WorkerTrait{
             targetVm ! Executor(executorActor)
 
             log.debug("sending ExecuteTask to EXECUTOR")
-            executorActor ! ExecuteTask(task, target.vmInfo)
+            executorActor ! ExecuteTask(task, target.vmActorRef)
 
             // updating database
-            context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING)
+            context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING, tablename)
           }
           case Failure(_) => {
             log.error("could not get an executor - sending CannotGetExecutor to targetVm and goind back to isTaken = false")

@@ -38,7 +38,6 @@ class test {
       .withHostIp("127.0.0.1")
       .withHostPort(1337)
       .withProtocol(Protocol.tcp)
-      .withService(Service.http)
       .build)
     .withVagrantSyncedFoldersConfig(VagrantSyncedFoldersConfigBuilder
       .createVirtualBoxConfig
