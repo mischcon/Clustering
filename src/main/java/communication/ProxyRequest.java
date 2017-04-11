@@ -44,14 +44,37 @@ public class ProxyRequest<T> implements Serializable {
             this.future = Patterns.ask(vmProxy, request, timeout);
         }
         else {
-            if (request instanceof HttpRequest) {
-                CloseableHttpClient client;
-                CloseableHttpResponse response;
+            if (request instanceof RestApiRequest) {
                 try {
-                    client = HttpClientBuilder.create().build();
-                    response = client.execute(((HttpRequest) request).getRequest());
-                    this.response = new communication.HttpResponse(response);
-                    response.close();
+                    CloseableHttpClient client = HttpClientBuilder.create().build();
+                    CloseableHttpResponse response = null;
+                    switch (((RestApiRequest) request).getMethod()) {
+                        case "GET":
+                            GetRequest httpGet = new GetRequest((RestApiRequest) request);
+                            response = client.execute(httpGet.getRequest());
+                            this.response = new RestApiResponse(response);
+                            response.close();
+                            break;
+                        case "POST":
+                            PostRequest httpPost = new PostRequest((RestApiRequest) request);
+                            response = client.execute(httpPost.getRequest());
+                            this.response = new RestApiResponse(response);
+                            response.close();
+                            break;
+                        case "PUT":
+                            PutRequest httpPut = new PutRequest((RestApiRequest) request);
+                            response = client.execute(httpPut.getRequest());
+                            this.response = new RestApiResponse(response);
+                            response.close();
+                            break;
+                        case "DELETE":
+                            DeleteRequest httpDelete = new DeleteRequest((RestApiRequest) request);
+                            response = client.execute(httpDelete.getRequest());
+                            this.response = new RestApiResponse(response);
+                            response.close();
+                            break;
+                        default: break;
+                    }
                     client.close();
                 } catch (IOException e) {
                     e.printStackTrace();

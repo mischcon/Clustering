@@ -1,5 +1,6 @@
-package communication;
+package communication.util;
 
+import communication.RequestMethod;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpRequestBase;
 
@@ -7,22 +8,22 @@ import java.io.Serializable;
 import java.net.URI;
 
 /**
- * <strong>HTTP GET request w/ the opportunity of setting body</strong>
+ * <strong>HTTP DELETE request w/ the opportunity of setting body</strong>
  */
-class HttpGetWithBody extends HttpEntityEnclosingRequestBase implements Serializable {
-    static final RequestMethod METHOD_NAME = RequestMethod.GET;
+public class HttpDeleteWithBody extends HttpEntityEnclosingRequestBase implements Serializable {
+    static final RequestMethod METHOD_NAME = RequestMethod.DELETE;
     private URI uri;
 
-    public HttpGetWithBody() {
+    public HttpDeleteWithBody() {
         super();
     }
 
-    public HttpGetWithBody(final String uri) {
+    public HttpDeleteWithBody(final String uri) {
         super();
         setURI(URI.create(uri));
     }
 
-    public HttpGetWithBody(final URI uri) {
+    public HttpDeleteWithBody(final URI uri) {
         super();
         setURI(uri);
     }

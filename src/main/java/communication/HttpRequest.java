@@ -9,10 +9,8 @@ import java.io.*;
  * <strong>Blueprint for CRUD requests</strong>
  */
 public abstract class HttpRequest implements Serializable {
-    HttpEntityEnclosingRequestBase request;
-    RequestMethod method;
-    String url;
-    final String USER_AGENT = "TESTER";
+    private RequestMethod method;
+    private String url;
 
     HttpRequest() {}
 
@@ -27,6 +25,8 @@ public abstract class HttpRequest implements Serializable {
 
     public abstract HttpRequest addParam(String name, String value);
 
+    public abstract HttpRequest addBody(byte[] body);
+
     public abstract HttpRequest addBody(String body);
 
     public abstract HttpRequest addBody(JsonObject body);
@@ -37,9 +37,5 @@ public abstract class HttpRequest implements Serializable {
 
     public String getUrl() {
         return url;
-    }
-
-    public String getUSER_AGENT() {
-        return USER_AGENT;
     }
 }
