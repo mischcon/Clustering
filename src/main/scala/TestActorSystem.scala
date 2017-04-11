@@ -1,3 +1,5 @@
+import java.io.{ByteArrayInputStream, ObjectInput, ObjectInputStream}
+
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import clustering.ClusteringTask
 import communication.{HttpRequest, HttpResponse, ProxyRequest}
@@ -47,7 +49,7 @@ class VMProxyActor extends Actor {
       sender() ! s"got an Integer : $d"
     case request : HttpRequest =>
       val client = HttpClientBuilder.create.build
-      val response = client.execute(request.asInstanceOf[HttpRequest].getRequest)
+      val response = client.execute(request.getRequest)
       val output = new HttpResponse(response)
       sender() ! output
     case o =>

@@ -1,6 +1,7 @@
 package communication;
 
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpRequestBase;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -9,7 +10,7 @@ import java.net.URI;
  * <strong>HTTP PUT request w/ the opportunity of setting body</strong>
  */
 class HttpPutWithBody extends HttpEntityEnclosingRequestBase implements Serializable {
-    static final String METHOD_NAME = "PUT";
+    static final RequestMethod METHOD_NAME = RequestMethod.PUT;
     private URI uri;
 
     public HttpPutWithBody() {
@@ -35,6 +36,6 @@ class HttpPutWithBody extends HttpEntityEnclosingRequestBase implements Serializ
     }
 
     public String getMethod() {
-        return METHOD_NAME;
+        return METHOD_NAME.toString();
     }
 }

@@ -1,28 +1,27 @@
 package communication;
 
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpRequestBase;
 
 import java.io.Serializable;
 import java.net.URI;
 
 /**
- * <strong>HTTP GET request w/ the opportunity of setting body</strong>
+ * <strong>HTTP POST request w/ the opportunity of setting body</strong>
  */
-class HttpGetWithBody extends HttpEntityEnclosingRequestBase implements Serializable {
-    static final RequestMethod METHOD_NAME = RequestMethod.GET;
+class HttpPostWithBody extends HttpEntityEnclosingRequestBase implements Serializable {
+    static final RequestMethod METHOD_NAME = RequestMethod.POST;
     private URI uri;
 
-    public HttpGetWithBody() {
+    public HttpPostWithBody() {
         super();
     }
 
-    public HttpGetWithBody(final String uri) {
+    public HttpPostWithBody(final String uri) {
         super();
         setURI(URI.create(uri));
     }
 
-    public HttpGetWithBody(final URI uri) {
+    public HttpPostWithBody(final URI uri) {
         super();
         setURI(uri);
     }

@@ -1,15 +1,15 @@
 package communication;
 
 import com.google.gson.JsonObject;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * <strong>Blueprint for CRUD requests</strong>
  */
 public abstract class HttpRequest implements Serializable {
-    HttpRequestBase request;
+    HttpEntityEnclosingRequestBase request;
     RequestMethod method;
     String url;
     final String USER_AGENT = "TESTER";
@@ -21,7 +21,7 @@ public abstract class HttpRequest implements Serializable {
         this.url = url;
     }
 
-    public abstract HttpRequestBase getRequest();
+    public abstract HttpEntityEnclosingRequestBase getRequest();
 
     public abstract HttpRequest addHeader(String name, String value);
 

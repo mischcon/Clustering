@@ -40,8 +40,9 @@ public class ProxyRequest<T> implements Serializable {
             vmProxy == null : task is executed locally
             vmProxy != null : task is executed in cluster
         */
-        if (vmProxy != null)
+        if (vmProxy != null) {
             this.future = Patterns.ask(vmProxy, request, timeout);
+        }
         else {
             if (request instanceof HttpRequest) {
                 CloseableHttpClient client;
@@ -71,7 +72,7 @@ public class ProxyRequest<T> implements Serializable {
         if (vmProxy != null) {
             try {
                 this.response = Await.result(future, timeout.duration());
-                return response;
+                return this.response;
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -19,8 +19,8 @@ public class GetRequest extends HttpRequest implements Serializable {
     public GetRequest(String url) {
         super(RequestMethod.GET, url);
         this.request = new HttpGetWithBody(url);
-        request.addHeader("User-Agent", getUSER_AGENT());
-        request.addHeader("accept", "application/json");
+        this.request.addHeader("User-Agent", getUSER_AGENT());
+        this.request.addHeader("accept", "application/json");
     }
 
     @Override public HttpGetWithBody getRequest() {

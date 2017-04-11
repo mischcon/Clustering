@@ -15,16 +15,16 @@ import java.nio.charset.Charset;
  * <strong>HTTP POST request</strong>
  */
 public class PostRequest extends HttpRequest implements Serializable {
-    private HttpPost request;
+    private HttpPostWithBody request;
 
     public PostRequest(String url) {
         super(RequestMethod.POST, url);
-        this.request = new HttpPost(url);
+        this.request = new HttpPostWithBody(url);
         this.request.addHeader("User-Agent", getUSER_AGENT());
         this.request.addHeader("accept", "application/json");
     }
 
-    @Override public HttpPost getRequest() {
+    @Override public HttpPostWithBody getRequest() {
         return this.request;
     }
 
