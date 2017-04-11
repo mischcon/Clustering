@@ -5,6 +5,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -12,7 +13,7 @@ import java.nio.charset.Charset;
 /**
  * <strong>HTTP DELETE request</strong>
  */
-public class DeleteRequest extends HttpRequest {
+public class DeleteRequest extends HttpRequest implements Serializable {
     private HttpDeleteWithBody request;
 
     public DeleteRequest(String url) {

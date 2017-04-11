@@ -5,6 +5,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -12,7 +13,7 @@ import java.nio.charset.Charset;
 /**
  * <strong>HTTP PUT request</strong>
  */
-public class PutRequest extends HttpRequest {
+public class PutRequest extends HttpRequest implements Serializable {
     private HttpPutWithBody request;
 
     public PutRequest(String url) {

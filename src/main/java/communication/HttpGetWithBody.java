@@ -8,11 +8,12 @@ import java.net.URI;
 /**
  * <strong>HTTP GET request w/ the opportunity of setting body</strong>
  */
-class HttpGetWithBody extends HttpEntityEnclosingRequestBase implements Serializable{
-    public static final String METHOD_NAME = RequestMethod.GET.toString();
+class HttpGetWithBody extends HttpEntityEnclosingRequestBase implements Serializable {
+    static final String METHOD_NAME = "GET";
+    private URI uri;
 
-    public String getMethod() {
-        return METHOD_NAME;
+    public HttpGetWithBody() {
+        super();
     }
 
     public HttpGetWithBody(final String uri) {
@@ -25,7 +26,15 @@ class HttpGetWithBody extends HttpEntityEnclosingRequestBase implements Serializ
         setURI(uri);
     }
 
-    public HttpGetWithBody() {
-        super();
+    public URI getURI() {
+        return this.uri;
+    }
+
+    public void setURI(final URI uri) {
+        this.uri = uri;
+    }
+
+    public String getMethod() {
+        return METHOD_NAME;
     }
 }

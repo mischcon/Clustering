@@ -11,12 +11,13 @@ import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * <strong>Java & Scala marriage happens w/ help of this class</strong>
  * @param <T> request type - Object in {@link clustering.ClusteringTask}
  */
-public class ProxyRequest<T> {
+public class ProxyRequest<T> implements Serializable {
     /**
      * If executed in cluster, this field will be <i>post-injected</i> w/ instance of
      * <code>vmProxyActor</code> by executing actor
