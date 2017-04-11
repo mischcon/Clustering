@@ -23,7 +23,9 @@ trait VagrantProvisionerConfig {
 
 object Run extends Enumeration {
   type Run = Value
-  val always, never, once = Value
+  val always = Value("always")
+  val never = Value("never")
+  val once = Value("once")
 }
 
 class VagrantProvisionerFileConfig(var _run: Run,

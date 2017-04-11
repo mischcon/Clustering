@@ -22,7 +22,7 @@ object VagrantConfigurationUtilities {
   def createVagrantFileContent(config: VagrantEnvironmentConfig): String = {
     val builder = new StringBuilder
     builder.append("Vagrant.configure(\"2\") do |config|").append("\n")
-    for (vmConfig <- config.getVmConfigs) {
+    for (vmConfig <- config.vmConfigs) {
       builder.append(createVmInMultiEnvConfig(vmConfig))
     }
     builder.append("end").append("\n")
@@ -193,7 +193,7 @@ object VagrantConfigurationUtilities {
     if (portForwarding.isComplete) {
       builder.append(s"""    vm.vm.network "${portForwarding.mode}", guest: ${portForwarding.guestPort}, host: ${portForwarding.hostPort}""")
       if (portForwarding.name != null && !portForwarding.name.isEmpty) builder.append(s""", id: "${portForwarding.name}"""")
-      if (portForwarding.protocol != Protocol.tcp) builder.append(s", protocol: ${portForwarding.protocol.toString}")
+      if (portForwarding.protocol != Protocol.tcp) builder.append(s""", protocol: "${portForwarding.protocol.toString}"""")
       if (portForwarding.autoCorrect) builder.append(s", auto_correct: ${portForwarding.autoCorrect}")
       if (portForwarding.guestIp != null && !portForwarding.guestIp.isEmpty) builder.append(s""", guest_ip: "${portForwarding.guestIp}"""")
       if (portForwarding.hostIp != null && !portForwarding.hostIp.isEmpty) builder.append(s""", host_ip: "${portForwarding.hostIp}"""")

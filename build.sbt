@@ -11,6 +11,7 @@ val akkaVersion = "2.4.17"
 val akkaHttpVersion = "10.0.5"
 val jrubyVersion = "9.1.8.+"
 val sbtIoVersion = "1.0.0-+"
+val json4sVersion = "3.5.1"
 
 libraryDependencies ++= Seq(
 
@@ -22,6 +23,7 @@ libraryDependencies ++= Seq(
 
   // json
   "com.google.code.gson" % "gson" % "1.7.1",
+  "org.json4s" %% "json4s-native" % json4sVersion,
 
   // config parser
   "com.github.scopt"  %% "scopt" % "3.5.0",
@@ -48,9 +50,9 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-jackson" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-http-xml" % akkaHttpVersion,
 
-  //JRuby
+  // jruby
   "org.jruby" % "jruby-complete" % jrubyVersion,
  
-  //Sbt-IO
+  // sbt-io
   "org.scala-sbt" %% "io" % sbtIoVersion
 )

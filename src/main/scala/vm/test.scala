@@ -1,9 +1,19 @@
 package vm
 import java.io.File
 
+import akka.actor.{ActorSystem, Props}
+import communication.{GetRequest, HttpResponse}
+import org.json4s._
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization.{read, write}
 import vm.vagrant.Vagrant
-import vm.vagrant.configuration.Protocol
+import vm.vagrant.configuration.{Protocol, Service}
 import vm.vagrant.configuration.builder._
+import akka.pattern.ask
+import akka.util.Timeout
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 
 
@@ -28,23 +38,7 @@ class test {
       .withHostIp("127.0.0.1")
       .withHostPort(1337)
       .withProtocol(Protocol.tcp)
-      .build)
-    .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
-      .createPrivateNetworkConfig
-      .withAutoConfig(false)
-      .withDhcp(true)
-      .build)
-    .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
-      .createPrivateNetworkConfig
-      .withDhcp(false)
-      .withIp("192.168.10.200")
-      .withNetmask("255.255.255.0")
-      .build)
-    .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
-      .createPublicNetworkConfig
-      .withAutoAonfig(true)
-      .withDhcp(true)
-      .withBridge("en0: Ethernet")
+      .withService(Service.http)
       .build)
     .withVagrantSyncedFoldersConfig(VagrantSyncedFoldersConfigBuilder
       .createVirtualBoxConfig
@@ -67,7 +61,7 @@ class test {
       .withVmName("Test-VM")
       .build())
     .build
-  val vmConfig2 = VagrantVmConfigBuilder
+  var vmConfig2 = VagrantVmConfigBuilder
     .create
     .withName("Test-VM2")
     .withHostName("Test-VM.pc-ziegert.local")
@@ -77,27 +71,11 @@ class test {
       .createPortForwardingConfig
       .withName("Test-PortForwarding")
       .withAutoCorrect(true)
-      .withGuestPort(1338)
+      .withGuestPort(1337)
       .withHostIp("127.0.0.1")
-      .withHostPort(1338)
+      .withHostPort(1337)
       .withProtocol(Protocol.tcp)
-      .build)
-    .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
-      .createPrivateNetworkConfig
-      .withAutoConfig(false)
-      .withDhcp(true)
-      .build)
-    .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
-      .createPrivateNetworkConfig
-      .withDhcp(false)
-      .withIp("192.168.10.201")
-      .withNetmask("255.255.255.0")
-      .build)
-    .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
-      .createPublicNetworkConfig
-      .withAutoAonfig(true)
-      .withDhcp(true)
-      .withBridge("en0: Ethernet")
+      .withService(Service.http)
       .build)
     .withVagrantSyncedFoldersConfig(VagrantSyncedFoldersConfigBuilder
       .createVirtualBoxConfig
@@ -128,18 +106,49 @@ class test {
     .create
     .withVagrantVmConfig(vmConfig)
     .withVagrantVmConfig(vmConfig2)
+    .withPath(new File("/Volumes/Daten/Vagrant/scala.local"))
     .build
-  val vagrant = new Vagrant().createEnvironment(new File("/Volumes/Daten/Vagrant/scala.local"), environmentConfig)
+  //val vagrant = new Vagrant().createEnvironment(environmentConfig)
   //vagrant.up()
-  // println(vagrant.up)
-  val test = vagrant.status()
-  println(test.mkString("Status:\n", "\n", ""))
+  //println(vagrant.up())
+  //val test = vagrant.status()
+  //println(test.mkString("Status:\n", "\n", ""))
   //println(vagrant.destroy())
-  vmConfig = vagrant.getBoxePortMapping(vmConfig)
-  println(vagrant.sshExecute(vmConfig, "echo 'Test'"))
-  println(vagrant.sshExecute(vmConfig2, "echo 'Test2'"))
+  //vmConfig = vagrant.getBoxePortMapping(vmConfig)
+  //vmConfig2 = vagrant.getBoxePortMapping(vmConfig2)
+  //println(vagrant.sshExecute(vmConfig, "echo 'Test'"))
+  //println(vagrant.sshExecute(vmConfig2, "echo 'Test2'"))
+  //implicit val format = Serialization.formats(NoTypeHints)
+  //val ser = write(environmentConfig)
+  //println(ser)
+
+
+
+
+
+
+
+}
+
+class TestActorSystem {
+  val system = ActorSystem("testActorSystem")
+  val vmProxyActor = system.actorOf(Props[VMProxyActor], name="vmProxyActor")
+  val vmActor = system.actorOf(Props[VMActor], name="vmActor")
+  implicit val timeout = Timeout(100.days)
+
+
+  val test = new GetRequest("https://.pc-ziegert.de")
+  vmProxyActor ! vmActor
+  val response = Await.result(vmProxyActor ? test, Duration.Inf).asInstanceOf[HttpResponse]
+
+  println(response.getBody)
+
+  println("Test")
+
+  system.terminate()
 }
 
 object test extends App{
-  new test
+  //new test
+  new TestActorSystem
 }

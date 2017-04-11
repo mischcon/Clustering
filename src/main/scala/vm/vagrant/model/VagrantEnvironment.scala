@@ -1,19 +1,10 @@
 package vm.vagrant.model
 
-import java.net.URL
-import java.util
-
-import org.jruby.RubyArray
-import org.jruby.RubyBoolean
-import org.jruby.RubyNil
 import org.jruby.RubyObject
 import org.jruby.RubyString
 import org.jruby.exceptions.RaiseException
 import vm.vagrant.configuration.VagrantVmConfig
-import vm.vagrant.model.VmStatus.VmStatus
-import vm.vagrant.util.{VagrantException, VagrantVmConfigUtil}
-
-import scala.collection.JavaConversions._
+import vm.vagrant.util.{VagrantException, VagrantVmConfigUtils}
 
 /**
   * A {@link VagrantEnvironment} manages a set of VMs. By using the environment you can manage the lifecycle of all VMs inside the environment or access a specific VM.
@@ -162,13 +153,13 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
     case exception: RaiseException =>
       throw new VagrantException(exception)
   }
-  //TODO: Portmapping zurück in vmConfig \d+ \(guest\) => \d+ \(host\)
+
   def getBoxePortMapping(box: VagrantVmConfig): VagrantVmConfig = try {
     val output = vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "port"), RubyString.newString(vagrantEnvironment.getRuntime, box.name)).convertToString().toString
     val pattern = s"\\d+ \\(guest\\) => \\d+ \\(host\\)".r
     val regex = pattern.findAllMatchIn(output)
-    val mapping = regex.map(d => {val map = d.toString().split(" "); println(map.mkString("mapping: " , ";" , " :mapping end")); (map{0}.toInt, map{3}.toInt)}).collect({case x:(Int, Int) => x})
-    VagrantVmConfigUtil.updatePortMapping(box, mapping)
+    val mapping = regex.map(d => {val map = d.toString().split(" "); (map{0}.toInt, map{3}.toInt)}).collect({case x:(Int, Int) => x})
+    VagrantVmConfigUtils.updatePortMapping(box, mapping)
   } catch {
     case exception: RaiseException =>
       throw new VagrantException(exception)

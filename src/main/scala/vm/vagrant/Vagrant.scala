@@ -44,6 +44,9 @@ class Vagrant(debug: Boolean = false){
   def createEnvironment(path: File, environmentConfig: VagrantEnvironmentConfig): VagrantEnvironment = createEnvironment(path, VagrantConfigurationUtilities.createVagrantFileContent(environmentConfig), null, null)
 
   @throws[IOException]
+  def createEnvironment(environmentConfig: VagrantEnvironmentConfig): VagrantEnvironment = createEnvironment(environmentConfig.path, VagrantConfigurationUtilities.createVagrantFileContent(environmentConfig), null, null)
+
+  @throws[IOException]
   def createEnvironment(path: File, environmentConfig: VagrantEnvironmentConfig, fileTemplates: Iterable[VagrantFileTemplateConfiguration]): VagrantEnvironment = createEnvironment(path, VagrantConfigurationUtilities.createVagrantFileContent(environmentConfig), fileTemplates, null)
 
   @throws[IOException]

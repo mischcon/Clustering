@@ -1,5 +1,7 @@
 package vm.vagrant.configuration
 
+import java.io.File
+
 /**
   * Created by oliver.ziegert on 24.03.17.
   */
@@ -10,13 +12,8 @@ package vm.vagrant.configuration
   * @author oliver.ziegert
   *
   */
-class VagrantEnvironmentConfig(vmConfigs: Iterable[VagrantVmConfig]) {
-  /**
-    * Returns all {@link VagrantVmConfig}
-    *
-    * @return all { @link VagrantVmConfig}
-    */
-  def getVmConfigs: Iterable[VagrantVmConfig] = vmConfigs
+class VagrantEnvironmentConfig(var vmConfigs: Iterable[VagrantVmConfig],
+                               var path: File) {
 
   /**
     * Returns true if this configuration describes a multi VM environment. A multi VM environment manages more than one VM.

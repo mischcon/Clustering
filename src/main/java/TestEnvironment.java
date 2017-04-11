@@ -23,7 +23,7 @@ public class TestEnvironment implements ClusteringTask {
         JsonObject json = new JsonObject();
         json.addProperty("test", "get");
         HttpResponse response = (HttpResponse) request.getResponse(
-                new GetRequest("https://httpbin.org/get")
+                new GetRequest("/get")
                         .addParam("param_1", "1")
                         .addBody(json)
                         .addHeader("Content-Type", "application/json"));

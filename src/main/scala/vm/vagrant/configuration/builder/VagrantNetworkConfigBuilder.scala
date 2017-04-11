@@ -1,6 +1,7 @@
 package vm.vagrant.configuration.builder
 
 import vm.vagrant.configuration.Protocol.Protocol
+import vm.vagrant.configuration.Service.Service
 import vm.vagrant.configuration._
 
 
@@ -59,6 +60,7 @@ class VagrantPortForwardingConfigBuilder extends VagrantNetworkConfigBuilder {
   private var hostPort: Int = _
   private var hostIp: String = _
   private var protocol: Protocol = Protocol.tcp
+  private var service: Service = _
   private var name: String = _
 
   def withAutoCorrect(autoCorrect: Boolean): VagrantPortForwardingConfigBuilder = {
@@ -93,6 +95,11 @@ class VagrantPortForwardingConfigBuilder extends VagrantNetworkConfigBuilder {
     this
   }
 
+  def withService(service: Service):  VagrantPortForwardingConfigBuilder = {
+    this.service = service
+    this
+  }
+
   def withName(name: String): VagrantPortForwardingConfigBuilder = {
     this.name = name
     this
@@ -105,6 +112,7 @@ class VagrantPortForwardingConfigBuilder extends VagrantNetworkConfigBuilder {
                                     hostPort = hostPort,
                                     hostIp = hostIp,
                                     protocol = protocol,
+                                    service = service,
                                     name = name)
   }
 }
@@ -145,6 +153,6 @@ class VagrantPublicNetworkConfigBuilder extends VagrantNetworkConfigBuilder {
                                    useDhcpAssignedDefaultRoute = useDhcpAssignedDefaultRoute,
                                    ip = ip,
                                    bridges = bridges,
-                                   autoAonfig = autoAonfig)
+                                   autoConfig = autoAonfig)
   }
 }
