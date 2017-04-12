@@ -20,7 +20,7 @@ import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Random, Success}
 
 /**
   * Created by mischcon on 10.04.17.
@@ -56,7 +56,7 @@ class ClusteringApi extends Actor with ActorLogging with Directives with SprayJs
   }
 
   def handleUpload(bytes : Source[ByteString, Any]) ={
-    val file = File.createTempFile("DEBUG","b")
+    val file = File.createTempFile(new Random().nextString(15),"b")
     val sink = FileIO.toPath(file.toPath)
     val writing = bytes.runWith(sink)
     onSuccess(writing) { result =>
@@ -65,7 +65,7 @@ class ClusteringApi extends Actor with ActorLogging with Directives with SprayJs
           val content = java.nio.file.Files.readAllBytes(file.toPath)
           val loader : TestingCodebaseLoader = new TestingCodebaseLoader(content)
           val testMethods = loader.getClassClusterMethods
-          val datestring = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date())
+          val datestring = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date())
 
           for (a <- testMethods.asScala.toList) {
             println(s"adding task ${a.classname}.${a.methodname} to table $datestring")

@@ -1,7 +1,5 @@
 package utils
 
-import java.io.File
-
 class ClusterOptionParser() {
 
   private val VERSION : String = "0.1 alpha"

@@ -2,16 +2,16 @@ import java.net.NetworkInterface
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import de.oth.clustering.java._
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster
 import clustering.ClusterType
 import com.typesafe.config.ConfigFactory
+import de.oth.clustering.java._
 import utils.db.{CreateTask, DBActor}
 import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor, PrivateMethodExposer}
 import webui.ClusteringApi
+import worker.InstanceActor
 import worker.messages.{AddTask, Task}
-import worker.{DistributorActor, InstanceActor, TestVMNodesActor}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
@@ -64,11 +64,11 @@ object ClusterMain extends App{
         val apiActor : ActorRef = system.actorOf(Props[ClusteringApi], "api")
 
         // Load codebase
-        if(cli_config.input != "") {
+        if(cli_config.input != null) {
           val loader: TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
           val testMethods = loader.getClassClusterMethods
 
-          val datestring = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date())
+          val datestring = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date())
           // Add Tasks
             for (a <- testMethods.asScala.toList) {
               println(s"adding task ${a.classname}.${a.methodname} to table $datestring")
