@@ -12,7 +12,7 @@ import com.typesafe.config.ConfigFactory
   *
   * 0 .. * tasks_[...]:
   * +-----+--------+-------------+-----------+-------------+------------+-------------+------------+
-  * | id  | method | task_status | end_state | task_status | started_at | finished_at | time_spent |
+  * | id  | method | task_status | end_state | task_result | started_at | finished_at | time_spent |
   * +-----+--------+-------------+-----------+-------------+------------+-------------+------------+
   * | int | string | NOT_STARTED | SUCCESS   | string      | timestamp  | timestamp   | int        |
   * |     |        | RUNNING     | FAILURE   |             |            |             |            |
