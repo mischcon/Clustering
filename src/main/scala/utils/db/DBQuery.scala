@@ -101,7 +101,7 @@ class DBCreateTasks(methods : List[String], tableName : String) extends DBQuery 
   override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
     var sql = s"INSERT INTO $tableName (method) VALUES ("
-    for (i <- 1 to methods.size) sql += "?), ("
+    for (i <- 1 to methods.size) sql += "'?'), ("
     sql = sql.dropRight(3) + ";"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     for (i <- 1 to methods.size)

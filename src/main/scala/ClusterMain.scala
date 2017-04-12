@@ -1,12 +1,13 @@
 import java.net.NetworkInterface
-import de.oth.clustering.java._
 
+import de.oth.clustering.java._
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster
 import clustering.ClusterType
 import com.typesafe.config.ConfigFactory
 import utils.db.{CreateTask, DBActor}
 import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor, PrivateMethodExposer}
+import webui.ClusteringApi
 import worker.messages.{AddTask, Task}
 import worker.{DistributorActor, InstanceActor, TestVMNodesActor}
 
@@ -58,28 +59,29 @@ object ClusterMain extends App{
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
         val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
 
+        val apiActor : ActorRef = system.actorOf(Props[ClusteringApi], "api")
         // TODO: Create missing / not yet implemented Actors
 
-        // Load codebase
-        val loader : TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
-        val testMethods = loader.getClassClusterMethods
-
-        val instanceIds : List[String] = List("INSTANCE_ID_1")//, "INSTANCE_ID_2")
-        // Add Tasks
-        for(id <- instanceIds) {
-          for (a <- testMethods.asScala.toList) {
-            println(s"adding task ${a.classname}.${a.methodname} to table $id")
-            var singleInstance: Boolean = true
-            if (a.annotation.clusterType() == ClusterType.GROUPING)
-              singleInstance = false
-
-            // Add Task to dependency tree
-            instanceActor ! AddTask(id, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
-
-            // Add Task to Database
-            dBActor ! CreateTask(s"${a.classname}.${a.methodname}", id)
-          }
-        }
+//        // Load codebase
+//        val loader : TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
+//        val testMethods = loader.getClassClusterMethods
+//
+//        val instanceIds : List[String] = List("INSTANCE_ID_1")//, "INSTANCE_ID_2")
+//        // Add Tasks
+//        for(id <- instanceIds) {
+//          for (a <- testMethods.asScala.toList) {
+//            println(s"adding task ${a.classname}.${a.methodname} to table $id")
+//            var singleInstance: Boolean = true
+//            if (a.annotation.clusterType() == ClusterType.GROUPING)
+//              singleInstance = false
+//
+//            // Add Task to dependency tree
+//            instanceActor ! AddTask(id, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
+//
+//            // Add Task to Database
+//            dBActor ! CreateTask(s"${a.classname}.${a.methodname}", id)
+//          }
+//        }
 
         val testVMNodesActor : ActorRef = system.actorOf(Props[vm.VMProxyActor], "vmActor")
 

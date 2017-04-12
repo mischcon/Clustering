@@ -9,8 +9,9 @@ import org.apache.commons.codec.binary.Base64
 trait WebUIMessages
 
 case class UploadJar(content : Array[Byte])
-object UploadJar {
-  implicit val MessageFormat: Format[UploadJar] =
-    Format(Reads.of[String].map(s => apply(Base64.decodeBase64(s))),
-      Writes(a => Writes.of[String].writes(Base64.encodeBase64String(a.content))))
-}
+
+//object UploadJar //{
+//  implicit val MessageFormat: Format[UploadJar] =
+//    Format(Reads.of[String].map(s => apply(Base64.decodeBase64(s))),
+//      Writes(a => Writes.of[String].writes(Base64.encodeBase64String(a.content))))
+//}
