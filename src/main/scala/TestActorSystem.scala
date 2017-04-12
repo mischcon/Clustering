@@ -1,13 +1,8 @@
-import java.io.{ByteArrayInputStream, ObjectInput, ObjectInputStream}
-import java.net.URI
-import java.util
-
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import clustering.ClusteringTask
 import communication._
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClientBuilder
+import org.junit.runner.{Computer, JUnitCore}
 
 
 class TaskExecutorActor extends Actor {
@@ -86,7 +81,11 @@ object TestActorSystem extends App {
   val executor = system.actorOf(Props[TaskExecutorActor], name="testActor")
 
   val test : Tests = new Tests()
-  executor ! test
+  // executor ! test
+
+  val computer = new Computer()
+  val jUnitCore = new JUnitCore()
+  jUnitCore.run(computer, classOf[JUnitTests])
 
   system.terminate()
 }
