@@ -30,7 +30,7 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
     statement.executeUpdate()
     println(s"[DB]: '$tableName' table created")
     sql =
-      s"CREATE OR REPLACE TRIGGER ${tableName}_update_timestamp " +
+      s"CREATE OR REPLACE TRIGGER ${tableName}_update_timestamps " +
        "BEFORE UPDATE " +
         s"ON clustering.$tableName FOR EACH ROW " +
          "BEGIN " +
@@ -43,7 +43,7 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
          "END"
     statement = connection.prepareStatement(sql)
     statement.executeUpdate()
-    println(s"[DB]: '${tableName}_update_timestamp' trigger created")
+    println(s"[DB]: '${tableName}_update_timestamps' trigger created")
   }
 }
 
@@ -119,7 +119,7 @@ class DBCreateTasks(methods : List[String], tableName : String) extends DBQuery 
   override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
     var sql = s"INSERT INTO $tableName (method) VALUES ("
-    for (i <- 1 to methods.size) sql += "'?'), ("
+    for (i <- 1 to methods.size) sql += "?), ("
     sql = sql.dropRight(3) + ";"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     for (i <- 1 to methods.size)

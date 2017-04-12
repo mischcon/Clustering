@@ -1,5 +1,7 @@
 package utils.db
 
+import java.util.Calendar
+
 import akka.actor.{ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
@@ -18,7 +20,7 @@ object DBConnectionTest extends App {
 
   val sys = ActorSystem("actor-system")
   val db = sys.actorOf(Props[DBActor], name="db-actor")
-  val tableName = "tasks"
+  val tableName = uuid.replace("-", "")
 
   val method = uuid
   db ! CreateTask(method, tableName)
