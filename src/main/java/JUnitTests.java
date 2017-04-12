@@ -41,5 +41,6 @@ public class JUnitTests implements ClusteringTask {
         req.setBody(json);
         RestApiResponse response = (RestApiResponse) request.getResponse(req);
         System.out.println(response);
+        Assert.assertFalse("FAILED because I said so.", true);
     }
 }
