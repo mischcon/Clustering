@@ -1,0 +1,12 @@
+DELIMITER |
+CREATE OR REPLACE TRIGGER update_ts
+BEFORE UPDATE
+	ON clustering.tasks FOR EACH ROW
+BEGIN
+	IF NEW.task_status = 'RUNNING' THEN
+		SET NEW.started_at = CURRENT_TIMESTAMP;
+	ELSEIF NEW.task_status = 'DONE' THEN
+		SET NEW.finished_at = CURRENT_TIMESTAMP;
+        SET NEW.time_spent = (SELECT TIMESTAMPDIFF(SECOND, started_at, CURRENT_TIMESTAMP));
+	END IF;
+END

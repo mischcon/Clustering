@@ -10,22 +10,40 @@ trait DBQuery {
 class DBCreateTasksTable(tableName : String) extends DBQuery {
   override val table: String = tableName
   override def perform(connection: Connection): Unit = {
-    val sql =
+    var sql =
       s"CREATE TABLE IF NOT EXISTS $tableName ( " +
        "id            INT(11)      NOT NULL AUTO_INCREMENT, " +
        "method        VARCHAR(128) NOT NULL, " +
       s"task_status   VARCHAR(16)  NOT NULL DEFAULT '${TaskStatus.NOT_STARTED}', " +
        "end_state     VARCHAR(16), " +
        "task_result   VARCHAR(2048), " +
+       "started_at    TIMESTAMP DEFAULT 0, " +
+       "finished_at   TIMESTAMP DEFAULT 0, " +
+       "time_spent    INT(10), " +
        "PRIMARY KEY (id), " +
        "UNIQUE KEY method_UQ (method), " +
        "CONSTRAINT check_task_status CHECK (task_status IN (" +
       s"'${TaskStatus.NOT_STARTED}', '${TaskStatus.RUNNING}', '${TaskStatus.DONE}')), " +
        "CONSTRAINT check_end_state CHECK (end_state IN (" +
       s"NULL, '${EndState.SUCCESS}', '${EndState.FAILURE}', '${EndState.ABANDONED}', '${EndState.ERROR}')));"
-    val statement : PreparedStatement = connection.prepareStatement(sql)
-    val result = statement.executeUpdate()
+    var statement : PreparedStatement = connection.prepareStatement(sql)
+    statement.executeUpdate()
     println(s"[DB]: '$tableName' table created")
+    sql =
+      s"CREATE OR REPLACE TRIGGER ${tableName}_update_timestamp " +
+       "BEFORE UPDATE " +
+        s"ON clustering.$tableName FOR EACH ROW " +
+         "BEGIN " +
+           "IF NEW.task_status = 'RUNNING' THEN " +
+             "SET NEW.started_at = CURRENT_TIMESTAMP; " +
+           "ELSEIF NEW.task_status = 'DONE' THEN " +
+             "SET NEW.finished_at = CURRENT_TIMESTAMP; " +
+             "SET NEW.time_spent = (SELECT TIMESTAMPDIFF(SECOND, OLD.started_at, CURRENT_TIMESTAMP)); " +
+           "END IF; " +
+         "END"
+    statement = connection.prepareStatement(sql)
+    statement.executeUpdate()
+    println(s"[DB]: '${tableName}_update_timestamp' trigger created")
   }
 }
 
@@ -133,9 +151,13 @@ class DBGetTask(method : String, tableName : String) extends DBQuery {
           else
             EndState.valueOf(resultSet.getString("end_state"))
         val task_result = resultSet.getString("task_result")
-        task = RequestedTask(method, task_status, end_state, task_result)
+        val started_at = resultSet.getTimestamp("started_at")
+        val finished_at = resultSet.getTimestamp("finished_at")
+        val time_spent = resultSet.getInt("time_spent")
+        task = RequestedTask(method, task_status, end_state, task_result, started_at, finished_at, time_spent)
       }
-      println(s"[DB]: task found: ${task.method} - ${task.task_status} - ${task.end_state} - ${task.task_result}")
+      println(s"[DB]: task found: ${task.method} - ${task.task_status} - ${task.end_state} - " +
+        s"${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
       Some(task)
     }
   }
@@ -167,10 +189,15 @@ class DBGetTasks(methods : List[String], tableName : String) extends DBQuery {
           else
             EndState.valueOf(resultSet.getString("end_state"))
         val task_result = resultSet.getString("task_result")
-        taskList = RequestedTask(method, task_status, end_state, task_result) :: taskList
+        val started_at = resultSet.getTimestamp("started_at")
+        val finished_at = resultSet.getTimestamp("finished_at")
+        val time_spent = resultSet.getInt("time_spent")
+        taskList = RequestedTask(method, task_status, end_state, task_result,
+          started_at, finished_at, time_spent) :: taskList
       }
       for (task <- taskList)
-        println(s"[DB]: task found: ${task.method} - ${task.task_status} - ${task.end_state} - ${task.task_result}")
+        println(s"[DB]: task found: ${task.method} - ${task.task_status} - ${task.end_state} - " +
+          s"${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
       Some(taskList)
     }
   }
@@ -197,10 +224,15 @@ class DBGetTasksWithStatus(task_status : TaskStatus, tableName : String) extends
           else
             EndState.valueOf(resultSet.getString("end_state"))
         val task_result = resultSet.getString("task_result")
-        taskList = RequestedTask(method, task_status, end_state, task_result) :: taskList
+        val started_at = resultSet.getTimestamp("started_at")
+        val finished_at = resultSet.getTimestamp("finished_at")
+        val time_spent = resultSet.getInt("time_spent")
+        taskList = RequestedTask(method, task_status, end_state, task_result,
+          started_at, finished_at, time_spent) :: taskList
       }
       for (task <- taskList)
-        println(s"[DB]: task found: ${task.method} - ${task.task_status} - ${task.end_state} - ${task.task_result}")
+        println(s"[DB]: task found: ${task.method} - ${task.task_status} - ${task.end_state} - " +
+          s"${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
       Some(taskList)
     }
   }

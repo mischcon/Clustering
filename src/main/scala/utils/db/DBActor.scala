@@ -11,15 +11,15 @@ import com.typesafe.config.ConfigFactory
   * Current database scheme (clustering):
   *
   * 0 .. * tasks_[...]:
-  * +-----+--------+-------------+-----------+-------------+
-  * | id  | method | task_status | end_state | task_result |
-  * +-----+--------+-------------+-----------+-------------+
-  * | int | string | NOT_STARTED | SUCCESS   | string      |
-  * |     |        | RUNNING     | FAILURE   |             |
-  * |     |        | DONE        | ABANDONED |             |
-  * |     |        |             | ERROR     |             |
-  * |     |        |             | null      |             |
-  * +-----+--------+-------------+-----------+-------------+
+  * +-----+--------+-------------+-----------+-------------+------------+-------------+------------+
+  * | id  | method | task_status | end_state | task_result | started_at | finished_at | time_spent |
+  * +-----+--------+-------------+-----------+-------------+------------+-------------+------------+
+  * | int | string | NOT_STARTED | SUCCESS   | string      | timestamp  | timestamp   | int        |
+  * |     |        | RUNNING     | FAILURE   |             |            |             |            |
+  * |     |        | DONE        | ABANDONED |             |            |             |            |
+  * |     |        |             | ERROR     |             |            |             |            |
+  * |     |        |             | null      |             |            |             |            |
+  * +-----+--------+-------------+-----------+-------------+------------+-------------+------------+
   * }}}
   * All messages that are meant to be sent to this actor are of type [[utils.db.DBMessage]].
   */
