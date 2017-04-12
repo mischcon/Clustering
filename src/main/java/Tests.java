@@ -11,12 +11,13 @@ public class Tests implements ClusteringTask {
     @Clustering(id="get", expectedDuration=2, members={"requests"}) public void testGet() {
         JsonObject json = new JsonObject();
         json.addProperty("method", "get");
-        RestApiRequest req = new RestApiRequest(RequestMethod.GET, "https://httpbin.org/get");
+        RestApiRequest req =
+                new RestApiRequest(RequestMethod.GET, "https://sds.ssp-europe.eu:443/api/v4/auth/resources");
         req.addHeader("Content-Type", "application/json");
         req.addParam("param", "1");
         req.setBody(json);
         RestApiResponse response = (RestApiResponse) request.getResponse(req);
-        System.out.println("[Tests]: response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println(response);
     }
 
     @Clustering(id="post", expectedDuration=2, members={"requests"}) public void testPost() {
@@ -27,7 +28,7 @@ public class Tests implements ClusteringTask {
         req.addParam("param", "1");
         req.setBody(json);
         RestApiResponse response = (RestApiResponse) request.getResponse(req);
-        System.out.println("[Tests]: response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println(response);
     }
 
     @Clustering(id="put", expectedDuration=2, members={"requests"}) public void testPut() {
@@ -38,7 +39,7 @@ public class Tests implements ClusteringTask {
         req.addParam("param", "1");
         req.setBody(json);
         RestApiResponse response = (RestApiResponse) request.getResponse(req);
-        System.out.println("[Tests]: response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println(response);
     }
 
     @Clustering(id="delete", expectedDuration=2, members={"requests"}) public void testDelete() {
@@ -49,6 +50,6 @@ public class Tests implements ClusteringTask {
         req.addParam("param", "1");
         req.setBody(json);
         RestApiResponse response = (RestApiResponse) request.getResponse(req);
-        System.out.println("[Tests]: response: " + response.getStatusCode() + "\n" + response.getBody());
+        System.out.println(response);
     }
 }

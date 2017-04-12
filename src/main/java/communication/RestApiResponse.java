@@ -1,7 +1,6 @@
 package communication;
 
 
-import jnr.ffi.annotations.In;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
@@ -12,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * <strong>Serializable container class for {@link org.apache.http.HttpResponse}</strong>
@@ -84,5 +84,24 @@ public class RestApiResponse implements Serializable {
 
     public ProtocolVersion getProtocolVersion() {
         return protocolVersion;
+    }
+
+    @Override public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format(
+                "\n======================= RESPONSE [CODE: %d] =======================\n\n", getStatusCode()));
+        sb.append("  ");
+        sb.append(getStatusText());
+        sb.append("\n\n====================================================================\n");
+        sb.append("|                             HEADERS                              |");
+        sb.append("\n====================================================================");
+        for (Map.Entry<String, String> header : getHeaders().entrySet())
+            sb.append(String.format("\n  %s : %s", header.getKey(), header.getValue()));
+        sb.append("\n====================================================================\n");
+        sb.append("|                               BODY                               |");
+        sb.append("\n====================================================================\n");
+        sb.append(getBody());
+        sb.append("====================================================================\n");
+        return sb.toString();
     }
 }
