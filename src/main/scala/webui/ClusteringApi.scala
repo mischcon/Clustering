@@ -1,14 +1,12 @@
 package webui
 
-import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorLogging}
+import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
+import de.oth.clustering.java._
 import webui.messages.UploadJar
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.ws.{Message, TextMessage}
 
 import scala.concurrent.duration._
 

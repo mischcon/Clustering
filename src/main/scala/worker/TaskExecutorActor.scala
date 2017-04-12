@@ -3,6 +3,7 @@ package worker
 import Exceptions.{TestFailException, TestSuccessException}
 import clustering.ClusteringTask
 import communication.ProxyRequest
+import de.oth.clustering.java.TestingCodebaseLoader
 import worker.messages.ExecuteTask
 
 class TaskExecutorActor extends WorkerTrait{
@@ -25,8 +26,8 @@ class TaskExecutorActor extends WorkerTrait{
   def run(msg : ExecuteTask): Unit ={
     log.debug(s"EXECUTING ${msg.task.method}")
     try {
-      val loader = new OwnLoader
-      val cls : Class[_] = loader.getClassObject(msg.task.classname, msg.task.raw_cls)
+      val loader = new TestingCodebaseLoader()
+      val cls : Class[_] = loader.getClassFromByte(msg.task.raw_cls, msg.task.classname)
       val obj = cls.newInstance()
       println("got object")
       for (interface <- obj.getClass.getInterfaces){
@@ -63,12 +64,5 @@ class TaskExecutorActor extends WorkerTrait{
       }
     }
 
-  }
-}
-
-class OwnLoader extends ClassLoader {
-
-  def getClassObject(classname : String, raw_class : Array[Byte]) = {
-    defineClass(classname, raw_class, 0, raw_class.length)
   }
 }

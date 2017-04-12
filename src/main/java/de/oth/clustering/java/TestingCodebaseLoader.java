@@ -16,19 +16,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-class TestEntry {
-    String classname;
-    String methodname;
-    Clustering annotation;
-
-    public TestEntry(String classname, String methodname, Clustering annotation) {
-        this.classname = classname;
-        this.methodname = methodname;
-        this.annotation = annotation;
-    }
-}
-
-class TestingCodebaseLoader extends ClassLoader{
+public class TestingCodebaseLoader extends ClassLoader{
 
     private String path;
 
