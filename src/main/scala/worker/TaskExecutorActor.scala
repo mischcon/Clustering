@@ -29,15 +29,11 @@ class TaskExecutorActor extends WorkerTrait{
       val loader = new TestingCodebaseLoader()
       val cls : Class[_] = loader.getClassFromByte(msg.task.raw_cls, msg.task.classname)
       val obj = cls.newInstance()
-      println("got object")
       for (interface <- obj.getClass.getInterfaces){
-        println("got interface")
         if(interface.getTypeName eq classOf[ClusteringTask].getTypeName){
           for(field <- interface.getDeclaredFields){
-            println("got field")
             if(field.getType.isAssignableFrom(classOf[ProxyRequest[Object]])) {
               field.setAccessible(true)
-              println("set acccessible")
               val proxyRequest : ProxyRequest[Object] = field.get(obj).asInstanceOf[ProxyRequest[Object]]
               for (field <- proxyRequest.getClass.getDeclaredFields) {
                 field.getName match {
@@ -52,7 +48,6 @@ class TaskExecutorActor extends WorkerTrait{
           }
         }
       }
-      println("getting method")
       val method = obj.getClass.getMethod(msg.task.method)
       println(s"invoking (method is: ${method}")
       val res = method.invoke(obj)

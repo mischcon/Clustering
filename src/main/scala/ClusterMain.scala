@@ -1,4 +1,6 @@
 import java.net.NetworkInterface
+import java.text.SimpleDateFormat
+import java.util.Date
 
 import de.oth.clustering.java._
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
@@ -58,32 +60,29 @@ object ClusterMain extends App{
         val instanceActor : ActorRef = system.actorOf(Props[InstanceActor], "instances")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
         val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
-
-        val apiActor : ActorRef = system.actorOf(Props[ClusteringApi], "api")
-        // TODO: Create missing / not yet implemented Actors
-
-//        // Load codebase
-//        val loader : TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
-//        val testMethods = loader.getClassClusterMethods
-//
-//        val instanceIds : List[String] = List("INSTANCE_ID_1")//, "INSTANCE_ID_2")
-//        // Add Tasks
-//        for(id <- instanceIds) {
-//          for (a <- testMethods.asScala.toList) {
-//            println(s"adding task ${a.classname}.${a.methodname} to table $id")
-//            var singleInstance: Boolean = true
-//            if (a.annotation.clusterType() == ClusterType.GROUPING)
-//              singleInstance = false
-//
-//            // Add Task to dependency tree
-//            instanceActor ! AddTask(id, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
-//
-//            // Add Task to Database
-//            dBActor ! CreateTask(s"${a.classname}.${a.methodname}", id)
-//          }
-//        }
-
         val testVMNodesActor : ActorRef = system.actorOf(Props[vm.VMProxyActor], "vmActor")
+        val apiActor : ActorRef = system.actorOf(Props[ClusteringApi], "api")
+
+        // Load codebase
+        if(cli_config.input != "") {
+          val loader: TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
+          val testMethods = loader.getClassClusterMethods
+
+          val datestring = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date())
+          // Add Tasks
+            for (a <- testMethods.asScala.toList) {
+              println(s"adding task ${a.classname}.${a.methodname} to table $datestring")
+              var singleInstance: Boolean = true
+              if (a.annotation.clusterType() == ClusterType.GROUPING)
+                singleInstance = false
+
+              // Add Task to dependency tree
+              instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
+
+              // Add Task to Database
+              dBActor ! CreateTask(s"${a.classname}.${a.methodname}", datestring)
+            }
+        }
 
         Thread.sleep(500)
         println(new PrivateMethodExposer(system)('printTree)())
