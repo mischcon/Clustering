@@ -2,7 +2,7 @@ package vm
 
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging, Terminated}
-import communication.{HttpRequest, HttpResponse}
+import communication._
 import org.apache.http.impl.client.HttpClientBuilder
 import worker.messages._
 
@@ -53,19 +53,38 @@ class VMProxyActor extends Actor with ActorLogging{
       sender() ! s"got a String : $s"
     case d : Integer =>
       sender() ! s"got an Integer : $d"
-    case request : HttpRequest =>
-      log.debug("creating HttpClient")
-      val client = HttpClientBuilder.create.build
-      log.debug("getting response")
-      val req = request.getRequest
-      log.debug(s"request: ${request.getUrl}")
-      val response = client.execute(req)
-      log.debug("parsing")
-      val output = new HttpResponse(response)
-      log.debug("sending")
-      sender() ! output
+    case request : RestApiRequest =>
+      request.getMethod match {
+        case "GET" =>
+          val httpGet : GetRequest = new GetRequest(request)
+          sendRequest(httpGet)
+        case "POST" =>
+          val httpPost : PostRequest = new PostRequest(request)
+          sendRequest(httpPost)
+        case "PUT" =>
+          val httpPut : PutRequest = new PutRequest(request)
+          sendRequest(httpPut)
+        case "DELETE" =>
+          val httpDelete : DeleteRequest = new DeleteRequest(request)
+          sendRequest(httpDelete)
+      }
     case o =>
       sender() ! s"got an Object of class : ${o.getClass.getName}"
+  }
+
+  def sendRequest(httpRequest: HttpRequest) = {
+    log.debug("creating HttpClient")
+    val client = HttpClientBuilder.create.build
+    log.debug("getting response")
+    val req = httpRequest.getRequest
+    log.debug(s"request: ${httpRequest.getUrl}")
+    val response = client.execute(req)
+    log.debug("parsing")
+    val output = new RestApiResponse(response)
+    log.debug("sending")
+    sender() ! output
+    response.close()
+    client.close()
   }
 
   def handleFailure(): Unit ={

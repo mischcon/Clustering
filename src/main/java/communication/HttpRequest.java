@@ -1,31 +1,31 @@
 package communication;
 
 import com.google.gson.JsonObject;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
-import java.io.Serializable;
+import java.nio.charset.Charset;
+
 
 /**
  * <strong>Blueprint for CRUD requests</strong>
  */
-public abstract class HttpRequest implements Serializable{
-    HttpRequestBase request;
-    RequestMethod method;
-    String url;
-    final String USER_AGENT = "TESTER";
-
-    HttpRequest() {}
+public abstract class HttpRequest {
+    private RequestMethod method;
+    private String url;
+    private static final Charset CHARSET = Charset.forName("UTF-8");
 
     HttpRequest(RequestMethod method, String url) {
         this.method = method;
         this.url = url;
     }
 
-    public abstract HttpRequestBase getRequest();
+    public abstract HttpEntityEnclosingRequestBase getRequest();
 
     public abstract HttpRequest addHeader(String name, String value);
 
     public abstract HttpRequest addParam(String name, String value);
+
+    public abstract HttpRequest addBody(byte[] body);
 
     public abstract HttpRequest addBody(String body);
 
@@ -39,7 +39,7 @@ public abstract class HttpRequest implements Serializable{
         return url;
     }
 
-    public String getUSER_AGENT() {
-        return USER_AGENT;
+    public static Charset getCHARSET() {
+        return CHARSET;
     }
 }

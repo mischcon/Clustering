@@ -1,6 +1,12 @@
+import java.io.{ByteArrayInputStream, ObjectInput, ObjectInputStream}
+import java.net.URI
+import java.util
+
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import clustering.ClusteringTask
-import communication.{HttpRequest, HttpResponse, ProxyRequest}
+import communication._
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.utils.URIBuilder
 import org.apache.http.impl.client.HttpClientBuilder
 
 
@@ -40,16 +46,35 @@ class TaskExecutorActor extends Actor {
 }
 
 class VMProxyActor extends Actor {
+  def sendRequest(httpRequest: HttpRequest) = {
+    val client = HttpClientBuilder.create.build
+    val response = client.execute(httpRequest.getRequest)
+    val output = new RestApiResponse(response)
+    sender() ! output
+    response.close()
+    client.close()
+  }
+
   def receive = {
     case s : String =>
       sender() ! s"got a String : $s"
     case d : Integer =>
       sender() ! s"got an Integer : $d"
-    case request : HttpRequest =>
-      val client = HttpClientBuilder.create.build
-      val response = client.execute(request.asInstanceOf[HttpRequest].getRequest)
-      val output = new HttpResponse(response)
-      sender() ! output
+    case request : RestApiRequest =>
+      request.getMethod match {
+        case "GET" =>
+          val httpGet : GetRequest = new GetRequest(request)
+          sendRequest(httpGet)
+        case "POST" =>
+          val httpPost : PostRequest = new PostRequest(request)
+          sendRequest(httpPost)
+        case "PUT" =>
+          val httpPut : PutRequest = new PutRequest(request)
+          sendRequest(httpPut)
+        case "DELETE" =>
+          val httpDelete : DeleteRequest = new DeleteRequest(request)
+          sendRequest(httpDelete)
+      }
     case o =>
       sender() ! s"got an Object of class : ${o.getClass.getName}"
   }
@@ -60,7 +85,7 @@ object TestActorSystem extends App {
   val system = ActorSystem("testActorSystem")
   val executor = system.actorOf(Props[TaskExecutorActor], name="testActor")
 
-  val test : TestEnvironment = new TestEnvironment()
+  val test : Tests = new Tests()
   executor ! test
 
   system.terminate()

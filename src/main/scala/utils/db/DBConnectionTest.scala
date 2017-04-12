@@ -18,7 +18,7 @@ object DBConnectionTest extends App {
 
   val sys = ActorSystem("actor-system")
   val db = sys.actorOf(Props[DBActor], name="db-actor")
-  val tableName = "tasks_8"
+  val tableName = "tasks"
   val method = uuid
   db ! CreateTask(method, tableName)
 

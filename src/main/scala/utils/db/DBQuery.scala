@@ -11,7 +11,7 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
   override val table: String = tableName
   override def perform(connection: Connection): Unit = {
     val sql =
-      s"CREATE TABLE $tableName ( " +
+      s"CREATE TABLE IF NOT EXISTS $tableName ( " +
        "id            INT(11)      NOT NULL AUTO_INCREMENT, " +
        "method        VARCHAR(128) NOT NULL, " +
       s"task_status   VARCHAR(16)  NOT NULL DEFAULT '${TaskStatus.NOT_STARTED}', " +
