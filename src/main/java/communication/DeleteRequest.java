@@ -6,28 +6,24 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.Map;
 
 /**
  * <strong>HTTP DELETE request</strong>
  */
-public class DeleteRequest extends HttpRequest implements Serializable {
+public class DeleteRequest extends HttpRequest {
     private HttpDeleteWithBody request;
 
     public DeleteRequest(String url) {
         super(RequestMethod.DELETE, url);
         this.request = new HttpDeleteWithBody(url);
-        this.request.addHeader("accept", "application/json");
     }
 
     public DeleteRequest(RestApiRequest req) {
         super(RequestMethod.valueOf(req.getMethod()), req.getUrl());
         this.request = new HttpDeleteWithBody(req.getUrl());
-        this.request.addHeader("accept", "application/json");
         for (Map.Entry<String, String> header : req.getHeaders().entrySet())
             this.addHeader(header.getKey(), header.getValue());
         for (Map.Entry<String, String> param : req.getParams().entrySet())
@@ -49,6 +45,7 @@ public class DeleteRequest extends HttpRequest implements Serializable {
             URI uri = new URIBuilder(this.request.getURI()).addParameter(name, value).build();
             this.request.setURI(uri);
         } catch (URISyntaxException e) {
+            System.err.println(String.format("[DeleteRequest]: Invalid parameter: %s=%s", name, value));
             e.printStackTrace();
         }
         return this;
@@ -60,12 +57,12 @@ public class DeleteRequest extends HttpRequest implements Serializable {
     }
 
     @Override public DeleteRequest addBody(String body) {
-        this.request.setEntity(new ByteArrayEntity(body.getBytes(Charset.forName("UTF-8"))));
+        this.request.setEntity(new ByteArrayEntity(body.getBytes(getCHARSET())));
         return this;
     }
 
     @Override public DeleteRequest addBody(JsonObject body) {
-        this.request.setEntity(new StringEntity(body.toString(), Charset.forName("UTF-8")));
+        this.request.setEntity(new StringEntity(body.toString(), getCHARSET()));
         return this;
     }
 }

@@ -7,6 +7,9 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 
+/**
+ * <strong>Serializable container class for {@link org.apache.http.HttpRequest}</strong>
+ */
 public class RestApiRequest implements Serializable {
     private String method;
     private String url;

@@ -6,29 +6,24 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * <strong>HTTP GET request</strong>
  */
-public class GetRequest extends HttpRequest implements Serializable {
+public class GetRequest extends HttpRequest {
     private HttpGetWithBody request;
 
     public GetRequest(String url) {
         super(RequestMethod.GET, url);
         this.request = new HttpGetWithBody(url);
-        this.request.addHeader("accept", "application/json");
     }
 
     public GetRequest(RestApiRequest req) {
         super(RequestMethod.valueOf(req.getMethod()), req.getUrl());
         this.request = new HttpGetWithBody(req.getUrl());
-        this.request.addHeader("accept", "application/json");
         for (Map.Entry<String, String> header : req.getHeaders().entrySet())
             this.addHeader(header.getKey(), header.getValue());
         for (Map.Entry<String, String> param : req.getParams().entrySet())
@@ -50,6 +45,7 @@ public class GetRequest extends HttpRequest implements Serializable {
             URI uri = new URIBuilder(this.request.getURI()).addParameter(name, value).build();
             this.request.setURI(uri);
         } catch (URISyntaxException e) {
+            System.err.println(String.format("[GetRequest]: Invalid parameter: %s=%s", name, value));
             e.printStackTrace();
         }
         return this;
@@ -61,12 +57,12 @@ public class GetRequest extends HttpRequest implements Serializable {
     }
 
     @Override public GetRequest addBody(String body) {
-        this.request.setEntity(new ByteArrayEntity(body.getBytes(Charset.forName("UTF-8"))));
+        this.request.setEntity(new ByteArrayEntity(body.getBytes(getCHARSET())));
         return this;
     }
 
     @Override public GetRequest addBody(JsonObject body) {
-        this.request.setEntity(new StringEntity(body.toString(), Charset.forName("UTF-8")));
+        this.request.setEntity(new StringEntity(body.toString(), getCHARSET()));
         return this;
     }
 }

@@ -3,16 +3,16 @@ package communication;
 import com.google.gson.JsonObject;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
-import java.io.*;
+import java.nio.charset.Charset;
+
 
 /**
  * <strong>Blueprint for CRUD requests</strong>
  */
-public abstract class HttpRequest implements Serializable {
+public abstract class HttpRequest {
     private RequestMethod method;
     private String url;
-
-    HttpRequest() {}
+    private static final Charset CHARSET = Charset.forName("UTF-8");
 
     HttpRequest(RequestMethod method, String url) {
         this.method = method;
@@ -37,5 +37,9 @@ public abstract class HttpRequest implements Serializable {
 
     public String getUrl() {
         return url;
+    }
+
+    public static Charset getCHARSET() {
+        return CHARSET;
     }
 }

@@ -19,7 +19,7 @@ import java.io.Serializable;
  *     </li>
  * </ul>
  */
-public enum RequestMethod implements Serializable {
+public enum RequestMethod {
     GET("GET"),
     POST("POST"),
     PUT("PUT"),

@@ -2,25 +2,23 @@ package communication.util;
 
 import communication.RequestMethod;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpRequestBase;
 
-import java.io.Serializable;
 import java.net.URI;
 
 /**
- * <strong>HTTP DELETE request w/ the opportunity of setting body</strong>
+ * <strong>HTTP DELETE request w/ body</strong>
  */
-public class HttpDeleteWithBody extends HttpEntityEnclosingRequestBase implements Serializable {
-    static final RequestMethod METHOD_NAME = RequestMethod.DELETE;
+public class HttpDeleteWithBody extends HttpEntityEnclosingRequestBase {
+    private static final RequestMethod METHOD_NAME = RequestMethod.DELETE;
     private URI uri;
 
     public HttpDeleteWithBody() {
         super();
     }
 
-    public HttpDeleteWithBody(final String uri) {
+    public HttpDeleteWithBody(final String url) {
         super();
-        setURI(URI.create(uri));
+        setURI(URI.create(url));
     }
 
     public HttpDeleteWithBody(final URI uri) {

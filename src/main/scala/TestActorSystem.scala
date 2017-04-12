@@ -85,7 +85,7 @@ object TestActorSystem extends App {
   val system = ActorSystem("testActorSystem")
   val executor = system.actorOf(Props[TaskExecutorActor], name="testActor")
 
-  val test : TestEnvironment = new TestEnvironment()
+  val test : Tests = new Tests()
   executor ! test
 
   system.terminate()

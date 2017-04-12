@@ -3,23 +3,22 @@ package communication.util;
 import communication.RequestMethod;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
-import java.io.Serializable;
 import java.net.URI;
 
 /**
- * <strong>HTTP POST request w/ the opportunity of setting body</strong>
+ * <strong>HTTP POST request w/ body</strong>
  */
-public class HttpPostWithBody extends HttpEntityEnclosingRequestBase implements Serializable {
-    static final RequestMethod METHOD_NAME = RequestMethod.POST;
+public class HttpPostWithBody extends HttpEntityEnclosingRequestBase {
+    private static final RequestMethod METHOD_NAME = RequestMethod.POST;
     private URI uri;
 
     public HttpPostWithBody() {
         super();
     }
 
-    public HttpPostWithBody(final String uri) {
+    public HttpPostWithBody(final String url) {
         super();
-        setURI(URI.create(uri));
+        setURI(URI.create(url));
     }
 
     public HttpPostWithBody(final URI uri) {
