@@ -2,6 +2,7 @@ package utils.db
 
 import java.sql.{Connection, PreparedStatement, Types}
 
+
 trait DBQuery {
   val table : String
   def perform(connection: Connection) : Any
@@ -14,6 +15,7 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
       s"CREATE TABLE IF NOT EXISTS $tableName ( " +
        "id            INT(11)      NOT NULL AUTO_INCREMENT, " +
        "method        VARCHAR(128) NOT NULL, " +
+       "params        VARCHAR(512), " +
       s"task_status   VARCHAR(16)  NOT NULL DEFAULT '${TaskStatus.NOT_STARTED}', " +
        "end_state     VARCHAR(16), " +
        "task_result   VARCHAR(2048), " +
@@ -105,10 +107,32 @@ class DBCountEndState(tableName : String) extends DBQuery {
 
 class DBCreateTask(method : String, tableName : String) extends DBQuery {
   override val table: String = tableName
+  var params : Map[String, String] = _
+
+  // for parametrized tasks
+  def this(method : String, params : Map[String, String], tableName: String) {
+    this(method, tableName)
+    this.params = params
+  }
+
   override def perform(connection : Connection) : Unit = {
-    val sql = s"INSERT INTO $tableName (method) VALUES (?);"
-    val statement : PreparedStatement = connection.prepareStatement(sql)
-    statement.setString(1, method)
+    var statement : PreparedStatement = null
+    if (params eq null) {
+      val sql = s"INSERT INTO $tableName (method) VALUES (?);"
+      statement = connection.prepareStatement(sql)
+      statement.setString(1, method)
+    }
+    // parametrized tasks
+    else {
+      val sql = s"INSERT INTO $tableName (method, params) VALUES (?, ?);"
+      statement = connection.prepareStatement(sql)
+      statement.setString(1, method)
+      var paramsAsString = ""
+      for ((name, value) <- params)
+        paramsAsString += name + "=" + value + "; "
+      paramsAsString dropRight 1
+      statement.setString(2, paramsAsString)
+    }
     val result = statement.executeUpdate()
     assert(result equals 1)
     println(s"[DB]: task created")
@@ -117,13 +141,43 @@ class DBCreateTask(method : String, tableName : String) extends DBQuery {
 
 class DBCreateTasks(methods : List[String], tableName : String) extends DBQuery {
   override val table: String = tableName
+  var methodsWithParams : Map[String, Map[String, String]] = _
+
+  // for parametrized tasks
+  def this(methodsWithParams : Map[String, Map[String, String]], tableName: String) {
+    this(methodsWithParams.keys.toList, tableName)
+    this.methodsWithParams = methodsWithParams
+  }
+
   override def perform(connection : Connection) : Unit = {
-    var sql = s"INSERT INTO $tableName (method) VALUES ("
-    for (i <- 1 to methods.size) sql += "?), ("
-    sql = sql.dropRight(3) + ";"
-    val statement : PreparedStatement = connection.prepareStatement(sql)
-    for (i <- 1 to methods.size)
-      statement.setString(i, methods(i - 1))
+    var statement : PreparedStatement = null
+    if (methodsWithParams eq null) {
+      var sql = s"INSERT INTO $tableName (method) VALUES ("
+      for (i <- 1 to methods.size) sql += "?), ("
+      sql = sql.dropRight(3) + ";"
+      statement = connection.prepareStatement(sql)
+      for (i <- 1 to methods.size)
+        statement.setString(i, methods(i - 1))
+    }
+    // parametrized tasks
+    else {
+      var sql = s"INSERT INTO $tableName (method, params) VALUES ("
+      for (i <- 1 to methods.size) sql += "?, ?), ("
+      sql = sql.dropRight(3) + ";"
+      statement = connection.prepareStatement(sql)
+      var i = 1
+      var j = 2
+      for (k <- 1 to methods.size) {
+        statement.setString(i, methods(k - 1))
+        var paramsAsString = ""
+        for ((name, value) <- methodsWithParams(methods(k - 1)))
+          paramsAsString += name + "=" + value + "; "
+        paramsAsString dropRight 1
+        statement.setString(j, paramsAsString)
+        i += 2
+        j += 2
+      }
+    }
     val result = statement.executeUpdate()
     assert(result equals methods.size)
     println(s"[DB]: ${methods.size} tasks created")
@@ -143,7 +197,14 @@ class DBGetTask(method : String, tableName : String) extends DBQuery {
     }
     else {
       var task : RequestedTask = null
+      var paramsstr = ""
       while (resultSet.next()) {
+        val params = Map[String, String]()
+        if (resultSet.getString("params") != null) {
+          paramsstr = resultSet.getString("params")
+          val pairs = resultSet.getString("params").replace(";", "").split("=| ").grouped(2)
+          val params = pairs.map { case Array(k, v) => k -> v }.toMap
+        }
         val task_status = TaskStatus.valueOf(resultSet.getString("task_status"))
         val end_state =
           if (resultSet.getString("end_state") == null)
@@ -154,10 +215,10 @@ class DBGetTask(method : String, tableName : String) extends DBQuery {
         val started_at = resultSet.getTimestamp("started_at")
         val finished_at = resultSet.getTimestamp("finished_at")
         val time_spent = resultSet.getInt("time_spent")
-        task = RequestedTask(method, task_status, end_state, task_result, started_at, finished_at, time_spent)
+        task = RequestedTask(method, params, task_status, end_state, task_result, started_at, finished_at, time_spent)
       }
-      println(s"[DB]: task found: ${task.method} - ${task.task_status} - ${task.end_state} - " +
-        s"${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
+      println(s"[DB]: task found: ${task.method} - $paramsstr - ${task.task_status} - " +
+        s"${task.end_state} - ${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
       Some(task)
     }
   }
@@ -180,8 +241,15 @@ class DBGetTasks(methods : List[String], tableName : String) extends DBQuery {
     }
     else {
       var taskList = List[RequestedTask]()
+      var paramsstr = ""
       while (resultSet.next()) {
         val method = resultSet.getString("method")
+        val params = Map[String, String]()
+        if (resultSet.getString("params") != null) {
+          paramsstr = resultSet.getString("params")
+          val pairs = resultSet.getString("params").replace(";", "").split("=| ").grouped(2)
+          val params = pairs.map { case Array(k, v) => k -> v }.toMap
+        }
         val task_status = TaskStatus.valueOf(resultSet.getString("task_status"))
         val end_state =
           if (resultSet.getString("end_state") == null)
@@ -192,12 +260,12 @@ class DBGetTasks(methods : List[String], tableName : String) extends DBQuery {
         val started_at = resultSet.getTimestamp("started_at")
         val finished_at = resultSet.getTimestamp("finished_at")
         val time_spent = resultSet.getInt("time_spent")
-        taskList = RequestedTask(method, task_status, end_state, task_result,
+        taskList = RequestedTask(method, params, task_status, end_state, task_result,
           started_at, finished_at, time_spent) :: taskList
       }
       for (task <- taskList)
-        println(s"[DB]: task found: ${task.method} - ${task.task_status} - ${task.end_state} - " +
-          s"${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
+        println(s"[DB]: task found: ${task.method} - $paramsstr - ${task.task_status} - " +
+          s"${task.end_state} - ${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
       Some(taskList)
     }
   }
@@ -216,8 +284,15 @@ class DBGetTasksWithStatus(task_status : TaskStatus, tableName : String) extends
     }
     else {
       var taskList = List[RequestedTask]()
+      var paramsstr = ""
       while (resultSet.next()) {
         val method = resultSet.getString("method")
+        val params = Map[String, String]()
+        if (resultSet.getString("params") != null) {
+          paramsstr = resultSet.getString("params")
+          val pairs = resultSet.getString("params").replace(";", "").split("=| ").grouped(2)
+          val params = pairs.map { case Array(k, v) => k -> v }.toMap
+        }
         val end_state =
           if (resultSet.getString("end_state") == null)
             EndState.NONE
@@ -227,12 +302,12 @@ class DBGetTasksWithStatus(task_status : TaskStatus, tableName : String) extends
         val started_at = resultSet.getTimestamp("started_at")
         val finished_at = resultSet.getTimestamp("finished_at")
         val time_spent = resultSet.getInt("time_spent")
-        taskList = RequestedTask(method, task_status, end_state, task_result,
+        taskList = RequestedTask(method, params, task_status, end_state, task_result,
           started_at, finished_at, time_spent) :: taskList
       }
       for (task <- taskList)
-        println(s"[DB]: task found: ${task.method} - ${task.task_status} - ${task.end_state} - " +
-          s"${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
+        println(s"[DB]: task found: ${task.method} - $paramsstr - ${task.task_status} - " +
+          s"${task.end_state} - ${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
       Some(taskList)
     }
   }

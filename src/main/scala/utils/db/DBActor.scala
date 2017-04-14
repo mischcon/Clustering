@@ -11,15 +11,15 @@ import com.typesafe.config.ConfigFactory
   * Current database scheme (clustering):
   *
   * 0 .. * tasks_[...]:
-  * +-----+--------+-------------+-----------+-------------+------------+-------------+------------+
-  * | id  | method | task_status | end_state | task_result | started_at | finished_at | time_spent |
-  * +-----+--------+-------------+-----------+-------------+------------+-------------+------------+
-  * | int | string | NOT_STARTED | SUCCESS   | string      | timestamp  | timestamp   | int        |
-  * |     |        | RUNNING     | FAILURE   |             |            |             |            |
-  * |     |        | DONE        | ABANDONED |             |            |             |            |
-  * |     |        |             | ERROR     |             |            |             |            |
-  * |     |        |             | null      |             |            |             |            |
-  * +-----+--------+-------------+-----------+-------------+------------+-------------+------------+
+  * +-----+--------+--------+-------------+-----------+-------------+------------+-------------+------------+
+  * | id  | method | params | task_status | end_state | task_result | started_at | finished_at | time_spent |
+  * +-----+--------+--------+-------------+-----------+-------------+------------+-------------+------------+
+  * | int | string | string | NOT_STARTED | SUCCESS   | string      | timestamp  | timestamp   | int        |
+  * |     |        |        | RUNNING     | FAILURE   |             |            |             |            |
+  * |     |        |        | DONE        | ABANDONED |             |            |             |            |
+  * |     |        |        |             | ERROR     |             |            |             |            |
+  * |     |        |        |             | null      |             |            |             |            |
+  * +-----+--------+--------+-------------+-----------+-------------+------------+-------------+------------+
   * }}}
   * All messages that are meant to be sent to this actor are of type [[utils.db.DBMessage]].
   */
@@ -108,11 +108,30 @@ class DBActor extends Actor with ActorLogging {
   }
 
   /**
+    * = Creates task entry in the database =
+    * @param method name of the task to be saved; __must be unique__
+    * @param params parameters of the given task
+    * @param tableName table name
+    */
+  def createTask(method : String, params : Map[String, String], tableName: String): Unit = {
+    performQuery(new DBCreateTask(method, params, tableName))
+  }
+
+  /**
     * = Creates several task entries in the database =
     * @param methods list w/ names of tasks to be saved; __names must be unique__
     * @param tableName table name
     */
   def createTasks(methods : List[String], tableName: String): Unit = {
+    performQuery(new DBCreateTasks(methods, tableName))
+  }
+
+  /**
+    * = Creates several task entries in the database =
+    * @param methods list w/ names and their parameters of tasks to be saved; __names must be unique__
+    * @param tableName table name
+    */
+  def createTasks(methods : Map[String, Map[String, String]], tableName: String): Unit = {
     performQuery(new DBCreateTasks(methods, tableName))
   }
 
@@ -217,7 +236,11 @@ class DBActor extends Actor with ActorLogging {
       countEndState(tableName)
     case CreateTask(method, tableName) =>
       createTask(method, tableName)
+    case CreateParametrizedTask(method, params, tableName) =>
+      createTask(method, params, tableName)
     case CreateTasks(methods, tableName) =>
+      createTasks(methods, tableName)
+    case CreateParametrizedTasks(methods, tableName) =>
       createTasks(methods, tableName)
     case GetTask(method, tableName) =>
       getTask(method, tableName)

@@ -2,7 +2,6 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import clustering.ClusteringTask
 import communication._
 import org.apache.http.impl.client.HttpClientBuilder
-import org.junit.runner.{Computer, JUnitCore, Result}
 
 
 class TaskExecutorActor extends Actor {
@@ -81,13 +80,7 @@ object TestActorSystem extends App {
   val executor = system.actorOf(Props[TaskExecutorActor], name="testActor")
 
   val test : Tests = new Tests()
-  // executor ! test
-
-  val computer = new Computer()
-  val jUnitCore = new JUnitCore()
-  val result : Result = jUnitCore.run(computer, classOf[JUnitTests])
-
-  println(result.getFailures)
+  executor ! test
 
   system.terminate()
 }

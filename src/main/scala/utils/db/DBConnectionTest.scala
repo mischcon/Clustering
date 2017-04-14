@@ -23,10 +23,14 @@ object DBConnectionTest extends App {
   val tableName = uuid.replace("-", "")
 
   val method = uuid
+  val params = Map("param1" -> "1", "param2" -> "2")
   db ! CreateTask(method, tableName)
+  db ! CreateParametrizedTask(uuid, params, tableName)
 
   val methods = List(uuid, uuid, uuid)
+  val methodsWithParams = Map(uuid -> params, uuid -> params)
   db ! CreateTasks(methods, tableName)
+  db ! CreateParametrizedTasks(methodsWithParams, tableName)
 
   val future1 = db ? GetTask(method, tableName)
   val result1 = Await.result(future1, timeout.duration).asInstanceOf[Option[RequestedTask]]
@@ -87,4 +91,6 @@ object DBConnectionTest extends App {
 //  db ! DeleteTasks(methods, tableName)
 
   db ! "TEST"
+
+  sys.terminate
 }

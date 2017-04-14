@@ -1,6 +1,16 @@
-id;method;task_status;end_state;task_result;started_at;finished_at;time_spent
-int;string;NOT_STARTED;SUCCESS;string;timestamp;timestamp;int
-;;RUNNING;FAILURE
-;;DONE;ABANDONED
-;;;ERROR
-;;;null
+id;method;params;task_status;end_state;task_result;started_at;finished_at;time_spent
+int;string;string;NOT_STARTED;SUCCESS;string;timestamp;timestamp;int
+;;;RUNNING;FAILURE
+;;;DONE;ABANDONED
+;;;;ERROR
+;;;;null
+
++-----+--------+--------+-------------+-----------+-------------+------------+-------------+------------+
+| id  | method | params | task_status | end_state | task_result | started_at | finished_at | time_spent |
++-----+--------+--------+-------------+-----------+-------------+------------+-------------+------------+
+| int | string | string | NOT_STARTED | SUCCESS   | string      | timestamp  | timestamp   | int        |
+|     |        |        | RUNNING     | FAILURE   |             |            |             |            |
+|     |        |        | DONE        | ABANDONED |             |            |             |            |
+|     |        |        |             | ERROR     |             |            |             |            |
+|     |        |        |             | null      |             |            |             |            |
++-----+--------+--------+-------------+-----------+-------------+------------+-------------+------------+
