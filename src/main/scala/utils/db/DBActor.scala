@@ -82,11 +82,15 @@ class DBActor extends Actor with ActorLogging {
     }
   }
 
+  def generateReport(tableName : String): Unit = {
+    performQuery(new DBGenerateReport(tableName))
+  }
+
   /**
     * = Answers w/ [[utils.db.CountedTaskStatus]] =
     * @param tableName table name
     */
-  def countTaskStatus(tableName: String): Unit = {
+  def countTaskStatus(tableName : String): Unit = {
     performQuery(new DBCountTaskStatus(tableName))
   }
 
@@ -94,7 +98,7 @@ class DBActor extends Actor with ActorLogging {
     * = Answers w/ [[utils.db.CountedEndState]] =
     * @param tableName table name
     */
-  def countEndState(tableName: String): Unit = {
+  def countEndState(tableName : String): Unit = {
     performQuery(new DBCountEndState(tableName))
   }
 
@@ -230,6 +234,8 @@ class DBActor extends Actor with ActorLogging {
   }
 
   override def receive: Receive = {
+    case GenerateReport(tableName) =>
+      generateReport(tableName)
     case CountTaskStatus(tableName) =>
       countTaskStatus(tableName)
     case CountEndState(tableName) =>

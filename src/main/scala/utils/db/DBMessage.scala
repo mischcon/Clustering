@@ -13,6 +13,12 @@ trait DBMessage
  */
 
 /**
+  *
+  * @param tableName
+  */
+case class GenerateReport(tableName : String) extends DBMessage
+
+/**
   * = Request ''task_status - amount'' relation =
   * __Example__:
   * {{{
@@ -22,7 +28,7 @@ trait DBMessage
   * }}}
   * @param tableName table name
   */
-case class CountTaskStatus(tableName: String) extends DBMessage
+case class CountTaskStatus(tableName : String) extends DBMessage
 
 /**
   * = Request ''end_state - amount'' relation =
@@ -36,7 +42,7 @@ case class CountTaskStatus(tableName: String) extends DBMessage
   * }}}
   * @param tableName table name
   */
-case class CountEndState(tableName: String) extends DBMessage
+case class CountEndState(tableName : String) extends DBMessage
 
 /**
   * = Create task entry in the database =

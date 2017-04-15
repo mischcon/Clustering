@@ -1,5 +1,6 @@
 package utils.db
 
+import java.io.{BufferedWriter, File, FileWriter}
 import java.sql.{Connection, PreparedStatement, Types}
 
 
@@ -46,6 +47,47 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
     statement = connection.prepareStatement(sql)
     statement.executeUpdate()
     println(s"[DB]: '${tableName}_update_timestamps' trigger created")
+  }
+}
+
+class DBGenerateReport(tableName : String) extends DBQuery {
+  override val table: String = tableName
+  override def perform(connection: Connection): Unit = {
+    val query1 = new DBGetTasksWithStatus(TaskStatus.DONE, tableName)
+    val doneTasks = query1.perform(connection)
+    val query2 = new DBCountEndState(tableName)
+    val endStateOfTasks = query2.perform(connection)
+    doneTasks match {
+      case Some(tasks) =>
+        val file = new File(s"$tableName.txt")
+        val bw = new BufferedWriter(new FileWriter(file))
+        bw.write(s"TASK SET : $tableName\n\n")
+        for ((k, v) <- endStateOfTasks.result) {
+          if (k == EndState.ABANDONED)
+            bw.write(s"$k\t$v\n")
+          else
+            bw.write(s"$k\t\t$v\n")
+        }
+        bw.write("\n")
+        for (task <- tasks) {
+          bw.write("===================================================================================================\n")
+          bw.write(task.end_state.toString + "\n\n")
+          var paramsAsString = ""
+          for ((name, value) <- task.params)
+            paramsAsString += name + "=" + value + "; "
+          paramsAsString dropRight 1
+          bw.write(s"METHOD     : ${task.method} ($paramsAsString)\n")
+          bw.write(s"STARTED @  : ${task.started_at}\n")
+          bw.write(s"FINISHED @ : ${task.finished_at}\n")
+          bw.write(s"TIME SPENT : ${task.time_spent} SEC\n")
+          bw.write(s"RESULT :\n${task.task_result}\n")
+        }
+        bw.write("===================================================================================================")
+        bw.close()
+        println(s"[DB]: report generated")
+      case None =>
+        println(s"[DB]: nothing to generate")
+    }
   }
 }
 

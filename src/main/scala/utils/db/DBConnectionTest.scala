@@ -90,7 +90,7 @@ object DBConnectionTest extends App {
 //  db ! DeleteTask(method, tableName)
 //  db ! DeleteTasks(methods, tableName)
 
-  db ! "TEST"
+  db ! GenerateReport(tableName)
 
   sys.terminate
 }
