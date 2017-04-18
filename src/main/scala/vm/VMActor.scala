@@ -2,19 +2,29 @@ package vm
 
 import java.io.File
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorLogging}
+import org.json4s.native.Serialization.read
 import vm.vagrant.Vagrant
-import vm.vagrant.configuration.{Protocol, Service}
+import vm.vagrant.configuration.{Protocol, Service, VagrantEnvironmentConfig}
 import vm.vagrant.configuration.builder._
 
 /**
   * Created by mischcon on 3/20/17.
   */
-class VMActor extends Actor {
+class VMActor extends Actor with ActorLogging {
+
+  private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
 
   override def receive: Receive = {
     case "up" => up; sender() ! "Mkey!"
     case "destroy" => destroy; sender() ! "Mkey!"
+    case x: String => parseVmConfig(x)
+  }
+
+  def parseVmConfig(vmConfigJson: String) = {
+    //try {
+    //  vagrantEnvironmentConfig = read[VagrantEnvironmentConfig](vmConfigJson)
+   // }
   }
 
   var vmConfig = VagrantVmConfigBuilder

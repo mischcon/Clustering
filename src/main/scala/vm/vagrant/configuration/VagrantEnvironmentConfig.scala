@@ -13,7 +13,8 @@ import java.io.File
   *
   */
 class VagrantEnvironmentConfig(var vmConfigs: Iterable[VagrantVmConfig],
-                               var path: File) {
+                               var path: File,
+                               var version: String) {
 
   /**
     * Returns true if this configuration describes a multi VM environment. A multi VM environment manages more than one VM.

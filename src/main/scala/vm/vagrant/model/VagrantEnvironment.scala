@@ -154,6 +154,17 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
       throw new VagrantException(exception)
   }
 
+  def updateBoxes(boxName: String = null): String = try {
+    if (boxName == null) {
+      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "box"), RubyString.newString(vagrantEnvironment.getRuntime, "update"), RubyString.newString(vagrantEnvironment.getRuntime, "--box"), RubyString.newString(vagrantEnvironment.getRuntime, boxName)).convertToString().toString
+    } else {
+      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "box"), RubyString.newString(vagrantEnvironment.getRuntime, "update")).convertToString().toString
+    }
+  } catch {
+    case exception: RaiseException =>
+      throw new VagrantException(exception)
+  }
+
   def getBoxePortMapping(box: VagrantVmConfig): VagrantVmConfig = try {
     val output = vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "port"), RubyString.newString(vagrantEnvironment.getRuntime, box.name)).convertToString().toString
     val pattern = s"\\d+ \\(guest\\) => \\d+ \\(host\\)".r

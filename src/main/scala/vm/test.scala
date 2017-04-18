@@ -107,7 +107,7 @@ class test {
     .withVagrantVmConfig(vmConfig2)
     .withPath(new File("/Volumes/Daten/Vagrant/scala.local"))
     .build
-  //val vagrant = new Vagrant().createEnvironment(environmentConfig)
+  val vagrant = new Vagrant().createEnvironment(environmentConfig)
   //vagrant.up()
   //println(vagrant.up())
   //val test = vagrant.status()
@@ -119,6 +119,7 @@ class test {
   //println(vagrant.sshExecute(vmConfig2, "echo 'Test2'"))
   //implicit val format = Serialization.formats(NoTypeHints)
   //val ser = write(environmentConfig)
+
   //println(ser)
 
 
@@ -148,6 +149,6 @@ class TestActorSystem {
 }
 
 object test extends App{
-  //new test
-  new TestActorSystem
+  new test
+  //new TestActorSystem
 }

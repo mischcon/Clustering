@@ -19,6 +19,7 @@ object VagrantEnvironmentConfigBuilder {
 class VagrantEnvironmentConfigBuilder() {
   private var vmConfigs: List[VagrantVmConfig] = List()
   private var path: File = _
+  private var version: String = _
 
   def withVagrantVmConfig(vmConfig: VagrantVmConfig): VagrantEnvironmentConfigBuilder = {
     vmConfigs ::= vmConfig
@@ -30,10 +31,17 @@ class VagrantEnvironmentConfigBuilder() {
     this
   }
 
+  def withVersion(version: String): VagrantEnvironmentConfigBuilder = {
+    this.version = version
+    this
+  }
+
   def build: VagrantEnvironmentConfig = {
     if (vmConfigs.isEmpty) throw new VagrantBuilderException("No vm defined")
     if (path == null) throw new VagrantBuilderException("No path defined")
+    if (version == null || version.isEmpty) new VagrantBuilderException("No version defined")
     new VagrantEnvironmentConfig(vmConfigs = vmConfigs,
-                                 path = path)
+                                 path = path,
+                                 version = version)
   }
 }
