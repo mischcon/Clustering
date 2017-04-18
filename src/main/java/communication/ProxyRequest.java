@@ -22,16 +22,33 @@ public class ProxyRequest<T> {
      * <code>vmProxyActor</code> by executing actor
      */
     private ActorRef vmProxy;
-    private Timeout timeout;
     private Future<Object> future;
     private Object response;
+    private static final Timeout TIMEOUT = new Timeout(Duration.create(5, "seconds"));
 
-    public ProxyRequest() {
-        this.timeout = new Timeout(Duration.create(5, "seconds"));
-    }
+    public ProxyRequest() {}
 
-    ProxyRequest(Integer timeout) {
-        this.timeout = new Timeout(Duration.create(timeout, "seconds"));
+    private void execute(HttpRequest http) {
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        CloseableHttpResponse response = null;
+        try {
+            response = client.execute(http.getRequest());
+            this.response = new RestApiResponse(response);
+        } catch (IOException e) {
+            System.err.println(String.format(
+                    "[ProxyRequest]: Could not execute following request: %s", http.getRequest().getURI()));
+            e.printStackTrace();
+        } finally {
+            try {
+                if (response != null) {
+                    response.close();
+                }
+                client.close();
+            } catch (IOException e) {
+                System.err.println("[ProxyRequest]: Could not clean up the resources");
+                e.printStackTrace();
+            }
+        }
     }
 
     private void send(T request) {
@@ -39,20 +56,17 @@ public class ProxyRequest<T> {
             vmProxy == null : task is executed locally
             vmProxy != null : task is executed in cluster
         */
-        if (vmProxy != null)
-            this.future = Patterns.ask(vmProxy, request, timeout);
+        if (vmProxy != null) {
+            this.future = Patterns.ask(vmProxy, request, TIMEOUT);
+        }
         else {
-            if (request instanceof HttpRequest) {
-                CloseableHttpClient client;
-                CloseableHttpResponse response;
-                try {
-                    client = HttpClientBuilder.create().build();
-                    response = client.execute(((HttpRequest) request).getRequest());
-                    this.response = new communication.HttpResponse(response);
-                    response.close();
-                    client.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            if (request instanceof RestApiRequest) {
+                switch (((RestApiRequest) request).getMethod()) {
+                    case "GET":    execute(new GetRequest((RestApiRequest) request));    break;
+                    case "POST":   execute(new PostRequest((RestApiRequest) request));   break;
+                    case "PUT":    execute(new PutRequest((RestApiRequest) request));    break;
+                    case "DELETE": execute(new DeleteRequest((RestApiRequest) request)); break;
+                    default: break;
                 }
             }
             /* expand if needed
@@ -69,9 +83,10 @@ public class ProxyRequest<T> {
     private Object receive() {
         if (vmProxy != null) {
             try {
-                this.response = Await.result(future, timeout.duration());
-                return response;
+                this.response = Await.result(future, TIMEOUT.duration());
+                return this.response;
             } catch (Exception e) {
+                System.err.println("[ProxyRequest]: Something went wrong during waiting for response");
                 e.printStackTrace();
             }
             return null;

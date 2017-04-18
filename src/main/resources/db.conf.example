@@ -1,0 +1,6 @@
+db {
+  url      = "jdbc:mysql://localhost:3306/clustering?zeroDateTimeBehavior=convertToNull"
+  driver   = "com.mysql.jdbc.Driver"
+  username = "root"
+  password = "root"
+}

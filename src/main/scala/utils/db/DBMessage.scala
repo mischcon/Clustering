@@ -1,5 +1,7 @@
 package utils.db
 
+import java.sql.Timestamp
+
 
 /**
   * = Message trait for [[utils.db.DBActor]] =
@@ -11,6 +13,12 @@ trait DBMessage
  */
 
 /**
+  *
+  * @param tableName
+  */
+case class GenerateReport(tableName : String) extends DBMessage
+
+/**
   * = Request ''task_status - amount'' relation =
   * __Example__:
   * {{{
@@ -20,7 +28,7 @@ trait DBMessage
   * }}}
   * @param tableName table name
   */
-case class CountTaskStatus(tableName: String) extends DBMessage
+case class CountTaskStatus(tableName : String) extends DBMessage
 
 /**
   * = Request ''end_state - amount'' relation =
@@ -34,7 +42,7 @@ case class CountTaskStatus(tableName: String) extends DBMessage
   * }}}
   * @param tableName table name
   */
-case class CountEndState(tableName: String) extends DBMessage
+case class CountEndState(tableName : String) extends DBMessage
 
 /**
   * = Create task entry in the database =
@@ -44,11 +52,26 @@ case class CountEndState(tableName: String) extends DBMessage
 case class CreateTask(method : String, tableName: String) extends DBMessage
 
 /**
+  * = Create task entry in the database =
+  * @param method name of the task to be saved; __must be unique__
+  * @param params parameters of the given task; if no parameters available use [[CreateTask]]
+  * @param tableName table name
+  */
+case class CreateParametrizedTask(method : String, params : Map[String, String], tableName: String) extends DBMessage
+
+/**
   * = Create several task entries in the database =
   * @param methods list w/ names of tasks to be saved; __names must be unique__
   * @param tableName table name
   */
 case class CreateTasks(methods : List[String], tableName: String) extends DBMessage
+
+/**
+  * = Create several task entries in the database =
+  * @param methods list w/ names and their parameters of tasks to be saved; __names must be unique__
+  * @param tableName table name
+  */
+case class CreateParametrizedTasks(methods : Map[String, Map[String, String]], tableName: String) extends DBMessage
 
 /**
   * = Get database entry for requested task =
@@ -145,9 +168,14 @@ case class CountedEndState(result : Map[EndState, Int]) extends DBMessage
 /**
   * = Response message for task entry =
   * @param method entry in tasks table for column '''method'''
+  * @param params entry in tasks table for column '''params'''
   * @param task_status entry in tasks table for column '''task_status'''
   * @param end_state entry in tasks table for column '''end_state'''
   * @param task_result entry in tasks table for column '''task_result'''
+  * @param started_at entry in tasks table for column '''started_at'''
+  * @param finished_at entry in tasks table for column '''finished_at'''
+  * @param time_spent entry in tasks table for column '''time_spent'''
   */
-case class RequestedTask(method : String, task_status : TaskStatus, end_state : EndState,
-                         task_result : String) extends DBMessage
+case class RequestedTask(method : String, params : Map[String, String], task_status : TaskStatus, end_state : EndState,
+                         task_result : String, started_at : Timestamp, finished_at : Timestamp, time_spent : Int)
+  extends DBMessage

@@ -3,6 +3,7 @@ package worker
 import Exceptions.{TestFailException, TestSuccessException}
 import clustering.ClusteringTask
 import communication.ProxyRequest
+import de.oth.clustering.java.TestingCodebaseLoader
 import worker.messages.ExecuteTask
 
 class TaskExecutorActor extends WorkerTrait{
@@ -25,18 +26,14 @@ class TaskExecutorActor extends WorkerTrait{
   def run(msg : ExecuteTask): Unit ={
     log.debug(s"EXECUTING ${msg.task.method}")
     try {
-      val loader = new OwnLoader
-      val cls : Class[_] = loader.getClassObject(msg.task.classname, msg.task.raw_cls)
+      val loader = new TestingCodebaseLoader()
+      val cls : Class[_] = loader.getClassFromByte(msg.task.raw_cls, msg.task.classname)
       val obj = cls.newInstance()
-      println("got object")
       for (interface <- obj.getClass.getInterfaces){
-        println("got interface")
         if(interface.getTypeName eq classOf[ClusteringTask].getTypeName){
           for(field <- interface.getDeclaredFields){
-            println("got field")
             if(field.getType.isAssignableFrom(classOf[ProxyRequest[Object]])) {
               field.setAccessible(true)
-              println("set acccessible")
               val proxyRequest : ProxyRequest[Object] = field.get(obj).asInstanceOf[ProxyRequest[Object]]
               for (field <- proxyRequest.getClass.getDeclaredFields) {
                 field.getName match {
@@ -51,7 +48,6 @@ class TaskExecutorActor extends WorkerTrait{
           }
         }
       }
-      println("getting method")
       val method = obj.getClass.getMethod(msg.task.method)
       println(s"invoking (method is: ${method}")
       val res = method.invoke(obj)
@@ -63,12 +59,5 @@ class TaskExecutorActor extends WorkerTrait{
       }
     }
 
-  }
-}
-
-class OwnLoader extends ClassLoader {
-
-  def getClassObject(classname : String, raw_class : Array[Byte]) = {
-    defineClass(classname, raw_class, 0, raw_class.length)
   }
 }

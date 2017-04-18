@@ -1,13 +1,14 @@
 package communication;
 
 import com.google.gson.JsonObject;
+import communication.util.HttpPutWithBody;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.util.Map;
 
 /**
  * <strong>HTTP PUT request</strong>
@@ -18,8 +19,16 @@ public class PutRequest extends HttpRequest {
     public PutRequest(String url) {
         super(RequestMethod.PUT, url);
         this.request = new HttpPutWithBody(url);
-        this.request.addHeader("User-Agent", getUSER_AGENT());
-        this.request.addHeader("accept", "application/json");
+    }
+
+    public PutRequest(RestApiRequest req) {
+        super(RequestMethod.valueOf(req.getMethod()), req.getUrl());
+        this.request = new HttpPutWithBody(req.getUrl());
+        for (Map.Entry<String, String> header : req.getHeaders().entrySet())
+            this.addHeader(header.getKey(), header.getValue());
+        for (Map.Entry<String, String> param : req.getParams().entrySet())
+            this.addParam(param.getKey(), param.getValue());
+        this.addBody(req.getBody());
     }
 
     @Override public HttpPutWithBody getRequest() {
@@ -36,18 +45,24 @@ public class PutRequest extends HttpRequest {
             URI uri = new URIBuilder(this.request.getURI()).addParameter(name, value).build();
             this.request.setURI(uri);
         } catch (URISyntaxException e) {
+            System.err.println(String.format("[PutRequest]: Invalid parameter: %s=%s", name, value));
             e.printStackTrace();
         }
         return this;
     }
 
+    @Override public PutRequest addBody(byte[] body) {
+        this.request.setEntity(new ByteArrayEntity(body));
+        return this;
+    }
+
     @Override public PutRequest addBody(String body) {
-        this.request.setEntity(new ByteArrayEntity(body.getBytes(Charset.forName("UTF-8"))));
+        this.request.setEntity(new ByteArrayEntity(body.getBytes(getCHARSET())));
         return this;
     }
 
     @Override public PutRequest addBody(JsonObject body) {
-        this.request.setEntity(new StringEntity(body.toString(), Charset.forName("UTF-8")));
+        this.request.setEntity(new StringEntity(body.toString(), getCHARSET()));
         return this;
     }
 }
