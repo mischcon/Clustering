@@ -4,6 +4,8 @@ import Exceptions.{TestFailException, TestSuccessException}
 import clustering.ClusteringTask
 import communication.ProxyRequest
 import de.oth.clustering.java.TestingCodebaseLoader
+import org.junit.Test
+import org.junit.runner.{JUnitCore, Request, Result}
 import worker.messages.ExecuteTask
 
 class TaskExecutorActor extends WorkerTrait{
@@ -49,9 +51,22 @@ class TaskExecutorActor extends WorkerTrait{
         }
       }
       val method = obj.getClass.getMethod(msg.task.method)
-      println(s"invoking (method is: ${method}")
-      val res = method.invoke(obj)
-      throw new TestSuccessException(msg.task, res)
+      val an = method.getAnnotation(classOf[Test])
+      if (an != null) {
+        println(s"JUnit test method found\ninvoking (method is: ${method}")
+        val result : Result = new JUnitCore().run(Request.method(cls, method.getName))
+        var res = new String
+        if (result.wasSuccessful)
+          res = "Test successful"
+        else
+          res = "Test failed : " + result.getFailures
+        throw new TestSuccessException(msg.task, res)
+      }
+      else {
+        println(s"invoking (method is: ${method}")
+        val res = method.invoke(obj)
+        throw new TestSuccessException(msg.task, res)
+      }
     } catch {
       case e : Exception => {
         log.debug(s"invocation failed - ${e.getCause.toString}")
