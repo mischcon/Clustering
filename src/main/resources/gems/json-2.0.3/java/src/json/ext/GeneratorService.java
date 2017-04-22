@@ -5,13 +5,13 @@
  */
 package json.ext;
 
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.runtime.load.BasicLibraryService;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 /**
  * The service invoked by JRuby's {@link org.jruby.runtime.load.LoadService LoadService}.

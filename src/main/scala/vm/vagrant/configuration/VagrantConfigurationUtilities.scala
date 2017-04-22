@@ -6,9 +6,11 @@ package vm.vagrant.configuration
 
 import java.io.File
 import java.net.URL
-import java.util.UUID
 
-import vm.vagrant.configuration.ChecksumType.ChecksumType
+import vm.vagrant.util.{ChecksumType, Protocol, Run}
+
+import scala.collection.JavaConverters._
+
 
 /**
   * Some utilities for the configuration of Vagrant environments. This class creates configurationfiles for Vagrant.
@@ -22,7 +24,7 @@ object VagrantConfigurationUtilities {
   def createVagrantFileContent(config: VagrantEnvironmentConfig): String = {
     val builder = new StringBuilder
     builder.append("Vagrant.configure(\"2\") do |config|").append("\n")
-    for (vmConfig <- config.vmConfigs) {
+    for (vmConfig <- config.vmConfigs().asScala) {
       builder.append(createVmInMultiEnvConfig(vmConfig))
     }
     builder.append("end").append("\n")
@@ -48,11 +50,11 @@ object VagrantConfigurationUtilities {
     if (vmConfig.gracefulHaltTimeout != 0) builder.append(createVmGracefulHaltTimeoutConfig(vmConfig.gracefulHaltTimeout))
     if (vmConfig.guest != null) builder.append(createVmGuestConfig(vmConfig.guest))
     if (vmConfig.hostName != null) builder.append(createVmHostNameConfig(vmConfig.hostName))
-    if (vmConfig.vagrantNetworkConfigs != null) for (vagrantNetworkConfig <- vmConfig.vagrantNetworkConfigs) builder.append(createVmNetworkConfig(vagrantNetworkConfig))
+    if (vmConfig.vagrantNetworkConfigs != null) for (vagrantNetworkConfig <- vmConfig.vagrantNetworkConfigs().asScala) builder.append(createVmNetworkConfig(vagrantNetworkConfig))
     if (vmConfig.postUpMessage != null) builder.append(createVmPostUpMessageConfig(vmConfig.postUpMessage))
     builder.append(createVmProviderConfig(vmConfig.provider))
-    if (vmConfig.vagrantProvisionerConfigs != null) for (vagrantProvisionerConfig <- vmConfig.vagrantProvisionerConfigs) builder.append(createVmProvisionerConfig(vagrantProvisionerConfig))
-    if (vmConfig.vagrantSyncedFolderConfigs != null) for (vagrantSyncedFolderConfig <- vmConfig.vagrantSyncedFolderConfigs) builder.append(createVmSyncFolderConfig(vagrantSyncedFolderConfig))
+    if (vmConfig.vagrantProvisionerConfigs != null) for (vagrantProvisionerConfig <- vmConfig.vagrantProvisionerConfigs().asScala) builder.append(createVmProvisionerConfig(vagrantProvisionerConfig))
+    if (vmConfig.vagrantSyncedFolderConfigs != null) for (vagrantSyncedFolderConfig <- vmConfig.vagrantSyncedFolderConfigs().asScala) builder.append(createVmSyncFolderConfig(vagrantSyncedFolderConfig))
     if (!vmConfig.usablePortRange.equals("2200..2250")) builder.append(createVmUsablePortRangeConfig(vmConfig.usablePortRange))
     builder.append("  end").append("\n")
     builder.toString
@@ -177,47 +179,41 @@ object VagrantConfigurationUtilities {
 
   private def createVmNetworkPrivateNetworkConfig(privateNetwork: VagrantPrivateNetworkConfig) = {
     val builder = new StringBuilder
-    if (privateNetwork.isComplete) {
-      builder.append(s"""    vm.vm.network "${privateNetwork.mode}"""")
-      if (privateNetwork.dhcp) builder.append(s""", type: "dhcp" """)
-      if (privateNetwork.ip != null && !privateNetwork.ip.isEmpty) builder.append(s""", ip: "${privateNetwork.ip}" """)
-      if (privateNetwork.netmask != null && !privateNetwork.netmask.isEmpty) builder.append(s""", netmask: "${privateNetwork.netmask}" """)
-      if (!privateNetwork.autoConfig) builder.append(s", auto_config: ${privateNetwork.autoConfig.toString} ")
-      builder.append("\n")
-    }
+    builder.append(s"""    vm.vm.network "${privateNetwork.mode}"""")
+    if (privateNetwork.dhcp) builder.append(s""", type: "dhcp" """)
+    if (privateNetwork.ip != null && !privateNetwork.ip.isEmpty) builder.append(s""", ip: "${privateNetwork.ip}" """)
+    if (privateNetwork.netmask != null && !privateNetwork.netmask.isEmpty) builder.append(s""", netmask: "${privateNetwork.netmask}" """)
+    if (!privateNetwork.autoConfig) builder.append(s", auto_config: ${privateNetwork.autoConfig.toString} ")
+    builder.append("\n")
     builder.toString
   }
 
   private def createVmNetworkPortForwardingConfig(portForwarding: VagrantPortForwardingConfig) = {
     val builder = new StringBuilder
-    if (portForwarding.isComplete) {
-      builder.append(s"""    vm.vm.network "${portForwarding.mode}", guest: ${portForwarding.guestPort}, host: ${portForwarding.hostPort}""")
-      if (portForwarding.name != null && !portForwarding.name.isEmpty) builder.append(s""", id: "${portForwarding.name}"""")
-      if (portForwarding.protocol != Protocol.tcp) builder.append(s""", protocol: "${portForwarding.protocol.toString}"""")
-      if (portForwarding.autoCorrect) builder.append(s", auto_correct: ${portForwarding.autoCorrect}")
-      if (portForwarding.guestIp != null && !portForwarding.guestIp.isEmpty) builder.append(s""", guest_ip: "${portForwarding.guestIp}"""")
-      if (portForwarding.hostIp != null && !portForwarding.hostIp.isEmpty) builder.append(s""", host_ip: "${portForwarding.hostIp}"""")
-      builder.append("\n")
-    }
+    builder.append(s"""    vm.vm.network "${portForwarding.mode}", guest: ${portForwarding.guestPort}, host: ${portForwarding.hostPort}""")
+    if (portForwarding.name != null && !portForwarding.name.isEmpty) builder.append(s""", id: "${portForwarding.name}"""")
+    if (portForwarding.protocol != Protocol.TCP) builder.append(s""", protocol: "${portForwarding.protocol.toString}"""")
+    if (portForwarding.autoCorrect) builder.append(s", auto_correct: ${portForwarding.autoCorrect}")
+    if (portForwarding.guestIp != null && !portForwarding.guestIp.isEmpty) builder.append(s""", guest_ip: "${portForwarding.guestIp}"""")
+    if (portForwarding.hostIp != null && !portForwarding.hostIp.isEmpty) builder.append(s""", host_ip: "${portForwarding.hostIp}"""")
+    builder.append("\n")
     builder.toString
   }
 
   private def createVmNetworkPublicNetworkConfig(publicNetwork: VagrantPublicNetworkConfig) = {
     val builder = new StringBuilder
-    if (publicNetwork.isComplete) {
-      builder.append(s"""    vm.vm.network "${publicNetwork.mode}"""")
-      if (publicNetwork.useDhcpAssignedDefaultRoute) builder.append(s", use_dhcp_assigned_default_route: ${publicNetwork.useDhcpAssignedDefaultRoute.toString}")
-      if (publicNetwork.ip != null && !publicNetwork.ip.isEmpty) builder.append(s""", ip: "${publicNetwork.ip}"""")
-      if (publicNetwork.bridges != null && publicNetwork.bridges.length > 0) {
-        builder.append(", bridge:")
-        if (publicNetwork.bridges.length == 1 ) builder.append(s""" "${publicNetwork.bridges{0}}"""")
-        else {
-          builder.append(publicNetwork.bridges.mkString(" [ ", ", ", " ]"))
-        }
+    builder.append(s"""    vm.vm.network "${publicNetwork.mode}"""")
+    if (publicNetwork.useDhcpAssignedDefaultRoute) builder.append(s", use_dhcp_assigned_default_route: ${publicNetwork.useDhcpAssignedDefaultRoute.toString}")
+    if (publicNetwork.ip != null && !publicNetwork.ip.isEmpty) builder.append(s""", ip: "${publicNetwork.ip}"""")
+    if (publicNetwork.bridges != null && publicNetwork.bridges().size() > 0) {
+      builder.append(", bridge:")
+      if (publicNetwork.bridges().size() == 1 ) builder.append(s""" "${publicNetwork.bridges().get(0)}"""")
+      else {
+        builder.append(publicNetwork.bridges().asScala.mkString(" [ ", ", ", " ]"))
       }
-      if (!publicNetwork.autoConfig) builder.append(s", auto_config: ${publicNetwork.autoConfig.toString}")
-      builder.append("\n")
     }
+    if (!publicNetwork.autoConfig) builder.append(s", auto_config: ${publicNetwork.autoConfig.toString}")
+    builder.append("\n")
     builder.toString
   }
 
@@ -227,7 +223,7 @@ object VagrantConfigurationUtilities {
     if (syncFolder.create) builder.append(s", create: ${syncFolder.create.toString}")
     if (syncFolder.disabled) builder.append(s", disabled: ${syncFolder.disabled.toString}")
     if (syncFolder.group != null && !syncFolder.group.isEmpty) builder.append(s""", group: "${syncFolder.group}" """)
-    if (syncFolder.mountOptions != null && syncFolder.mountOptions.length > 0) builder.append(s""", mount_options: ${syncFolder.mountOptions.mkString("""["""", """", """", """"]""")} """)
+    if (syncFolder.mountOptions != null && syncFolder.mountOptions().size() > 0) builder.append(s""", mount_options: ${syncFolder.mountOptions().asScala.mkString("""["""", """", """", """"]""")} """)
     if (syncFolder.owner != null && !syncFolder.owner.isEmpty) builder.append(s""", owner: "${syncFolder.owner}" """)
     if (syncFolder.name != null && !syncFolder.name.isEmpty) builder.append(s""", id: "${syncFolder.name}" """)
     syncFolder match {
@@ -255,7 +251,7 @@ object VagrantConfigurationUtilities {
       if (provider.memory > 0 ) builder.append(s"""      provider.memory = "${provider.memory.toString}"""").append("\n")
       if (provider.cpus > 0 ) builder.append(s"""      provider.cpus = ${provider.cpus.toString}""").append("\n")
       if (provider.vmName != null && !provider.vmName.isEmpty) builder.append(s"""      provider.name = "${provider.vmName}"""").append("\n")
-      if (provider.customize != null) for (customize <- provider.customize) { builder.append(s"      provider.customize = ${customize}").append("\n") }
+      if (provider.customize != null) for (customize <- provider.customize().asScala) { builder.append(s"      provider.customize = ${customize}").append("\n") }
       builder.append("    end").append("\n")
     }
     builder.toString
@@ -264,7 +260,7 @@ object VagrantConfigurationUtilities {
   private def createVmProvisionerConfig(provisioner: VagrantProvisionerConfig) = {
     val builder = new StringBuilder
     builder.append(s"""    vm.vm.provision "${provisioner.mode}"""")
-    if (provisioner.run != Run.once) builder.append(s""", run: "${provisioner.run.toString}"""")
+    if (provisioner.run != Run.ONCE) builder.append(s""", run: "${provisioner.run.toString}"""")
     if (provisioner.preserveOrder) builder.append(s", preserve_order: ${provisioner.preserveOrder}")
     provisioner match {
       case x: VagrantProvisionerFileConfig => builder.append(createVmProvisionerFileConfig(x))
@@ -277,13 +273,13 @@ object VagrantConfigurationUtilities {
   private def createVmProvisionerFileConfig(provisionerFile: VagrantProvisionerFileConfig) = {
     val builder = new StringBuilder
     if (provisionerFile.source != null) builder.append(s""", source: "${provisionerFile.source.toString}"""")
-    if (provisionerFile.destination != null) builder.append(s""", destination: "${provisionerFile.destination.toString}"""")
+    if (provisionerFile.destination() != null) builder.append(s""", destination: "${provisionerFile.destination().toString}"""")
     builder.toString()
   }
 
   private def createVmProvisionerShellConfig(provisionerShell: VagrantProvisionerShellConfig) = {
     val builder = new StringBuilder
-    if (provisionerShell.args != null && provisionerShell.args.length > 0) builder.append(s""", args: ${provisionerShell.args.mkString("""["""", """", """", """"]""")}""")
+    if (provisionerShell.args != null && provisionerShell.args().size() > 0) builder.append(s""", args: ${provisionerShell.args().asScala.mkString("""["""", """", """", """"]""")}""")
     if (provisionerShell.binary) builder.append(s", binary: ${provisionerShell.binary.toString} ")
     if (!provisionerShell.privileged) builder.append(s", privileged: ${provisionerShell.privileged.toString} ")
     if (provisionerShell.uploadPath != null) builder.append(s""", upload_path: "${provisionerShell.uploadPath.toString}" """)

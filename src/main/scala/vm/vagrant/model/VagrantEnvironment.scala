@@ -1,13 +1,12 @@
 package vm.vagrant.model
 
-import org.jruby.RubyObject
-import org.jruby.RubyString
+import org.jruby.{RubyObject, RubyString}
 import org.jruby.exceptions.RaiseException
 import vm.vagrant.configuration.VagrantVmConfig
 import vm.vagrant.util.{VagrantException, VagrantVmConfigUtils}
 
 /**
-  * A {@link VagrantEnvironment} manages a set of VMs. By using the environment you can manage the lifecycle of all VMs inside the environment or access a specific VM.
+  * A {@link VmEnvironment} manages a set of VMs. By using the environment you can manage the lifecycle of all VMs inside the environment or access a specific VM.
   *
   * @author oliver.ziegert
   *
@@ -15,7 +14,7 @@ import vm.vagrant.util.{VagrantException, VagrantVmConfigUtils}
 class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
 
 /**
-  * The {@link VagrantEnvironment} is a Wrapper for a Vagrant environment. The class contains the JRuby object for the connections and forwards the method calls to it. This constructor is used by the builder classes or the {@link Vagrant} class. You do not need to call it in your code
+  * The {@link VmEnvironment} is a Wrapper for a Vagrant environment. The class contains the JRuby object for the connections and forwards the method calls to it. This constructor is used by the builder classes or the {@link Vagrant} class. You do not need to call it in your code
   */
   /**
     * Start all VMs in this environment

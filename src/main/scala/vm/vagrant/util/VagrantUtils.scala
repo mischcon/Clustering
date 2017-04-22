@@ -1,8 +1,8 @@
 package vm.vagrant.util
 
 import java.io.IOException
-import java.net.MalformedURLException
-import java.net.URL
+import java.net.{MalformedURLException, URL}
+
 import scala.io.Source.fromURL
 
 /**

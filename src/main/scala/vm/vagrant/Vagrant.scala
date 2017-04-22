@@ -2,17 +2,20 @@ package vm.vagrant
 
 import java.io.{File, IOException}
 import java.nio.charset.Charset
-import scala.io.Source.fromURL
-import scala.collection.JavaConverters._
-import sbt.io.IO.{copyFile, write, copyDirectory}
+
 import org.jruby.RubyObject
 import org.jruby.embed.{LocalContextScope, ScriptingContainer}
+import sbt.io.IO.{copyDirectory, copyFile, write}
 import vm.vagrant.configuration._
 import vm.vagrant.model.VagrantEnvironment
+
+import scala.collection.JavaConverters._
+import scala.io.Source.fromURL
 
 /**
   * Created by oliver.ziegert on 24.03.2017.
   */
+
 class Vagrant(debug: Boolean = false){
 
   private val scriptingContainer: ScriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETHREAD)
@@ -53,7 +56,7 @@ class Vagrant(debug: Boolean = false){
   def createEnvironment(path: File, environmentConfig: VagrantEnvironmentConfig, fileTemplates: Iterable[VagrantFileTemplateConfiguration], folderTemplates: Iterable[VagrantFolderTemplateConfiguration]): VagrantEnvironment = createEnvironment(path, VagrantConfigurationUtilities.createVagrantFileContent(environmentConfig), fileTemplates, folderTemplates)
 
   @throws[IOException]
-  def createEnvironment(path: File, configuration: VagrantConfiguration): VagrantEnvironment = createEnvironment(path, VagrantConfigurationUtilities.createVagrantFileContent(configuration.getEnvironmentConfig), configuration.getFileTemplateConfigurations, configuration.getFolderTemplateConfigurations)
+  def createEnvironment(path: File, configuration: VagrantConfiguration): VagrantEnvironment = createEnvironment(path, VagrantConfigurationUtilities.createVagrantFileContent(configuration.environmentConfig()), configuration.fileTemplateConfigurations().asScala, configuration.folderTemplateConfigurations().asScala)
 
   @throws[IOException]
   def createEnvironment(path: File, vagrantfileContent: String, fileTemplates: Iterable[VagrantFileTemplateConfiguration], folderTemplates: Iterable[VagrantFolderTemplateConfiguration]): VagrantEnvironment = {

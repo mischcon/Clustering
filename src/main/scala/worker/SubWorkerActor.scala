@@ -4,11 +4,10 @@ import Exceptions.{TestFailException, TestSuccessException}
 import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{ActorRef, ActorSelection, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.util.Timeout
-import akka.pattern._
 import utils.db.{EndState, TaskStatus, UpdateTask}
 import worker.messages._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.Random
 

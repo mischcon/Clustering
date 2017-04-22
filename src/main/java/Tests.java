@@ -1,7 +1,9 @@
 import clustering.Clustering;
-import com.google.gson.JsonObject;
 import clustering.ClusteringTask;
-import communication.*;
+import com.google.gson.JsonObject;
+import communication.RequestMethod;
+import communication.RestApiRequest;
+import communication.RestApiResponse;
 
 /**
  * <strong>Contains test tasks for the cluster</strong>
