@@ -9,6 +9,7 @@ import de.oth.clustering.java.TestingCodebaseLoader
 
 
 object test extends App{
-  val loader: TestingCodebaseLoader = new TestingCodebaseLoader("TestJar2.jar")
-  val testMethods = loader.getClassClusterMethods
+  val loader: TestingCodebaseLoader = new TestingCodebaseLoader("TestJar3.jar")
+  val config = loader.getVmConfig
+  println(config)
 }
