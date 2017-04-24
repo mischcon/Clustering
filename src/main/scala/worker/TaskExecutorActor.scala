@@ -55,12 +55,12 @@ class TaskExecutorActor extends WorkerTrait{
       if (an != null) {
         println(s"JUnit test method found\ninvoking (method is: ${method}")
         val result : Result = new JUnitCore().run(Request.method(cls, method.getName))
-        var res = new String
-        if (result.wasSuccessful)
-          res = "Test successful"
-        else
-          res = "Test failed : " + result.getFailures
-        throw new TestSuccessException(msg.task, res)
+        if (result.wasSuccessful) {
+          throw new TestSuccessException(msg.task, result.toString)
+        }
+        else {
+          throw new TestFailException(msg.task, result.getFailures.get(0).getException)
+        }
       }
       else {
         println(s"invoking (method is: ${method}")
