@@ -14,6 +14,7 @@ val akkaVersion = "2.4.17"
 val akkaHttpVersion = "10.0.5"
 val jrubyVersion = "9.1.8.+"
 val sbtIoVersion = "1.0.0-+"
+val junitVersion = "4.10"
 
 libraryDependencies ++= Seq(
 
@@ -58,7 +59,10 @@ libraryDependencies ++= Seq(
   "org.jruby" % "jruby-complete" % jrubyVersion,
  
   //Sbt-IO
-  "org.scala-sbt" %% "io" % sbtIoVersion
+  "org.scala-sbt" %% "io" % sbtIoVersion,
+
+  //JUnit
+  "junit" % "junit" % junitVersion
 )
 
 //assemblyMergeStrategy in assembly := {
