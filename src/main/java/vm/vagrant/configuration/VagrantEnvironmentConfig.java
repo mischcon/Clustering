@@ -13,6 +13,7 @@ public class VagrantEnvironmentConfig {
 
     private List<VagrantVmConfig> vmConfigs;
     private File path;
+    private String version;
 
     public VagrantEnvironmentConfig(Iterable<VagrantVmConfig> vmConfigs, File path) {
         this.vmConfigs = new ArrayList<>();
@@ -38,6 +39,10 @@ public class VagrantEnvironmentConfig {
     }
 
     public File path() { return path; }
+
+    public String version() { return version; }
+
+    public void setVersion(String version) { this.version = version; }
 
     /**
      * Returns true if this configuration describes a multi VM environment. A multi VM environment manages more than one VM.

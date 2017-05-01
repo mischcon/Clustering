@@ -1,6 +1,7 @@
 package worker.messages
 
 import akka.actor.ActorRef
+import vm.vagrant.configuration.VagrantEnvironmentConfig
 
 trait WorkerMessagesTrait
 
@@ -26,7 +27,7 @@ case class PersistAndSuicide(reason : String) extends WorkerMessagesTrait
 
 /* DEPLOYMENT */
 case object GetDeployInfo extends WorkerMessagesTrait
-case class DeployInfo(deployInfo : Object) extends WorkerMessagesTrait
+case class DeployInfo(vagrantEnvironmentConfig : VagrantEnvironmentConfig) extends WorkerMessagesTrait
 case object NoDeployInfo extends WorkerMessagesTrait
 
 

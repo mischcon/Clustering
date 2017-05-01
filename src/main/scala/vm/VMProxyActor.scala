@@ -1,33 +1,111 @@
 package vm
 
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging, Terminated}
+import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Terminated}
+import akka.util.Timeout
 import communication._
 import org.apache.http.impl.client.HttpClientBuilder
+import vm.messages._
+import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantPortForwardingConfig}
 import worker.messages._
+import akka.pattern._
+import vm.vagrant.util.Service
+
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
+import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
 
 /**
   * Created by mischcon on 3/20/17.
   */
-class VMProxyActor extends Actor with ActorLogging{
+class VMProxyActor extends Actor with ActorLogging {
 
-  var haveSpaceForTasks = true
+  private val uuid = self.path.name.split("-"){-1}
+  private val nodeActor: ActorRef = context.parent
+  private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
+  private var vmActor: ActorRef = _
+  private var distributorActor: ActorRef = _
+  private var portMapping: Map[Service, Int] = Map()
+  private var cancellable: Cancellable = _
+  private var cancellableGetTask: Cancellable = _
+  private var haveSpaceForTasks = true
+  import context.dispatcher
+  init
 
-  //TODO: define what vmInfo is
-  var vmInfo : Object = null
 
-
-  override def preStart(): Unit = {
-    log.debug(s"hello from ${self.path.name}")
+  override def receive: Receive = {
+    case SetVagrantEnvironmentConfig(vagrantEnvironmentConfig) => {
+      this.vagrantEnvironmentConfig = vagrantEnvironmentConfig
+      getPortMapping
+      if (cancellable != null) {
+        cancellable.cancel()
+        cancellable = null
+      }
+    }
+    case NotReadyJet => registerScheduler
+    case GetTask if haveSpaceForTasks => distributorActor ! GetTask(vagrantEnvironmentConfig.version())
+    case GetTask if !haveSpaceForTasks => cancellableGetTask.cancel(); cancellableGetTask = null
+    case SendTask(task) if haveSpaceForTasks => sender() ! AcquireExecutor(vagrantEnvironmentConfig.version(), self); haveSpaceForTasks = false
+    case SendTask(task) if !haveSpaceForTasks => sender() ! Failure(new Exception("no more tasks!"))
+    case Executor(executor) => context.watch(executor)
+    case ExecuteTask(task, targetVM) => ???
   }
 
-  override def postStop(): Unit = {
-    log.debug(s"goodbye from ${self.path.name}")
+
+  private def init = {
+    implicit val timeout = Timeout(5 seconds)
+    val vmActorFuture = nodeActor ? GetVmActor
+    Await.result(vmActorFuture, timeout.duration) match {
+      case SetVmActor(vmActor) => this.vmActor = vmActor
+      case _ => ???
+    }
+    val distributorFuture = nodeActor ? GetDistributorActor
+    Await.result(distributorFuture, timeout.duration) match {
+      case SetDistributorActor(distributorActor) => this.distributorActor = distributorActor
+      case _ => ???
+    }
+    val vagrantEnvironmentConfigFuture = vmActor ? GetVagrantEnvironmentConfig
+    Await.result(vagrantEnvironmentConfigFuture, timeout.duration) match {
+      case SetVagrantEnvironmentConfig(vagrantEnvironmentConfig) => self ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
+      case NotReadyJet => self ! NotReadyJet
+    }
+    registerGetTask
   }
+
+  private def getPortMapping = {
+    portMapping = Map()
+    vagrantEnvironmentConfig.vmConfigs().asScala.map(_.vagrantNetworkConfigs()).foreach{case x: VagrantPortForwardingConfig => portMapping += x.service() -> x.hostPort()}
+  }
+
+
+  private def registerScheduler = {
+    if (cancellable == null)
+      cancellable = context.system.scheduler.schedule(10 seconds, 60 seconds, vmActor, GetVagrantEnvironmentConfig)
+  }
+
+  private def registerGetTask = {
+    if (cancellableGetTask == null)
+      cancellableGetTask = context.system.scheduler.schedule(1 seconds, 1 seconds, self, GetTask)
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
 
   override def receive: Receive = {
     case "get" => {
-      log.debug("sent GetTask to distributor")
+      log.debug("sent GetTask to distributorActor")
       context.system.actorSelection("/user/instances") ! GetTask()
     }
     case t : SendTask if haveSpaceForTasks => {
@@ -94,5 +172,12 @@ class VMProxyActor extends Actor with ActorLogging{
     Thread.sleep(1000)
     self ! "get"
   }
+*/
+  override def preStart(): Unit = {
+    log.debug(s"hello from ${self.path.name}")
+  }
 
+  override def postStop(): Unit = {
+    log.debug(s"goodbye from ${self.path.name}")
+  }
 }

@@ -9,8 +9,8 @@ import com.typesafe.config.ConfigFactory
 import de.oth.clustering.java._
 import utils._
 import utils.db.{CreateTask, DBActor}
-import vm.messages.{SetMaster, SetVmEnvironment}
-import vm.{NodeActor, NodeMonitorActor}
+import vm.messages._
+import vm.{NodeActor, NodeMasterActor, NodeMonitorActor}
 import webui.ClusteringApi
 import worker.InstanceActor
 import worker.messages.{AddTask, Task}
@@ -65,9 +65,8 @@ object ClusterMain extends App{
         val testVMNodesActor : ActorRef = system.actorOf(Props[vm.VMProxyActor], "vmActor")
         val apiActor : ActorRef = system.actorOf(Props[ClusteringApi], "api")
         val globalStatus : ActorRef = system.actorOf(Props[GlobalStatusActor], "globalStatus")
-        val nodeActor : ActorRef = system.actorOf(Props[NodeActor], "nodeActor")
-        nodeActor ! SetMaster(s"akka://the-cluster/user/globalStatus")
-        nodeActor ! SetVmEnvironment(new TestVagrantEnvironment().createEnvironment())
+        val nodeMasterActor : ActorRef = system.actorOf(Props[NodeMasterActor], "nodeMasterActor")
+        nodeMasterActor ! IncludeNode
 
         // Load codebase
         if(cli_config.input != null) {
@@ -128,8 +127,7 @@ object ClusterMain extends App{
         if(cli_config.seednode != null) {
           println(s"using ${cli_config.seednode} as seed-node")
           Cluster(system).join(Address("akka.tcp", "the-cluster", cli_config.seednode.split(":").head, cli_config.seednode.split(":").reverse.head.toInt))
-          val nodeMonitorActor : ActorRef = system.actorOf(Props[NodeMonitorActor], "nodeMonitorActor")
-          nodeMonitorActor ! SetMaster(s"akka.tcp://the-cluster@${cli_config.seednode}/user/globalStatus")
+
         }
 
         println("Press any key to gracefully stop the client...")

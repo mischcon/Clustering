@@ -8,13 +8,9 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import org.jruby.RubyObject
 import org.jruby.embed.{LocalContextScope, ScriptingContainer}
 import utils.messages.{DeregisterNodeMonitorActor, RegisterNodeMonitorActor, SystemAttributes}
-import vm.messages.{GetSystemAttributes, SetMaster, SetPath}
+import vm.messages._
 
 import scala.collection.JavaConverters._
-import scala.concurrent.duration.DurationInt
-import scala.util.{Failure, Success}
-
-
 
 
 /**
@@ -25,7 +21,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
   private var path: File = _
   private var vagrant: Boolean = _
   private var globalStatusActor: ActorRef = _
-  private var master: String = _
+  private var nodeMasterActor: ActorRef = context.parent
   private val mbeanServer = ManagementFactory.getPlatformMBeanServer()
   val attributes = Map(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME -> Array("FreePhysicalMemorySize",
                                                                                "TotalPhysicalMemorySize",
@@ -36,22 +32,20 @@ class NodeMonitorActor extends Actor with ActorLogging {
                                                                                "Version"),
                        ManagementFactory.RUNTIME_MXBEAN_NAME -> Array("VmName",
                                                                       "SpecVersion"))
+  init
 
   override def receive: Receive = {
     case GetSystemAttributes => sender() ! SystemAttributes(getSystemAttributes)
     case SetPath(path) => this.path = path
-    case SetMaster(master) => this.master = master; init
+    case SetGlobalStatusActor(globalStatusActor) => {
+      this.globalStatusActor = globalStatusActor
+      globalStatusActor ! RegisterNodeMonitorActor
+    }
   }
 
   def init = {
-    log.debug("init called")
-    import context.dispatcher
-    context.actorSelection(master).resolveOne(1 second).onComplete {
-      case Success(actorRef) => globalStatusActor = actorRef
-      case Failure(ex) => log.warning(s"$master does not exist")
-    }
+    nodeMasterActor ! GetGlobalStatusActor
     vagrant = checkVagrant
-    globalStatusActor ! RegisterNodeMonitorActor
   }
 
   def getSystemAttributes: Map[String,String] = {

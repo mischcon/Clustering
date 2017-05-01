@@ -16,7 +16,7 @@ class GlobalStatusActor extends Actor with ActorLogging {
   override def receive: Receive = {
     case RegisterNodeMonitorActor => registerNodeMonitorActor(sender())
     case DeregisterNodeMonitorActor => deregisterNodeMonitorActor(sender())
-    case SystemAttributes(attributes) => ??? //log.debug(attributes.mkString("\n"))
+    case SystemAttributes(attributes) => log.debug(attributes.mkString("\n"))
   }
 
   private def registerNodeMonitorActor(nodeMonitorActor: ActorRef) = {
