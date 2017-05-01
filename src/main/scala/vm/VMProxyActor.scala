@@ -45,10 +45,18 @@ class VMProxyActor extends Actor with ActorLogging {
     case NotReadyJet => registerScheduler
     case GetTask if haveSpaceForTasks => distributorActor ! GetTask(vagrantEnvironmentConfig.version())
     case GetTask if !haveSpaceForTasks => cancellableGetTask.cancel(); cancellableGetTask = null
-    case SendTask(task) if haveSpaceForTasks => sender() ! AcquireExecutor(vagrantEnvironmentConfig.version(), self); haveSpaceForTasks = false
+    case SendTask(task) if haveSpaceForTasks => {
+      haveSpaceForTasks = false
+      sender() ! AcquireExecutor(vagrantEnvironmentConfig.version(), self)
+    }
     case SendTask(task) if !haveSpaceForTasks => sender() ! Failure(new Exception("no more tasks!"))
     case Executor(executor) => context.watch(executor)
-    case ExecuteTask(task, targetVM) => ???
+    case CannotGetExecutor => handleFailure()
+    case t : Terminated => {
+      log.debug(s"received TERMINATED from ${t.actor.path.toString}, which means that the task is done - now I have space for a new task!")
+      handleFailure()
+    }
+    case request : RestApiRequest => ??? // ToDo:
   }
 
 
@@ -88,69 +96,7 @@ class VMProxyActor extends Actor with ActorLogging {
       cancellableGetTask = context.system.scheduler.schedule(1 seconds, 1 seconds, self, GetTask)
   }
 
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-
-  override def receive: Receive = {
-    case "get" => {
-      log.debug("sent GetTask to distributorActor")
-      context.system.actorSelection("/user/instances") ! GetTask()
-    }
-    case t : SendTask if haveSpaceForTasks => {
-      log.debug("received SendTask and I still have space for tasks!")
-      haveSpaceForTasks = false
-
-      sender() ! AcquireExecutor(vmInfo, self)
-    }
-    case t : SendTask if ! haveSpaceForTasks => {
-      log.debug("received SendTask but I dont have any more space :(")
-      sender() ! Failure(new Exception)
-    }
-    case t : Executor => {
-      log.debug("received an ActorRef, which means that this is an executor - monitoring it now")
-      context.watch(t.ref)
-    }
-    case t : Terminated => {
-      log.debug(s"received TERMINATED from ${t.actor.path.toString}, which means that the task is done - now I have space for a new task!")
-      handleFailure()
-    }
-    case CannotGetExecutor => handleFailure()
-    case s : String =>
-      sender() ! s"got a String : $s"
-    case d : Integer =>
-      sender() ! s"got an Integer : $d"
-    case request : RestApiRequest =>
-      request.getMethod match {
-        case "GET" =>
-          val httpGet : GetRequest = new GetRequest(request)
-          sendRequest(httpGet)
-        case "POST" =>
-          val httpPost : PostRequest = new PostRequest(request)
-          sendRequest(httpPost)
-        case "PUT" =>
-          val httpPut : PutRequest = new PutRequest(request)
-          sendRequest(httpPut)
-        case "DELETE" =>
-          val httpDelete : DeleteRequest = new DeleteRequest(request)
-          sendRequest(httpDelete)
-      }
-    case o =>
-      sender() ! s"got an Object of class : ${o.getClass.getName}"
-  }
-
-  def sendRequest(httpRequest: HttpRequest) = {
+/*  def sendRequest(httpRequest: HttpRequest) = {
     log.debug("creating HttpClient")
     val client = HttpClientBuilder.create.build
     log.debug("getting response")
@@ -164,15 +110,15 @@ class VMProxyActor extends Actor with ActorLogging {
     response.close()
     client.close()
   }
-
+*/
   def handleFailure(): Unit ={
     log.debug("releasing task - now I have space for a new task!")
     haveSpaceForTasks = true
 
     Thread.sleep(1000)
-    self ! "get"
+    registerGetTask
   }
-*/
+
   override def preStart(): Unit = {
     log.debug(s"hello from ${self.path.name}")
   }
