@@ -32,8 +32,8 @@ class NodeActor extends Actor with ActorLogging {
     case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor
     //case SetDistributorActor(distributorActor) => this.distributorActor = distributorActor
     case GetInstanceActor => sender ! SetInstanceActor(instanceActor)
-    case GetVmProxyActor => sender() ! getVmProxyActor(sender().path.name.split("_"){1})
-    case GetVmActor => sender() ! getVmActor(sender().path.name.split("_"){1})
+    case GetVmProxyActor(name) => println(name); sender() ! getVmProxyActor(name.split("_"){1})
+    case GetVmActor(name) => sender() ! getVmActor(name.split("_"){1})
     //case GetDistributorActor => sender() ! SetDistributorActor(distributorActor)
     case VmProvisioned => ???
   }
@@ -82,15 +82,18 @@ class NodeActor extends Actor with ActorLogging {
   }
 
   private def getVmActor(uuid: String): SetVmActor = {
+    log.debug(s"searching for uuid: $uuid in:\n${this.vmActors}")
     if (vmActors.contains(uuid)) {
-      SetVmActor(vmActors{uuid}._1)
+      log.debug("found uuid!")
+      return SetVmActor(vmActors{uuid}._1)
     }
+    log.debug("did not find uuid :(")
     SetVmActor(null)
   }
 
   private def getVmProxyActor(uuid: String): SetVmProxyActor = {
     if (vmActors.contains(uuid)) {
-      SetVmProxyActor(vmActors{uuid}._2)
+      return SetVmProxyActor(vmActors{uuid}._2)
     }
     SetVmProxyActor(null)
   }

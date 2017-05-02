@@ -29,11 +29,11 @@ case class IncludeNode(address: Address) extends VmMessages
 
 case class SetVmProxyActor(vmProxyActor: ActorRef) extends VmMessages
 
-case object GetVmProxyActor extends VmMessages
+case class GetVmProxyActor(name : String) extends VmMessages
 
 case class SetVmActor(vmActor: ActorRef) extends VmMessages
 
-case object GetVmActor extends VmMessages
+case class GetVmActor(name : String) extends VmMessages
 
 case object VmProvisioned extends VmMessages
 

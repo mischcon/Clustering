@@ -66,7 +66,7 @@ class VMActor extends Actor with ActorLogging {
       case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor
       case _ => ???
     }
-    val vmProxyActorFuture = nodeActor ? GetVmProxyActor
+    val vmProxyActorFuture = nodeActor ? GetVmProxyActor(self.path.name)
     Await.result(vmProxyActorFuture, timeout.duration) match {
       case SetVmProxyActor(vmProxyActor) => this.vmProxyActor = vmProxyActor
       case _ => ???
