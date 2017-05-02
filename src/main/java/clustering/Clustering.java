@@ -40,7 +40,5 @@ public @interface Clustering {
     String id();
     ClusterType clusterType() default ClusterType.GROUPING;
     String[] members() default {};
-    int expectedDuration();
-    DurationUnit durationUnit() default DurationUnit.SEC;
     TrafficLoad expectedTraffic() default TrafficLoad.MINOR;
 }
