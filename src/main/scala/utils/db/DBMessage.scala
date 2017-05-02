@@ -13,8 +13,8 @@ trait DBMessage
  */
 
 /**
-  *
-  * @param tableName
+  * = Request report from database for ''DONE'' tasks =
+  * @param tableName table name
   */
 case class GenerateReport(tableName : String) extends DBMessage
 

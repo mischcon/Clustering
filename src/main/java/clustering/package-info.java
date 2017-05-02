@@ -1,4 +1,4 @@
 /**
- * <strong>Contains annotations & interfaces needed for clustering tasks</strong>
+ * <strong>Contains annotations & interfaces required for clustering tasks.</strong>
  */
 package clustering;

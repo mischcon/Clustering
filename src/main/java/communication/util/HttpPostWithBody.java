@@ -6,7 +6,8 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import java.net.URI;
 
 /**
- * <strong>HTTP POST request w/ body</strong>
+ * <strong>HTTP POST request w/ body</strong><br><br>
+ * This class is redundant. Made only for aesthetics.
  */
 public class HttpPostWithBody extends HttpEntityEnclosingRequestBase {
     private static final RequestMethod METHOD_NAME = RequestMethod.POST;

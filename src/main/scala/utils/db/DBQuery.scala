@@ -24,11 +24,7 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
        "finished_at   TIMESTAMP DEFAULT 0, " +
        "time_spent    INT(10), " +
        "PRIMARY KEY (id), " +
-       "UNIQUE KEY method_UQ (method), " +
-       "CONSTRAINT check_task_status CHECK (task_status IN (" +
-      s"'${TaskStatus.NOT_STARTED}', '${TaskStatus.RUNNING}', '${TaskStatus.DONE}')), " +
-       "CONSTRAINT check_end_state CHECK (end_state IN (" +
-      s"NULL, '${EndState.SUCCESS}', '${EndState.FAILURE}', '${EndState.ABANDONED}', '${EndState.ERROR}')));"
+       "UNIQUE KEY method_UQ (method));"
     var statement : PreparedStatement = connection.prepareStatement(sql)
     statement.executeUpdate()
     println(s"[DB]: '$tableName' table created")
@@ -195,7 +191,7 @@ class DBCreateTasks(methods : List[String], tableName : String) extends DBQuery 
     var statement : PreparedStatement = null
     if (methodsWithParams eq null) {
       var sql = s"INSERT INTO $tableName (method) VALUES ("
-      for (i <- 1 to methods.size) sql += "?), ("
+      for (_ <- 1 to methods.size) sql += "?), ("
       sql = sql.dropRight(3) + ";"
       statement = connection.prepareStatement(sql)
       for (i <- 1 to methods.size)
@@ -204,7 +200,7 @@ class DBCreateTasks(methods : List[String], tableName : String) extends DBQuery 
     // parametrized tasks
     else {
       var sql = s"INSERT INTO $tableName (method, params) VALUES ("
-      for (i <- 1 to methods.size) sql += "?, ?), ("
+      for (_ <- 1 to methods.size) sql += "?, ?), ("
       sql = sql.dropRight(3) + ";"
       statement = connection.prepareStatement(sql)
       var i = 1
@@ -241,11 +237,11 @@ class DBGetTask(method : String, tableName : String) extends DBQuery {
       var task : RequestedTask = null
       var paramsstr = ""
       while (resultSet.next()) {
-        val params = Map[String, String]()
+        var params = Map[String, String]()
         if (resultSet.getString("params") != null) {
           paramsstr = resultSet.getString("params")
           val pairs = resultSet.getString("params").replace(";", "").split("=| ").grouped(2)
-          val params = pairs.map { case Array(k, v) => k -> v }.toMap
+          params = pairs.map { case Array(k, v) => k -> v }.toMap
         }
         val task_status = TaskStatus.valueOf(resultSet.getString("task_status"))
         val end_state =
@@ -270,7 +266,7 @@ class DBGetTasks(methods : List[String], tableName : String) extends DBQuery {
   override val table: String = tableName
   override def perform(connection : Connection) : Option[List[RequestedTask]] = {
     var sql = s"SELECT * FROM $tableName WHERE method IN ("
-    for (i <- 1 to methods.size)
+    for (_ <- 1 to methods.size)
       sql += "?, "
     sql = sql.dropRight(2) + ");"
     val statement : PreparedStatement = connection.prepareStatement(sql)
@@ -286,11 +282,11 @@ class DBGetTasks(methods : List[String], tableName : String) extends DBQuery {
       var paramsstr = ""
       while (resultSet.next()) {
         val method = resultSet.getString("method")
-        val params = Map[String, String]()
+        var params = Map[String, String]()
         if (resultSet.getString("params") != null) {
           paramsstr = resultSet.getString("params")
           val pairs = resultSet.getString("params").replace(";", "").split("=| ").grouped(2)
-          val params = pairs.map { case Array(k, v) => k -> v }.toMap
+          params = pairs.map { case Array(k, v) => k -> v }.toMap
         }
         val task_status = TaskStatus.valueOf(resultSet.getString("task_status"))
         val end_state =
@@ -329,11 +325,11 @@ class DBGetTasksWithStatus(task_status : TaskStatus, tableName : String) extends
       var paramsstr = ""
       while (resultSet.next()) {
         val method = resultSet.getString("method")
-        val params = Map[String, String]()
+        var params = Map[String, String]()
         if (resultSet.getString("params") != null) {
           paramsstr = resultSet.getString("params")
           val pairs = resultSet.getString("params").replace(";", "").split("=| ").grouped(2)
-          val params = pairs.map { case Array(k, v) => k -> v }.toMap
+          params = pairs.map { case Array(k, v) => k -> v }.toMap
         }
         val end_state =
           if (resultSet.getString("end_state") == null)
@@ -379,7 +375,7 @@ class DBUpdateTasks(methods : List[String], task_status: TaskStatus, end_state: 
   override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
     var sql = s"UPDATE $tableName SET task_status = ?, end_state = ?, task_result = ? WHERE method IN ("
-    for (i <- 1 to methods.size)
+    for (_ <- 1 to methods.size)
       sql += "?, "
     sql = sql.dropRight(2) + ");"
     val statement : PreparedStatement = connection.prepareStatement(sql)
@@ -414,7 +410,7 @@ class DBUpdateTasksStatus(methods : List[String], task_status: TaskStatus, table
   override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
     var sql = s"UPDATE $tableName SET task_status = ? WHERE method IN ("
-    for (i <- 1 to methods.size)
+    for (_ <- 1 to methods.size)
       sql += "?, "
     sql = sql.dropRight(2) + ");"
     val statement : PreparedStatement = connection.prepareStatement(sql)
@@ -443,7 +439,7 @@ class DBDeleteTasks(methods : List[String], tableName : String) extends DBQuery 
   override val table: String = tableName
   override def perform(connection : Connection) : Unit = {
     var sql = s"DELETE FROM $tableName WHERE method IN ("
-    for (i <- 1 to methods.size)
+    for (_ <- 1 to methods.size)
       sql += "?, "
     sql = sql.dropRight(2) + ");"
     val statement : PreparedStatement = connection.prepareStatement(sql)

@@ -4,13 +4,14 @@ package clustering;
  * <strong>Indicates cluster type</strong>
  * <ul>
  *     <li>
- *         Task within SINGLE_INSTANCE cluster type should run independently of other tasks.
+ *         Task within <b>SINGLE_INSTANCE</b> cluster type must run independently of other tasks.
  *     </li>
  *     <li>
- *         Task within GROUPING cluster type depends on other tasks.
+ *         Task within <b>GROUPING</b> cluster type depends on other tasks.
  *     </li>
  * </ul>
  */
+@SuppressWarnings("unused")
 public enum ClusterType {
     SINGLE_INSTANCE,
     GROUPING

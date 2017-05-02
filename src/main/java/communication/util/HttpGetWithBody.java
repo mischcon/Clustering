@@ -6,7 +6,10 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import java.net.URI;
 
 /**
- * <strong>HTTP GET request w/ body</strong>
+ * <strong>HTTP GET request w/ body</strong><br><br>
+ * Check <a href="https://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-19#section-6.3">RFC 2616</a> before using it.<br>
+ * Make sure that server have an implementation for GET requests w/ body.<br>
+ * Otherwise request might be rejected.
  */
 public class HttpGetWithBody extends HttpEntityEnclosingRequestBase {
     private static final RequestMethod METHOD_NAME = RequestMethod.GET;
