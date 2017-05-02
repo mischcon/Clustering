@@ -24,7 +24,8 @@ class VMProxyActor extends Actor with ActorLogging {
   private val nodeActor: ActorRef = context.parent
   private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
   private var vmActor: ActorRef = _
-  private var distributorActor: ActorRef = _
+  //private var distributorActor: ActorRef = _
+  private var instanceActor : ActorRef = _
   private var portMapping: Map[Service, Int] = Map()
   private var cancellable: Cancellable = _
   private var cancellableGetTask: Cancellable = _
@@ -43,7 +44,7 @@ class VMProxyActor extends Actor with ActorLogging {
       }
     }
     case NotReadyJet => registerScheduler
-    case GetTask if haveSpaceForTasks => distributorActor ! GetTask(vagrantEnvironmentConfig)
+    case GetTask if haveSpaceForTasks => instanceActor ! GetTask(vagrantEnvironmentConfig)
     case GetTask if !haveSpaceForTasks => cancellableGetTask.cancel(); cancellableGetTask = null
     case SendTask(task) if haveSpaceForTasks => {
       haveSpaceForTasks = false
@@ -67,9 +68,9 @@ class VMProxyActor extends Actor with ActorLogging {
       case SetVmActor(vmActor) => this.vmActor = vmActor
       case _ => ???
     }
-    val distributorFuture = nodeActor ? GetDistributorActor
-    Await.result(distributorFuture, timeout.duration) match {
-      case SetDistributorActor(distributorActor) => this.distributorActor = distributorActor
+    val instanceFuture = nodeActor ? GetInstanceActor
+    Await.result(instanceFuture, timeout.duration) match {
+      case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor
       case _ => ???
     }
     val vagrantEnvironmentConfigFuture = vmActor ? GetVagrantEnvironmentConfig

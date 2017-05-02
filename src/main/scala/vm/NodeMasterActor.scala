@@ -16,14 +16,14 @@ class NodeMasterActor extends Actor with ActorLogging {
 
   private var globalStatusActor: ActorRef = getActor("/user/globalStatus").orNull
   private var instanceActor: ActorRef = getActor("/user/instances").orNull
-  private var distributorActor: ActorRef = getActor("/user/distributor").orNull
+  //private var distributorActor: ActorRef = getActor("/user/distributor").orNull
   private var nodeActors: List[ActorRef] = List()
   private val cluster = Cluster(context.system)
 
   override def receive: Receive = {
     case GetGlobalStatusActor => sender() ! SetGlobalStatusActor(globalStatusActor)
     case GetInstanceActor => sender() ! SetInstanceActor(instanceActor)
-    case GetDistributorActor => sender() ! SetDistributorActor(distributorActor)
+    //case GetDistributorActor => sender() ! SetDistributorActor(distributorActor)
     case DeregisterNodeActor => nodeActors = nodeActors.diff(sender() :: Nil)
     case IncludeNode(address) => includeNode(address)
     case MemberJoined(member) => handleMemberJoined(member)

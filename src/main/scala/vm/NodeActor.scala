@@ -23,18 +23,18 @@ class NodeActor extends Actor with ActorLogging {
   private var nodeMonitorActor: ActorRef = _
   private var globalStatusActor: ActorRef = _
   private var instanceActor: ActorRef = _
-  private var distributorActor: ActorRef = _
+  //private var distributorActor: ActorRef = _
   private var vmActors: Map[String, (ActorRef, ActorRef)] = Map()
   init
 
   override def receive: Receive = {
     case SetGlobalStatusActor(globalStatusActor) => this.globalStatusActor = globalStatusActor
     case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor
-    case SetDistributorActor(distributorActor) => this.distributorActor = distributorActor
+    //case SetDistributorActor(distributorActor) => this.distributorActor = distributorActor
     case GetInstanceActor => sender ! SetInstanceActor(instanceActor)
     case GetVmProxyActor => sender() ! getVmProxyActor(sender().path.name.split("_"){1})
     case GetVmActor => sender() ! getVmActor(sender().path.name.split("_"){1})
-    case GetDistributorActor => sender() ! SetDistributorActor(distributorActor)
+    //case GetDistributorActor => sender() ! SetDistributorActor(distributorActor)
     case VmProvisioned => ???
   }
 
