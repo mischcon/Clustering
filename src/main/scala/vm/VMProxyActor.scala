@@ -24,7 +24,6 @@ class VMProxyActor extends Actor with ActorLogging {
   private val nodeActor: ActorRef = context.parent
   private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
   private var vmActor: ActorRef = _
-  //private var distributorActor: ActorRef = _
   private var instanceActor : ActorRef = _
   private var portMapping: Map[Service, Int] = Map()
   private var cancellable: Cancellable = _
@@ -42,6 +41,7 @@ class VMProxyActor extends Actor with ActorLogging {
         cancellable.cancel()
         cancellable = null
       }
+      registerGetTask
     }
     case NotReadyJet => registerScheduler
     case GetTask if haveSpaceForTasks => instanceActor ! GetTask(vagrantEnvironmentConfig)
@@ -76,15 +76,14 @@ class VMProxyActor extends Actor with ActorLogging {
     }
     val vagrantEnvironmentConfigFuture = vmActor ? GetVagrantEnvironmentConfig
     Await.result(vagrantEnvironmentConfigFuture, timeout.duration) match {
-      case SetVagrantEnvironmentConfig(vagrantEnvironmentConfig) => self ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
+      case SetVagrantEnvironmentConfig(vagrantEnvironmentConfig) => self ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig); registerGetTask
       case NotReadyJet => self ! NotReadyJet
     }
-    registerGetTask
   }
 
   private def getPortMapping = {
     portMapping = Map()
-    vagrantEnvironmentConfig.vmConfigs().asScala.map(_.vagrantNetworkConfigs()).foreach{case x: VagrantPortForwardingConfig => portMapping += x.service() -> x.hostPort()}
+    //TODO: vagrantEnvironmentConfig.vmConfigs().asScala.map(_.vagrantNetworkConfigs()).foreach{case x: VagrantPortForwardingConfig => portMapping += x.service() -> x.hostPort()}
   }
 
 

@@ -38,6 +38,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
     case GetSystemAttributes => sender() ! SystemAttributes(getSystemAttributes)
     case SetPath(path) => this.path = path
     case SetGlobalStatusActor(globalStatusActor) => {
+      log.debug("received GlobalStatusActor")
       this.globalStatusActor = globalStatusActor
       globalStatusActor ! RegisterNodeMonitorActor
     }

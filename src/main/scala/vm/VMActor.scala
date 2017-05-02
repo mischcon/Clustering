@@ -124,6 +124,7 @@ class VMActor extends Actor with ActorLogging {
   }
 
   override def postStop(): Unit = {
+    new Vagrant().createEnvironment(vagrantEnvironmentConfig).destroy()
     log.debug(s"goodbye from ${self.path.name}")
   }
 

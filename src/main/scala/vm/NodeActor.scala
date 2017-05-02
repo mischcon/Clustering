@@ -32,7 +32,7 @@ class NodeActor extends Actor with ActorLogging {
     case GetInstanceActor => sender ! SetInstanceActor(instanceActor)
     case GetVmProxyActor(name) => println(name); sender() ! getVmProxyActor(name.split("_"){1})
     case GetVmActor(name) => sender() ! getVmActor(name.split("_"){1})
-    case VmProvisioned => ???
+    case VmProvisioned => log.error("NOT YET IMPLEMENTED: VmProvisioned in NodeActor.scala")
   }
 
   private def init = {
