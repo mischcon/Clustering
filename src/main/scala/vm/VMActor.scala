@@ -52,6 +52,7 @@ class VMActor extends Actor with ActorLogging {
     case VmUpdateBoxes(boxName) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.updateBoxes(boxName))
     case _ if !vmProvisioned => sender() ! NotReadyJet
     case DeployInfo(vagrantEnvironmentConfig) => {
+      log.debug("received DeployInfo")
       this.vagrantEnvironmentConfig = vagrantEnvironmentConfig
       if (cancellable != null) cancellable.cancel()
       provisionVm
@@ -73,7 +74,12 @@ class VMActor extends Actor with ActorLogging {
     }
     val vagrantEnvironmentConfigFuture = instanceActor ? GetDeployInfo
     Await.result(vagrantEnvironmentConfigFuture, timeout.duration) match {
-      case DeployInfo(vagrantEnvironmentConfig) => self ! DeployInfo(vagrantEnvironmentConfig)
+      case DeployInfo(vagrantEnvironmentConfig) =>{
+        log.debug("received DeployInfo")
+        this.vagrantEnvironmentConfig = vagrantEnvironmentConfig
+        if (cancellable != null) cancellable.cancel()
+        provisionVm
+      }//self ! DeployInfo(vagrantEnvironmentConfig)
       case NoDeployInfo => registerScheduler
     }
   }

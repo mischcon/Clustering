@@ -39,6 +39,7 @@ class InstanceActor extends Actor with ActorLogging{
   }
 
   def handleGetTask(msg : GetTask): Unit = {
+    log.debug(s"received GetTask: $msg")
     if(!instances.exists(a => a._3 == msg.version)){
       log.debug("No more tasks available")
       sender() ! NoMoreTasks
@@ -51,6 +52,7 @@ class InstanceActor extends Actor with ActorLogging{
     log.debug("GetDeployInfo called")
     if(instances.nonEmpty){
       val info = instances.sortBy(a => a._1).head._3
+      log.debug(s"sending DeployInfo: $info")
       sender() ! DeployInfo(info)
     } else {
       sender() ! NoDeployInfo
