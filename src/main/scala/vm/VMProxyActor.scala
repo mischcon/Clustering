@@ -62,7 +62,7 @@ class VMProxyActor extends Actor with ActorLogging {
 
 
   private def init = {
-    implicit val timeout = Timeout(5 seconds)
+    implicit val timeout = Timeout(15 seconds)
     val vmActorFuture = nodeActor ? GetVmActor(self.path.name)
     Await.result(vmActorFuture, timeout.duration) match {
       case SetVmActor(vmActor) => this.vmActor = vmActor

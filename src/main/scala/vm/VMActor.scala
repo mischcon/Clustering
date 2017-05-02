@@ -30,6 +30,7 @@ class VMActor extends Actor with ActorLogging {
   private var vmProxyActor: ActorRef = _
   private var vmProvisioned: Boolean = false
   private var cancellable: Cancellable = _
+  private var vmProvisioningStarted : Boolean = false
   init
 
   override def receive: Receive = {
@@ -85,21 +86,31 @@ class VMActor extends Actor with ActorLogging {
   }
 
   private def provisionVm = {
-    if (!vagrantEnvironmentConfig.path().isDirectory)
-      throw new VagrantException("path is not a directory!")
-    if (vagrantEnvironmentConfig.path().canWrite)
-      throw new VagrantException("can not write in path")
-    val path = new File(vagrantEnvironmentConfig.path(), uuid)
-    val version = vagrantEnvironmentConfig.version()
-    path.mkdirs()
-    var vagrantEnvironment = new Vagrant().createEnvironment(vagrantEnvironmentConfig)
-    vagrantEnvironment.up()
-    var vmConfigs = vagrantEnvironmentConfig.vmConfigs().asScala.map(vagrantEnvironment.getBoxePortMapping(_))
-    vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vmConfigs.asJava, vagrantEnvironmentConfig.path())
-    vagrantEnvironmentConfig.setVersion(version)
-    vmProvisioned = true
-    nodeActor ! VmProvisioned
-    vmProxyActor ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
+    if(!vmProvisioningStarted) {
+      vmProvisioningStarted = true
+      new Thread(new Runnable{
+        override def run(): Unit = {
+          if (!vagrantEnvironmentConfig.path().isDirectory)
+            throw new VagrantException("path is not a directory!")
+          //    if (vagrantEnvironmentConfig.path().canWrite)
+          //      throw new VagrantException("can not write in path")
+          //    TODO: THROWS ERROR ON LINUX SYSTEMS
+          val path = new File(vagrantEnvironmentConfig.path(), uuid)
+          val version = vagrantEnvironmentConfig.version()
+          path.mkdirs()
+          var vagrantEnvironment = new Vagrant().createEnvironment(vagrantEnvironmentConfig)
+          log.debug("STARTING VM")
+          vagrantEnvironment.up()
+          log.debug("VM STARTED AND READY")
+          var vmConfigs = vagrantEnvironmentConfig.vmConfigs().asScala.map(vagrantEnvironment.getBoxePortMapping(_))
+          vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vmConfigs.asJava, vagrantEnvironmentConfig.path())
+          vagrantEnvironmentConfig.setVersion(version)
+          vmProvisioned = true
+          nodeActor ! VmProvisioned
+          vmProxyActor ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
+        }
+      }).start()
+    }
   }
 
   private def registerScheduler = {

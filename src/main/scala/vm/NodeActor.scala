@@ -73,7 +73,7 @@ class NodeActor extends Actor with ActorLogging {
       case DeployInfo(vagrantEnvironmentConfig) => memory = vagrantEnvironmentConfig.vmConfigs().asScala.map(_.provider().memory().intValue()).sum
       case NoDeployInfo => memory = -1
     }
-    if (memory > 0 && systemAttributes {"FreePhysicalMemorySize"}.toInt >= memory) {
+    if (memory > 0 && systemAttributes {"FreePhysicalMemorySize"}.toLong >= memory) {
       val uuid = UUID.randomUUID().toString
       val vmProxyActor = context.actorOf(Props[VMProxyActor], s"vmProxyActor_$uuid")
       val vmActor = context.actorOf(Props[VMActor], s"vmActor_$uuid")
