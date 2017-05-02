@@ -1,7 +1,5 @@
 package communication;
 
-import java.io.Serializable;
-
 /**
  * <strong>HTTP request methods</strong>
  * <ul>

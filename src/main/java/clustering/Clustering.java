@@ -7,33 +7,47 @@ import java.lang.annotation.Target;
 
 
 /**
- * <strong>Main clustering annotation</strong><br>
+ * <strong>Main clustering annotation</strong><br><br>
+ * Parameter description:
  * <ul>
  *     <li>
  *         id - task identifier
  *     </li>
  *     <li>
- *         clusterType - SINGLE_INSTANCE or GROUPING
+ *         clusterType - <b>SINGLE_INSTANCE</b> or <b>GROUPING</b>
  *     </li>
  *     <li>
- *         <p>
- *             members - task dependency chain (single member if clusterType is SINGLE_INSTANCE)<br>
- *             array should be ordered in the way members depend on each other<br>
- *             e.g. {"files", "uploads"} - "uploads" depends on "files" so it appears after "files"<br>
- *         </p>
+ *         members - task dependency tree (single member if clusterType is <b>SINGLE_INSTANCE</b>)<br>
+ *         array should be ordered in the way members depend on each other<br>
+ *         e.g. <i>{"files", "uploads"}</i> - <i>"uploads"</i> depends on <i>"files"</i>
+ *         so it appears after <i>"files"</i><br>
+ *         <pre>
+ *                   ...
+ *                  /
+ *                 /
+ *               files
+ *               / \
+ *              /   \
+ *            print  \
+ *            / \   uploads
+ *           /   \     \
+ *         ...   ...   ...
+ *         </pre>
  *     </li>
  *     <li>
- *         expectedDuration - expected task duration
+ *         expectedDuration - approx. expected task duration
  *     </li>
  *     <li>
- *         durationUnit - unit for expectedDuration
+ *         durationUnit - unit for <i>expectedDuration</i> (seconds, minutes or hours)
  *     </li>
  *     <li>
- *         expectedTraffic - expected traffic load
+ *         expectedTraffic - expected traffic load<br>
+ *         e.g. task contains a file upload of several MBs ---> traffic load = <b>MAJOR</b>
  *     </li>
  * </ul>
  * </pre>
  */
+@SuppressWarnings("unused")
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.TYPE })
 public @interface Clustering {

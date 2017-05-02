@@ -1,0 +1,85 @@
+title Complete Workflow (AddTask, GetDeployInfo, GetTask, Execute)
+Person->API: UploadJar
+API->InstanceActor: AddTask(InstanceId, Group, Task, version : VagrantEnvironmentConfig)
+API->DBActor: AddTask to Database
+InstanceActor->Distributor: AddTask
+Distributor->GroupActor: AddTask
+GroupActor->TaskActor: AddTask
+note left of TaskActor:
+Task Dependency Tree Creation Complete
+Awaiting Deployment of VM
+end note
+
+
+
+VMProxyActor->InstanceActor: GetDeployInfo
+InstanceActor->VMProxyActor: DeployInfo(version : VagrantEnvironmentConfig)
+VMProxyActor->VMProxyActor: Start VM, etc...
+VMProxyActor->InstanceActor: GetTask(version : VagrantEnvironmentConfig)
+
+
+InstanceActor -> Distributor: GetTask
+Distributor -> GroupActor: GetTask
+GroupActor -> TaskActor: GetTask
+note right of TaskActor:
+    isTaken = true
+end note
+TaskActor -> VMProxyActor: ? SendTask(task)
+note left of VMProxyActor:
+    haveSpaceForTasks -= 1
+end note
+VMProxyActor -> TaskActor: AquireExecutor(vmInfo, self)
+note right of TaskActor:
+    targetVm = sender()
+end note
+TaskActor --> VMProxyActor: context.watch
+note right of TaskActor:
+    Monitor the VMProxyActor
+    in case of UNREACHABLE
+end note
+TaskActor -> ExecutorDirectoryActor: ? GetExecutorAdress
+ExecutorDirectoryActor -> TaskActor: NodeAdress(ip, path)
+TaskActor -> TaskActor: context.actorOf(ExecutorActor, ip, path)
+TaskActor --> ExecutorActor: context.actorOf
+TaskActor --> ExecutorActor: context.watch
+TaskActor -> VMProxyActor: Executor(ActorRef of ExecutorActor)
+VMProxyActor --> ExecutorActor: context.watch
+note left of TaskActor:
+    In case of VMProxyActor UNREACHABLE:
+        > STOP the ExecutorActor
+        > isTaken = false
+        > targetVm = null
+
+    In case of ExecutorActor UNREACHABLE:
+        > isTaken = false
+        > targetVm = null
+        (even if we already have a VM - just
+        return to a "clean" state and wait for
+        another free VM)
+end note
+note left of VMProxyActor:
+    Monitor the Executor
+    in case of Termination:
+    1) Task done -> aquire new
+    2) Executor UNREACHABLE -> aquire new
+end note
+TaskActor -> ExecutorActor: ExecuteTask(task, vmInfo)
+TaskActor -> DBActor: UpdateTaskStatus(...)
+ExecutorActor -> ExecutorActor: Perform the Task
+ExecutorActor -> TaskActor: TestResultException(Result)
+TaskActor -> GroupActor: TestResultException(Result)
+GroupActor -> GroupActor: remove Task from list
+GroupActor -> TaskActor: STOP
+TaskActor -> ExecutorActor: STOP
+destroy TaskActor
+ExecutorActor -> VMProxyActor: Terminated
+destroy ExecutorActor
+GroupActor -> DBActor: PublishResults(Task, Result)
+note left of VMProxyActor:
+    haveSpaceForTasks += 1
+end note
+
+note left of InstanceActor:
+No more children? == All Tasks Done
+Create Report
+end note

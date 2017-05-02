@@ -47,5 +47,5 @@ Beim Start muss ein Netzwerkinterface aus einer Liste ausgewählt werden - ansch
 ## ActorHierarchy
 ![Bild](diagrams/ActorHierarchy.png)
 
-## Loadbalancing / "Pull" via GetTask (The Happy Path)
-![Bild](diagrams/GetTask(The Happy Path).png)
+## Workflow
+![Bild](diagrams/Complete Workflow (AddTask, GetDeployInfo, GetTask, Execute).png)
