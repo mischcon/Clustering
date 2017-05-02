@@ -1,0 +1,8 @@
+title GetDeployInfo-Workflow
+VMProxyActor->InstanceActor: GetDeployInfo
+InstanceActor->VMProxyActor: DeployInfo(version : VagrantEnvironmentConfig)
+VMProxyActor->VMProxyActor: Start VM, etc...
+VMProxyActor->InstanceActor: GetTask(version : VagrantEnvironmentConfig)
+note left of InstanceActor:
+Von jetzt an: siehe Workflow "GetTask (The Happy Path)"
+end note
