@@ -23,26 +23,19 @@ class NodeActor extends Actor with ActorLogging {
   private var nodeMonitorActor: ActorRef = _
   private var globalStatusActor: ActorRef = _
   private var instanceActor: ActorRef = _
-  //private var distributorActor: ActorRef = _
   private var vmActors: Map[String, (ActorRef, ActorRef)] = Map()
   init
 
   override def receive: Receive = {
     case SetGlobalStatusActor(globalStatusActor) => this.globalStatusActor = globalStatusActor
     case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor
-    //case SetDistributorActor(distributorActor) => this.distributorActor = distributorActor
     case GetInstanceActor => sender ! SetInstanceActor(instanceActor)
     case GetVmProxyActor(name) => println(name); sender() ! getVmProxyActor(name.split("_"){1})
     case GetVmActor(name) => sender() ! getVmActor(name.split("_"){1})
-    //case GetDistributorActor => sender() ! SetDistributorActor(distributorActor)
     case VmProvisioned => ???
   }
 
   private def init = {
-//    nodeMasterActor ! GetInstanceActor
-//    nodeMasterActor ! GetGlobalStatusActor
-//    nodeMasterActor ! GetDistributorActor
-
     val masterAddr = Cluster(context.system).state.members.filter(m => m.roles.contains("master")).head.uniqueAddress
 
     implicit val resolveTimeout = Timeout(5 seconds)
