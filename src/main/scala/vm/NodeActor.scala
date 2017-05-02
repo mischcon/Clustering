@@ -61,19 +61,23 @@ class NodeActor extends Actor with ActorLogging {
       val vmProxyActor = context.actorOf(Props[VMProxyActor], s"vmProxyActor_$uuid")
       val vmActor = context.actorOf(Props[VMActor], s"vmActor_$uuid")
       vmActors += uuid -> (vmActor, vmProxyActor)
+
     }
   }
 
   private def getVmActor(uuid: String): SetVmActor = {
+    log.debug(s"searching for uuid: $uuid in:\n${this.vmActors}")
     if (vmActors.contains(uuid)) {
-      SetVmActor(vmActors{uuid}._1)
+      log.debug("found uuid!")
+      return SetVmActor(vmActors{uuid}._1)
     }
+    log.debug("did not find uuid :(")
     SetVmActor(null)
   }
 
   private def getVmProxyActor(uuid: String): SetVmProxyActor = {
     if (vmActors.contains(uuid)) {
-      SetVmProxyActor(vmActors{uuid}._2)
+      return SetVmProxyActor(vmActors{uuid}._2)
     }
     SetVmProxyActor(null)
   }

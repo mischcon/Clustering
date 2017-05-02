@@ -54,7 +54,9 @@ object ClusterMain extends App{
       // MASTER
       if (cli_config.mode == "master") {
         val system : ActorSystem = ActorSystem("the-cluster", hostnameConfig
-          .withFallback(config.getConfig("master").withFallback(config)))
+          .withFallback(config.getConfig("master")
+            .withFallback(ConfigFactory.parseString("akka.cluster.roles = [master, vm, executor]"))
+            .withFallback(config)))
 
         Cluster(system).join(Address("akka.tcp", "the-cluster", localIp, 2550))
         println(s"Cluster created! Seed node IP is $localIp")
@@ -69,11 +71,12 @@ object ClusterMain extends App{
         val nodeMasterActor : ActorRef = system.actorOf(Props[NodeMasterActor], "nodeMasterActor")
         nodeMasterActor ! IncludeNode(Cluster(system).selfAddress)
 
+
         // Load codebase
         if(cli_config.input != null) {
           val loader: TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
           val testMethods = loader.getClassClusterMethods
-
+          val version = loader.getVmConfig
           val datestring = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date())
           // Add Tasks
             for (a <- testMethods.asScala.toList) {
@@ -83,7 +86,7 @@ object ClusterMain extends App{
                 singleInstance = false
 
               // Add Task to dependency tree
-              instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
+              instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance), version)
 
               // Add Task to Database
               dBActor ! CreateTask(s"${a.classname}.${a.methodname}", datestring)
@@ -107,7 +110,6 @@ object ClusterMain extends App{
       }
       // CLIENT
       else {
-
         config = hostnameConfig.withFallback(config.getConfig("client").withFallback(config))
 
         var roles : List[String] = List("executor", "vm")

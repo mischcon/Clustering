@@ -1,6 +1,8 @@
 package vm
 
 import akka.actor.{Actor, ActorLogging, ActorPath, ActorRef, Address, Deploy, Props}
+import akka.cluster.{Cluster, Member}
+import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberJoined, UnreachableMember}
 import akka.remote.RemoteScope
 import akka.util.Timeout
 import vm.messages._
@@ -14,9 +16,11 @@ import scala.util.{Failure, Success}
   */
 class NodeMasterActor extends Actor with ActorLogging {
 
+
   private var globalStatusActor: ActorRef = _
   private var instanceActor: ActorRef = _
   private var nodeActors: List[ActorRef] = List()
+  private val cluster = Cluster(context.system)
 
   self ! Init
 
@@ -26,6 +30,7 @@ class NodeMasterActor extends Actor with ActorLogging {
     case GetInstanceActor => sender() ! SetInstanceActor(instanceActor)
     case DeregisterNodeActor => excludeNode
     case IncludeNode(address) => includeNode(address)
+    case MemberJoined(member) => handleMemberJoined(member)
   }
 
   private def init = {
@@ -52,11 +57,19 @@ class NodeMasterActor extends Actor with ActorLogging {
     return None
   }
 
+  def handleMemberJoined(member : Member) = {
+    if(member.hasRole("vm")){
+      includeNode(member.address)
+    }
+  }
+
   override def preStart(): Unit = {
     log.debug(s"hello from ${self.path.name}")
+    cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberJoined])
   }
 
   override def postStop(): Unit = {
     log.debug(s"goodbye from ${self.path.name}")
+    cluster.unsubscribe(self)
   }
 }

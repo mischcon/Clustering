@@ -54,6 +54,7 @@ class VMActor extends Actor with ActorLogging {
     case VmUpdateBoxes(boxName) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.updateBoxes(boxName))
     case _ if !vmProvisioned => sender() ! NotReadyJet
     case DeployInfo(vagrantEnvironmentConfig) => {
+      log.debug("received DeployInfo")
       this.vagrantEnvironmentConfig = vagrantEnvironmentConfig
       if (cancellable != null) cancellable.cancel()
       provisionVm
@@ -76,7 +77,7 @@ class VMActor extends Actor with ActorLogging {
       case SetVmProxyActor(vmProxyActor) => this.vmProxyActor = vmProxyActor
       case _ => ???
     }
-    val vagrantEnvironmentConfigFuture = instanceActor ! GetDeployInfo
+    instanceActor ! GetDeployInfo
   }
 
   private def provisionVm = {
@@ -112,6 +113,4 @@ class VMActor extends Actor with ActorLogging {
       vagrantEnvironment.destroy()
     log.debug(s"goodbye from ${self.path.name}")
   }
-
-
 }

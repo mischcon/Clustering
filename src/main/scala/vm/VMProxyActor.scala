@@ -24,7 +24,7 @@ class VMProxyActor extends Actor with ActorLogging {
   private var nodeActor: ActorRef = _
   private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
   private var vmActor: ActorRef = _
-  private var distributorActor: ActorRef = _
+  private var instanceActor : ActorRef = _
   private var portMapping: Map[Service, Int] = Map()
   private var cancellable: Cancellable = _
   private var cancellableGetTask: Cancellable = _
@@ -42,9 +42,10 @@ class VMProxyActor extends Actor with ActorLogging {
         cancellable.cancel()
         cancellable = null
       }
+      registerGetTask
     }
     case NotReadyJet => registerScheduler
-    case GetTask if haveSpaceForTasks => distributorActor ! GetTask(vagrantEnvironmentConfig.version())
+    case GetTask if haveSpaceForTasks => instanceActor ! GetTask(vagrantEnvironmentConfig)
     case GetTask if !haveSpaceForTasks => cancellableGetTask.cancel(); cancellableGetTask = null
     case SendTask(task) if haveSpaceForTasks => {
       haveSpaceForTasks = false
@@ -75,33 +76,32 @@ class VMProxyActor extends Actor with ActorLogging {
       }
   }
 
-
   private def init = {
     uuid = self.path.name.split("_"){1}
     nodeActor = context.parent
     haveSpaceForTasks = true
-    implicit val timeout = Timeout(5 seconds)
+    implicit val timeout = Timeout(15 seconds)
     val vmActorFuture = nodeActor ? GetVmActor
     Await.result(vmActorFuture, timeout.duration) match {
       case SetVmActor(vmActor) => this.vmActor = vmActor
-      case _ => ???
+      case _ => log.error("did not receive vmActor")
     }
-    val distributorFuture = nodeActor ? GetDistributorActor
-    Await.result(distributorFuture, timeout.duration) match {
-      case SetDistributorActor(distributorActor) => this.distributorActor = distributorActor
+    log.debug(s"VMActor: ${this.vmActor}")
+    val instanceFuture = nodeActor ? GetInstanceActor
+    Await.result(instanceFuture, timeout.duration) match {
+      case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor
       case _ => ???
     }
     val vagrantEnvironmentConfigFuture = vmActor ? GetVagrantEnvironmentConfig
     Await.result(vagrantEnvironmentConfigFuture, timeout.duration) match {
-      case SetVagrantEnvironmentConfig(vagrantEnvironmentConfig) => self ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
+      case SetVagrantEnvironmentConfig(vagrantEnvironmentConfig) => self ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig); registerGetTask
       case NotReadyJet => self ! NotReadyJet
     }
-    registerGetTask
   }
 
   private def getPortMapping = {
     portMapping = Map()
-    vagrantEnvironmentConfig.vmConfigs().asScala.map(_.vagrantNetworkConfigs()).foreach{case x: VagrantPortForwardingConfig => portMapping += x.service() -> x.hostPort()}
+    //TODO: vagrantEnvironmentConfig.vmConfigs().asScala.map(_.vagrantNetworkConfigs()).foreach{case x: VagrantPortForwardingConfig => portMapping += x.service() -> x.hostPort()}
   }
 
 
