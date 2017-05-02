@@ -20,7 +20,7 @@ import scala.concurrent.duration.DurationInt
   */
 class VMProxyActor extends Actor with ActorLogging {
 
-  private val uuid = self.path.name.split("-"){-1}
+  private val uuid = self.path.name.split("-"){0}
   private val nodeActor: ActorRef = context.parent
   private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
   private var vmActor: ActorRef = _
@@ -43,7 +43,7 @@ class VMProxyActor extends Actor with ActorLogging {
       }
     }
     case NotReadyJet => registerScheduler
-    case GetTask if haveSpaceForTasks => distributorActor ! GetTask(vagrantEnvironmentConfig.version())
+    case GetTask if haveSpaceForTasks => distributorActor ! GetTask(vagrantEnvironmentConfig)
     case GetTask if !haveSpaceForTasks => cancellableGetTask.cancel(); cancellableGetTask = null
     case SendTask(task) if haveSpaceForTasks => {
       haveSpaceForTasks = false

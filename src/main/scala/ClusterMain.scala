@@ -72,7 +72,7 @@ object ClusterMain extends App{
         if(cli_config.input != null) {
           val loader: TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
           val testMethods = loader.getClassClusterMethods
-
+          val version = loader.getVmConfig
           val datestring = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date())
           // Add Tasks
             for (a <- testMethods.asScala.toList) {
@@ -82,7 +82,7 @@ object ClusterMain extends App{
                 singleInstance = false
 
               // Add Task to dependency tree
-              instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
+              instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance), version)
 
               // Add Task to Database
               dBActor ! CreateTask(s"${a.classname}.${a.methodname}", datestring)
