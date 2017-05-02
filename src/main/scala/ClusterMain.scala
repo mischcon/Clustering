@@ -54,7 +54,7 @@ object ClusterMain extends App{
       if (cli_config.mode == "master") {
         val system : ActorSystem = ActorSystem("the-cluster", hostnameConfig
           .withFallback(config.getConfig("master")
-            .withFallback(ConfigFactory.parseString("akka.cluster.roles = [master]"))
+            .withFallback(ConfigFactory.parseString("akka.cluster.roles = [master, vm, executor]"))
             .withFallback(config)))
 
         Cluster(system).join(Address("akka.tcp", "the-cluster", localIp, 2550))
@@ -108,7 +108,6 @@ object ClusterMain extends App{
       }
       // CLIENT
       else {
-
         config = hostnameConfig.withFallback(config.getConfig("client").withFallback(config))
 
         var roles : List[String] = List("executor", "vm")
