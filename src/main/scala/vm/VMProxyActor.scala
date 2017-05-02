@@ -20,20 +20,21 @@ import scala.concurrent.duration.DurationInt
   */
 class VMProxyActor extends Actor with ActorLogging {
 
-  private val uuid = self.path.name.split("-"){-1}
-  private val nodeActor: ActorRef = context.parent
+  private var uuid: String = _
+  private var nodeActor: ActorRef = _
   private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
   private var vmActor: ActorRef = _
   private var distributorActor: ActorRef = _
   private var portMapping: Map[Service, Int] = Map()
   private var cancellable: Cancellable = _
   private var cancellableGetTask: Cancellable = _
-  private var haveSpaceForTasks = true
+  private var haveSpaceForTasks: Boolean = _
   import context.dispatcher
-  init
 
+  self ! Init
 
   override def receive: Receive = {
+    case Init => init
     case SetVagrantEnvironmentConfig(vagrantEnvironmentConfig) => {
       this.vagrantEnvironmentConfig = vagrantEnvironmentConfig
       getPortMapping
@@ -56,11 +57,29 @@ class VMProxyActor extends Actor with ActorLogging {
       log.debug(s"received TERMINATED from ${t.actor.path.toString}, which means that the task is done - now I have space for a new task!")
       handleFailure()
     }
-    case request : RestApiRequest => ??? // ToDo:
+    case request : RestApiRequest =>
+      // ToDo: URL anpassen
+      request.getMethod match {
+        case "GET" =>
+          val httpGet : GetRequest = new GetRequest(request)
+          sendRequest(httpGet)
+        case "POST" =>
+          val httpPost : PostRequest = new PostRequest(request)
+          sendRequest(httpPost)
+        case "PUT" =>
+          val httpPut : PutRequest = new PutRequest(request)
+          sendRequest(httpPut)
+        case "DELETE" =>
+          val httpDelete : DeleteRequest = new DeleteRequest(request)
+          sendRequest(httpDelete)
+      }
   }
 
 
   private def init = {
+    uuid = self.path.name.split("_"){1}
+    nodeActor = context.parent
+    haveSpaceForTasks = true
     implicit val timeout = Timeout(5 seconds)
     val vmActorFuture = nodeActor ? GetVmActor
     Await.result(vmActorFuture, timeout.duration) match {
@@ -96,7 +115,7 @@ class VMProxyActor extends Actor with ActorLogging {
       cancellableGetTask = context.system.scheduler.schedule(1 seconds, 1 seconds, self, GetTask)
   }
 
-/*  def sendRequest(httpRequest: HttpRequest) = {
+  def sendRequest(httpRequest: HttpRequest) = {
     log.debug("creating HttpClient")
     val client = HttpClientBuilder.create.build
     log.debug("getting response")
@@ -110,7 +129,7 @@ class VMProxyActor extends Actor with ActorLogging {
     response.close()
     client.close()
   }
-*/
+
   def handleFailure(): Unit ={
     log.debug("releasing task - now I have space for a new task!")
     haveSpaceForTasks = true

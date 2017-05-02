@@ -21,7 +21,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
   private var path: File = _
   private var vagrant: Boolean = _
   private var globalStatusActor: ActorRef = _
-  private var nodeMasterActor: ActorRef = context.parent
+  private var nodeActor: ActorRef = context.parent
   private val mbeanServer = ManagementFactory.getPlatformMBeanServer()
   val attributes = Map(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME -> Array("FreePhysicalMemorySize",
                                                                                "TotalPhysicalMemorySize",
@@ -32,9 +32,11 @@ class NodeMonitorActor extends Actor with ActorLogging {
                                                                                "Version"),
                        ManagementFactory.RUNTIME_MXBEAN_NAME -> Array("VmName",
                                                                       "SpecVersion"))
-  init
+
+  self ! Init
 
   override def receive: Receive = {
+    case Init => init
     case GetSystemAttributes => sender() ! SystemAttributes(getSystemAttributes)
     case SetPath(path) => this.path = path
     case SetGlobalStatusActor(globalStatusActor) => {
@@ -44,7 +46,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
   }
 
   def init = {
-    nodeMasterActor ! GetGlobalStatusActor
+    nodeActor ! GetGlobalStatusActor
     vagrant = checkVagrant
   }
 
@@ -56,7 +58,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
       systemAttributes :+= new Attribute("FreeSpace", path.getFreeSpace)
     }
     systemAttributes :+= new Attribute("Vagrant", vagrant)
-    systemAttributes.groupBy(_.getName).map{case (k, v) => (k, v.head.getValue.toString)}
+    systemAttributes.groupBy(_.getName).map{case (k, v) => k -> v.head.getValue.toString}
   }
 
   def checkVagrant: Boolean = {

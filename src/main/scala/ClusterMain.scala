@@ -1,5 +1,6 @@
 import java.net.NetworkInterface
 import java.text.SimpleDateFormat
+import java.time.Clock
 import java.util.Date
 
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
@@ -62,11 +63,11 @@ object ClusterMain extends App{
         val instanceActor : ActorRef = system.actorOf(Props[InstanceActor], "instances")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
         val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
-        val testVMNodesActor : ActorRef = system.actorOf(Props[vm.VMProxyActor], "vmActor")
+        //val testVMNodesActor : ActorRef = system.actorOf(Props[vm.VMProxyActor], "vmActor")
         val apiActor : ActorRef = system.actorOf(Props[ClusteringApi], "api")
         val globalStatus : ActorRef = system.actorOf(Props[GlobalStatusActor], "globalStatus")
         val nodeMasterActor : ActorRef = system.actorOf(Props[NodeMasterActor], "nodeMasterActor")
-        nodeMasterActor ! IncludeNode
+        nodeMasterActor ! IncludeNode(Cluster(system).selfAddress)
 
         // Load codebase
         if(cli_config.input != null) {
@@ -95,7 +96,7 @@ object ClusterMain extends App{
         println("press key as soon as client has joined")
         StdIn.readLine()
 
-        testVMNodesActor ! "get"
+        //testVMNodesActor ! "get"
 
         println("Press any key to stop...")
         StdIn.readLine()

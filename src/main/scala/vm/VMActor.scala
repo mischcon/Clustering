@@ -22,17 +22,19 @@ import scala.concurrent.duration.DurationInt
   */
 class VMActor extends Actor with ActorLogging {
 
-  private val uuid: String = self.path.name.split("-"){-1}
-  private val nodeActor: ActorRef = context.parent
+  private var uuid: String = _
+  private var nodeActor: ActorRef = _
   private var instanceActor: ActorRef = _
   private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
   private var vagrantEnvironment: VagrantEnvironment = _
   private var vmProxyActor: ActorRef = _
-  private var vmProvisioned: Boolean = false
+  private var vmProvisioned: Boolean = _
   private var cancellable: Cancellable = _
-  init
+
+  self ! Init
 
   override def receive: Receive = {
+    case Init => init
     case GetVagrantEnvironmentConfig if vmProvisioned => sender() ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
     case VmUp(box) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.up(box))
     case VmDestroy(box) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.destroy(box))
@@ -60,6 +62,9 @@ class VMActor extends Actor with ActorLogging {
   }
 
   private def init = {
+    uuid = self.path.name.split("_"){1}
+    nodeActor = context.parent
+    vmProvisioned = false
     implicit val timeout = Timeout(5 seconds)
     val instanceActorFuture = nodeActor ? GetInstanceActor
     Await.result(instanceActorFuture, timeout.duration) match {
@@ -71,11 +76,7 @@ class VMActor extends Actor with ActorLogging {
       case SetVmProxyActor(vmProxyActor) => this.vmProxyActor = vmProxyActor
       case _ => ???
     }
-    val vagrantEnvironmentConfigFuture = instanceActor ? GetDeployInfo
-    Await.result(vagrantEnvironmentConfigFuture, timeout.duration) match {
-      case DeployInfo(vagrantEnvironmentConfig) => self ! DeployInfo(vagrantEnvironmentConfig)
-      case NoDeployInfo => registerScheduler
-    }
+    val vagrantEnvironmentConfigFuture = instanceActor ! GetDeployInfo
   }
 
   private def provisionVm = {
@@ -86,7 +87,7 @@ class VMActor extends Actor with ActorLogging {
     val path = new File(vagrantEnvironmentConfig.path(), uuid)
     val version = vagrantEnvironmentConfig.version()
     path.mkdirs()
-    var vagrantEnvironment = new Vagrant().createEnvironment(vagrantEnvironmentConfig)
+    vagrantEnvironment = new Vagrant().createEnvironment(vagrantEnvironmentConfig)
     vagrantEnvironment.up()
     var vmConfigs = vagrantEnvironmentConfig.vmConfigs().asScala.map(vagrantEnvironment.getBoxePortMapping(_))
     vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vmConfigs.asJava, vagrantEnvironmentConfig.path())
@@ -107,6 +108,8 @@ class VMActor extends Actor with ActorLogging {
   }
 
   override def postStop(): Unit = {
+    if (vagrantEnvironment != null)
+      vagrantEnvironment.destroy()
     log.debug(s"goodbye from ${self.path.name}")
   }
 

@@ -10,6 +10,7 @@ import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantVmConfig}
   */
 trait VmMessages
 
+case object Init extends VmMessages
 
 case class SetGlobalStatusActor(globalStatusActor: ActorRef) extends VmMessages
 
@@ -46,6 +47,8 @@ case object NotReadyJet extends VmMessages
 case class SetDistributorActor(distributor: ActorRef) extends VmMessages
 
 case object GetDistributorActor extends VmMessages
+
+case object AddVmActor extends VmMessages
 
 
 

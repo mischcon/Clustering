@@ -5,6 +5,7 @@ import java.util.UUID
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.pattern._
 import akka.util.Timeout
+import utils.messages.SystemAttributes
 import vm.messages._
 import worker.messages.{DeployInfo, GetDeployInfo, NoDeployInfo}
 
@@ -17,48 +18,49 @@ import scala.concurrent.duration.DurationInt
   */
 class NodeActor extends Actor with ActorLogging {
 
-  private var nodeMasterActor: ActorRef = context.parent
+  private var nodeMasterActor: ActorRef = _
   private var nodeMonitorActor: ActorRef = _
   private var globalStatusActor: ActorRef = _
   private var instanceActor: ActorRef = _
-  private var distributorActor: ActorRef = _
   private var vmActors: Map[String, (ActorRef, ActorRef)] = Map()
-  init
+
+  self ! Init
 
   override def receive: Receive = {
+    case Init => init
     case SetGlobalStatusActor(globalStatusActor) => this.globalStatusActor = globalStatusActor
     case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor
-    case SetDistributorActor(distributorActor) => this.distributorActor = distributorActor
     case GetInstanceActor => sender ! SetInstanceActor(instanceActor)
-    case GetVmProxyActor => sender() ! getVmProxyActor(sender().path.name.split("-"){-1})
-    case GetVmActor => sender() ! getVmActor(sender().path.name.split("-"){-1})
-    case GetDistributorActor => sender() ! SetDistributorActor(distributorActor)
-    case VmProvisioned => ???
+    case GetVmProxyActor => sender() ! getVmProxyActor(sender().path.name.split("_"){-1})
+    case GetVmActor => sender() ! getVmActor(sender().path.name.split("_"){-1})
+    case AddVmActor => addVmActor
+    case VmProvisioned => ??? //ToDo: Scheduler registerien und nach 15 Sek AddVmActor Aufrufen
+    case GetGlobalStatusActor => sender() ! SetGlobalStatusActor(globalStatusActor)
   }
 
   private def init = {
+    nodeMasterActor = context.parent
     nodeMasterActor ! GetInstanceActor
     nodeMasterActor ! GetGlobalStatusActor
-    nodeMasterActor ! GetDistributorActor
     nodeMonitorActor = context.actorOf(Props[NodeMonitorActor], "nodeMonitorActor")
-    addVmActor
+    self ! AddVmActor
   }
 
   private def addVmActor = {
-    implicit val timeout = Timeout(5 seconds)
+    implicit val timeout = Timeout(20 seconds)
     val systemAttributesFuture = nodeMonitorActor ? GetSystemAttributes
-    val systemAttributes = Await.result(systemAttributesFuture, timeout.duration).asInstanceOf[Map[String, String]]
+    val systemAttributes = Await.result(systemAttributesFuture, timeout.duration).asInstanceOf[SystemAttributes].attributes
     val vagrantEnvironmentConfigFuture = instanceActor ? GetDeployInfo
     var memory = 0
     Await.result(vagrantEnvironmentConfigFuture, timeout.duration) match {
       case DeployInfo(vagrantEnvironmentConfig) => memory = vagrantEnvironmentConfig.vmConfigs().asScala.map(_.provider().memory().intValue()).sum
       case NoDeployInfo => memory = -1
     }
-    if (memory > 0 && systemAttributes {"FreePhysicalMemorySize"}.toInt >= memory) {
+    if (memory > 0 && systemAttributes {"FreePhysicalMemorySize"}.toLong >= memory) {
       val uuid = UUID.randomUUID().toString
-      val vmProxyActor = context.actorOf(Props[VMProxyActor], s"vmProxyActor-$uuid")
-      val vmActor = context.actorOf(Props[VMActor], s"vmActor-$uuid")
-      vmActors +=  uuid -> (vmActor, vmProxyActor)
+      val vmProxyActor = context.actorOf(Props[VMProxyActor], s"vmProxyActor_$uuid")
+      val vmActor = context.actorOf(Props[VMActor], s"vmActor_$uuid")
+      vmActors += uuid -> (vmActor, vmProxyActor)
     }
   }
 

@@ -49,7 +49,7 @@ class InstanceActor extends Actor with ActorLogging{
   def handleGetDeployInfo() : Unit = {
     if(instances.nonEmpty){
       val info = instances.sortBy(a => a._1).head._3
-      sender() ! DeployInfo(info)
+      //sender() ! DeployInfo(info)
     } else {
       sender() ! NoDeployInfo
     }
