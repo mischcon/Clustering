@@ -1,4 +1,5 @@
 .idea/
+log/
 target/
 /src/main/resources/db.conf
 project/project/
