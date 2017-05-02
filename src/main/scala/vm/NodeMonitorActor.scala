@@ -46,6 +46,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
   def init = {
     nodeMasterActor ! GetGlobalStatusActor
     vagrant = checkVagrant
+    log.debug("init done")
   }
 
   def getSystemAttributes: Map[String,String] = {

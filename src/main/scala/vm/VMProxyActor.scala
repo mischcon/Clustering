@@ -20,7 +20,7 @@ import scala.concurrent.duration.DurationInt
   */
 class VMProxyActor extends Actor with ActorLogging {
 
-  private val uuid = self.path.name.split("-"){0}
+  private val uuid = self.path.name.split("_"){1}
   private val nodeActor: ActorRef = context.parent
   private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
   private var vmActor: ActorRef = _

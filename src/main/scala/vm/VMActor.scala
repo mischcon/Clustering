@@ -22,7 +22,7 @@ import scala.concurrent.duration.DurationInt
   */
 class VMActor extends Actor with ActorLogging {
 
-  private val uuid: String = self.path.name.split("-"){-1}
+  private val uuid: String = self.path.name.split("_"){1}
   private val nodeActor: ActorRef = context.parent
   private var instanceActor: ActorRef = _
   private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _

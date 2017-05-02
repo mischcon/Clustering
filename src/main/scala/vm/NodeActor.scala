@@ -3,8 +3,10 @@ package vm
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.cluster.Cluster
 import akka.pattern._
 import akka.util.Timeout
+import utils.messages.SystemAttributes
 import vm.messages._
 import worker.messages.{DeployInfo, GetDeployInfo, NoDeployInfo}
 
@@ -30,24 +32,41 @@ class NodeActor extends Actor with ActorLogging {
     case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor
     case SetDistributorActor(distributorActor) => this.distributorActor = distributorActor
     case GetInstanceActor => sender ! SetInstanceActor(instanceActor)
-    case GetVmProxyActor => sender() ! getVmProxyActor(sender().path.name.split("-"){-1})
-    case GetVmActor => sender() ! getVmActor(sender().path.name.split("-"){-1})
+    case GetVmProxyActor => sender() ! getVmProxyActor(sender().path.name.split("_"){1})
+    case GetVmActor => sender() ! getVmActor(sender().path.name.split("_"){1})
     case GetDistributorActor => sender() ! SetDistributorActor(distributorActor)
     case VmProvisioned => ???
   }
 
   private def init = {
-    nodeMasterActor ! GetInstanceActor
-    nodeMasterActor ! GetGlobalStatusActor
-    nodeMasterActor ! GetDistributorActor
+//    nodeMasterActor ! GetInstanceActor
+//    nodeMasterActor ! GetGlobalStatusActor
+//    nodeMasterActor ! GetDistributorActor
+
+    val masterAddr = Cluster(context.system).state.members.filter(m => m.roles.contains("master")).head.uniqueAddress
+
+    implicit val resolveTimeout = Timeout(5 seconds)
+
+    instanceActor = Await.result(context.actorSelection(masterAddr.address + "/user/instances").resolveOne(), resolveTimeout.duration)
+    globalStatusActor = Await.result(context.actorSelection(masterAddr.address + "/user/globalStatus").resolveOne(), resolveTimeout.duration)
+
     nodeMonitorActor = context.actorOf(Props[NodeMonitorActor], "nodeMonitorActor")
     addVmActor
   }
 
   private def addVmActor = {
-    implicit val timeout = Timeout(5 seconds)
+    implicit val timeout = Timeout(15 seconds)
     val systemAttributesFuture = nodeMonitorActor ? GetSystemAttributes
-    val systemAttributes = Await.result(systemAttributesFuture, timeout.duration).asInstanceOf[Map[String, String]]
+    val systemAttributes = Await.result(systemAttributesFuture, timeout.duration).asInstanceOf[SystemAttributes].attributes//.asInstanceOf[Map[String, String]]
+    /*
+    * BRO
+    * addVMActor ist immernoch Teil der Konstruktors
+    * bevor der Konstruktor abgearbeitet ist, verarbeitet der Actor KEINE ankommenden messages
+    * --> instanceActor ist null solange man noch im Konstruktor ist
+    * Sheeeeeeesh
+    *
+    * Hab das mal gefixed...
+    * */
     val vagrantEnvironmentConfigFuture = instanceActor ? GetDeployInfo
     var memory = 0
     Await.result(vagrantEnvironmentConfigFuture, timeout.duration) match {
@@ -56,8 +75,8 @@ class NodeActor extends Actor with ActorLogging {
     }
     if (memory > 0 && systemAttributes {"FreePhysicalMemorySize"}.toInt >= memory) {
       val uuid = UUID.randomUUID().toString
-      val vmProxyActor = context.actorOf(Props[VMProxyActor], s"vmProxyActor-$uuid")
-      val vmActor = context.actorOf(Props[VMActor], s"vmActor-$uuid")
+      val vmProxyActor = context.actorOf(Props[VMProxyActor], s"vmProxyActor_$uuid")
+      val vmActor = context.actorOf(Props[VMActor], s"vmActor_$uuid")
       vmActors +=  uuid -> (vmActor, vmProxyActor)
     }
   }
