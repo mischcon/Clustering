@@ -1,6 +1,7 @@
 title Complete Workflow (AddTask, GetDeployInfo, GetTask, Execute)
 Person->API: UploadJar
 API->InstanceActor: AddTask(InstanceId, Group, Task, version : VagrantEnvironmentConfig)
+API->DBActor: AddTask to Database
 InstanceActor->Distributor: AddTask
 Distributor->GroupActor: AddTask
 GroupActor->TaskActor: AddTask
@@ -63,6 +64,7 @@ note left of VMProxyActor:
     2) Executor UNREACHABLE -> aquire new
 end note
 TaskActor -> ExecutorActor: ExecuteTask(task, vmInfo)
+TaskActor -> DBActor: UpdateTaskStatus(...)
 ExecutorActor -> ExecutorActor: Perform the Task
 ExecutorActor -> TaskActor: TestResultException(Result)
 TaskActor -> GroupActor: TestResultException(Result)
