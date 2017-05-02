@@ -32,9 +32,6 @@ libraryDependencies ++= Seq(
   // logger
   "ch.qos.logback" % "logback-classic" % "1.2.2",
 
-  // play
-  //"com.typesafe.play" %% "play" % "2.6.0-+",
-
   // akka
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.akka" %% "akka-agent" % akkaVersion,
