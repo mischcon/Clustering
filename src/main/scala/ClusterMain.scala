@@ -67,7 +67,7 @@ object ClusterMain extends App{
         val instanceActor : ActorRef = system.actorOf(Props[InstanceActor], "instances")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
         val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
-        val apiActor : ActorRef = system.actorOf(Props[ClusteringApi], "api")
+        val apiActor : ActorRef = system.actorOf(Props(classOf[ClusteringApi], localIp), "api")
         val globalStatus : ActorRef = system.actorOf(Props[GlobalStatusActor], "globalStatus")
         val nodeMasterActor : ActorRef = system.actorOf(Props[NodeMasterActor], "nodeMasterActor")
         nodeMasterActor ! IncludeNode(Cluster(system).selfAddress)
