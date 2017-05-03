@@ -37,7 +37,7 @@ class VMProxyActor extends Actor with ActorLogging {
   self ! Init
 
   override def receive: Receive = {
-    case Init => init
+    case Init => log.debug("got Init"); init
     case SetVagrantEnvironmentConfig(vagrantEnvironmentConfig) => {
       log.debug("got SetVagrantEnvironmentConfig")
       this.vagrantEnvironmentConfig = vagrantEnvironmentConfig
@@ -45,25 +45,30 @@ class VMProxyActor extends Actor with ActorLogging {
       deregisterGetVagrantEnvironmentConfig
       log.debug("getPortMapping")
       getPortMapping
+      log.debug("registerGetTask")
       registerGetTask
     }
-    case SetVmActor(vmActor) => this.vmActor = vmActor; initGetVagrantEnvironmentConfig
-    case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor
-    case NotReadyJet => registerGetVagrantEnvironmentConfig
+    case SetVmActor(vmActor) => log.debug("got SetVmActor");this.vmActor = vmActor; initGetVagrantEnvironmentConfig
+    case SetInstanceActor(instanceActor) => log.debug("got SetInstanceActor");this.instanceActor = instanceActor
+    case NotReadyJet => log.debug("got NotReadyJet"); registerGetVagrantEnvironmentConfig
     case SendTask(task) if haveSpaceForTasks => {
+      log.debug(s"got SendTask, haveSpaceForTasks = $haveSpaceForTasks")
       haveSpaceForTasks = false
+      log.debug("deregisterGetTask")
       deregisterGetTask
+      log.debug("send AcquireExecutor")
       sender() ! AcquireExecutor(vagrantEnvironmentConfig.version(), self)
     }
-    case SendTask(task) if !haveSpaceForTasks => sender() ! Failure(new Exception("no more tasks!"))
-    case NoMoreTasks => destroyVm
-    case Executor(executor) => context.watch(executor)
-    case CannotGetExecutor => handleFailure()
+    case SendTask(task) if !haveSpaceForTasks => log.debug(s"got SendTask, haveSpaceForTasks = $haveSpaceForTasks"); sender() ! Failure(new Exception("no more tasks!"))
+    case NoMoreTasks => log.debug("got NoMoreTasks"); destroyVm
+    case Executor(executor) => log.debug("got Executor"); context.watch(executor)
+    case CannotGetExecutor => log.debug("got CannotGetExecutor"); handleFailure()
     case t : Terminated => {
       log.debug(s"received TERMINATED from ${t.actor.path.toString}, which means that the task is done - now I have space for a new task!")
       handleFailure()
     }
     case request: RestApiRequest =>
+      log.debug("got RestApiRequest");
       val url = new URL(request.getUrl)
       if (portMapping.contains(url.getProtocol)) {
         val protocol = url.getProtocol
@@ -126,25 +131,29 @@ class VMProxyActor extends Actor with ActorLogging {
 
   private def registerGetVagrantEnvironmentConfig = {
     if (cancellableGetVagrantEnvironmentConfig == null)
+      log.debug("register GetVagrantEnvironmentConfig scheduler")
       cancellableGetVagrantEnvironmentConfig = context.system.scheduler.schedule(10 seconds, 60 seconds, vmActor, GetVagrantEnvironmentConfig)
   }
 
   private def deregisterGetVagrantEnvironmentConfig = {
     if (cancellableGetVagrantEnvironmentConfig != null) {
       cancellableGetVagrantEnvironmentConfig.cancel()
-      cancellableGetVagrantEnvironmentConfig == null
+      cancellableGetVagrantEnvironmentConfig = null
+      log.debug("cancellableGetVagrantEnvironmentConfig = null")
     }
   }
 
   private def registerGetTask = {
     if (cancellableGetTask == null)
-      cancellableGetTask = context.system.scheduler.schedule(0 seconds, 1 seconds, instanceActor, GetTask)
+      log.debug("register GetTask scheduler")
+      cancellableGetTask = context.system.scheduler.schedule(0 seconds, 10 seconds, instanceActor, GetTask)
   }
 
   private def deregisterGetTask = {
     if (cancellableGetTask != null) {
       cancellableGetTask.cancel()
-      cancellableGetTask == null
+      cancellableGetTask = null
+      log.debug("cancellableGetTask = null")
     }
   }
 
