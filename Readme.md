@@ -6,11 +6,11 @@ The instances of the application are run in virtual machines, since virtual mach
 
 The cluster can be seen as three different parts that work together:
 1) Central Administration / "The Master"
-This part is responsible for providing the tasks, collecting / persisting the results, keeping track of all other parts, responding to failures / failure recovery and is the main entry point for all other parts.
+   This part is responsible for providing the tasks, collecting / persisting the results, keeping track of all other parts, responding to failures / failure recovery and is the main entry point for all other parts.
 2) Executors
-This part is responsible for the actual execution of the tasks.
+   This part is responsible for the actual execution of the tasks.
 3) Virtual Machines
-This part is responsible for the hosting of the to-be-tested application. It also keeps track of its own workload and asks the Central Administration for new tasks (task "pulling").
+   This part is responsible for the hosting of the to-be-tested application. It also keeps track of its own workload and asks the Central Administration for new tasks (task "pulling").
 
 There is only one instance of the Central Administration, but there can be multiple instances of Executors and Virtual Machines.
 Usually there is at least one Virtual Machine (+ some Executors) located on the same physical node as the Central Administration, which means that the cluster can be run on a single physical node.
