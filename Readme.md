@@ -5,13 +5,14 @@ The basic idea is to run test agains multiple instances of an to-be-tested appli
 The instances of the application are run in virtual machines, since virtual machines make provisioning and reconfiguring very easy - and they also provide the ability to run anything you want (Linux, Windows, OSX, iOS, Android, ...) on anything you want (Linux, Windows, OSX, even your smartphone (Jup, Scala can be run on a smartphone)).
 
 The cluster can be seen as three different parts that work together:
-1) Central Administration / "The Master"
+
+1. Central Administration / "The Master"
    This part is responsible for providing the tasks, collecting / persisting the results, keeping track of all other parts, responding to failures / failure recovery and is the main entry point for all other parts.
 
-2) Executors
+2. Executors
    This part is responsible for the actual execution of the tasks.
 
-3) Virtual Machines
+3. Virtual Machines
    This part is responsible for the hosting of the to-be-tested application. It also keeps track of its own workload and asks the Central Administration for new tasks (task "pulling").
 
 There is only one instance of the Central Administration, but there can be multiple instances of Executors and Virtual Machines.
