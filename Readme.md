@@ -18,7 +18,7 @@ If you add more physical nodes to the cluster, than those nodes will host Virtua
 
 *The more physical nodes - the faster the execution of all tasks*
 
-![](diagrams/Master_Client.svg)
+![](diagrams/Master_Client.png)
 
 ### HOW DOES IT WORK?
 The Cluster is based on the [Akka Framework](http://akka.io). Akka is one implementation of the [Actor Model](https://en.wikipedia.org/wiki/Actor_model) - a model of concurrent computation that treats small, independent units (so called "actors") as the universal primitives. Those actors depend on each other (every actor has a parent actor that supervises it), which is why we used this model for our implementation since it is very resilient and "self healing". We keep the "core" on the Central Administration and everything else can be outsourced to other nodes - if one of those nodes looses its connection to the cluster than the "parent" recognizes that and can react accordingly.
