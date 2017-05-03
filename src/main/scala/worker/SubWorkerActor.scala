@@ -45,8 +45,9 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
 
   def handleSuccess(task : Task, result : Object, source : ActorRef): Unit ={
     /* DB Actor + write */
-    log.debug("writing SUCCESS result to db")
-    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS, null, tablename)
+    log.debug(s"writing ${result.toString} result to db")
+    dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS,
+      if (result.toString == "IGNORE") result.toString else null, tablename)
 
     taskActors = taskActors.filter(x => x != source)
   }

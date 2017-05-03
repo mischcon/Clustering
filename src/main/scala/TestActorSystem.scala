@@ -91,29 +91,5 @@ object TestActorSystem extends App {
     println(s"FAIL; $seconds; ${result.getFailures.get(0).getTrace}")
   }
 
-  result = new JUnitCore().run(Request.method(classOf[JUnitTests], "testGetFailure"))
-  seconds = result.getRunTime / 1000.0
-  if (result.wasSuccessful()) {
-    if (result.getIgnoreCount == 1)
-      println(s"IGNORE; $seconds")
-    else
-      println(s"SUCCESS; $seconds")
-  }
-  else {
-    println(s"FAIL; $seconds; ${result.getFailures.get(0).getTrace}")
-  }
-
-  result = new JUnitCore().run(Request.method(classOf[JUnitTests], "testPostFailure"))
-  seconds  = result.getRunTime / 1000.0
-  if (result.wasSuccessful()) {
-    if (result.getIgnoreCount == 1)
-      println(s"IGNORE; $seconds")
-    else
-      println(s"SUCCESS; $seconds")
-  }
-  else {
-    println(s"FAIL; $seconds; ${result.getFailures.get(0).getTrace}")
-  }
-
   sys.terminate
 }

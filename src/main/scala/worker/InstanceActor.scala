@@ -1,6 +1,7 @@
 package worker
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
+import utils.db.GenerateReport
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages._
 
@@ -21,13 +22,19 @@ class InstanceActor extends Actor with ActorLogging{
     case p : AddTask => handleAddTask(p)
     case p : GetTask => handleGetTask(p)
     case GetDeployInfo => handleGetDeployInfo()
-    case t : Terminated => handleRunComplete(); instances = instances.filter(a => a._2 != t.actor)
+    case t : Terminated => handleRunComplete(t.actor); instances = instances.filter(a => a._2 != t.actor)
   }
 
-  def handleRunComplete() : Unit = {
+  def handleRunComplete(ref : ActorRef) : Unit = {
     /*
     * Enter code that should be executed once a run is complete here
     * */
+    for (actor <- instances) {
+      if (ref == actor._2) {
+        // TODO: HTML report generator
+        context.system.actorSelection("/user/db") ! GenerateReport(actor._1)
+      }
+    }
   }
 
   def handleAddTask(msg : AddTask): Unit ={
