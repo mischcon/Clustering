@@ -42,6 +42,14 @@ class InstanceActor extends Actor with ActorLogging{
     * */
   }
 
+  def getTableNameByActorRef(ref : ActorRef) : String = {
+    for(a <- instances){
+      if(a._2 == ref)
+        return a._1
+    }
+    return null
+  }
+
   /**
     * Creates a DistributorActor (if there are no suitable) and forwards incoming
     * {@link worker.messages#AddTask} messages to it
