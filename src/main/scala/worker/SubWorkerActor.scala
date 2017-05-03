@@ -47,7 +47,7 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
     /* DB Actor + write */
     log.debug(s"writing ${result.toString} result to db")
     dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS,
-      if (result.toString == "IGNORE") result.toString else null, tablename)
+      if (result.toString == "IGNORE") result.toString else "", tablename)
 
     taskActors = taskActors.filter(x => x != source)
   }

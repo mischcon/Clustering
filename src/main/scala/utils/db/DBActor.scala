@@ -83,11 +83,11 @@ class DBActor extends Actor with ActorLogging {
   }
 
   /**
-    * = Generates report for all tasks w/ status ''DONE'' =
+    * = Generates text report for all tasks w/ status ''DONE'' =
     * @param tableName table name
     */
-  def generateReport(tableName : String): Unit = {
-    performQuery(new DBGenerateReport(tableName))
+  def generateTextReport(tableName : String): Unit = {
+    performQuery(new DBGenerateTextReport(tableName))
   }
 
   /**
@@ -244,8 +244,8 @@ class DBActor extends Actor with ActorLogging {
   }
 
   override def receive: Receive = {
-    case GenerateReport(tableName) =>
-      generateReport(tableName)
+    case GenerateTextReport(tableName) =>
+      generateTextReport(tableName)
     case CountTaskStatus(tableName) =>
       countTaskStatus(tableName)
     case CountEndState(tableName) =>

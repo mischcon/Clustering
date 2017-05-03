@@ -13,10 +13,10 @@ trait DBMessage
  */
 
 /**
-  * = Request report from database for ''DONE'' tasks =
+  * = Request text report from database for ''DONE'' tasks =
   * @param tableName table name
   */
-case class GenerateReport(tableName : String) extends DBMessage
+case class GenerateTextReport(tableName : String) extends DBMessage
 
 /**
   * = Request ''task_status - amount'' relation =

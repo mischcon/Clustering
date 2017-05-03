@@ -80,6 +80,7 @@ object TestActorSystem extends App {
   val executor = sys.actorOf(Props[TaskExecutorActor], name="testActor")
 
   var result = new JUnitCore().run(Request.method(classOf[JUnitTests], "testGetSuccess"))
+
   var seconds : Double = result.getRunTime / 1000.0
   if (result.wasSuccessful()) {
     if (result.getIgnoreCount == 1)

@@ -46,7 +46,7 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
   }
 }
 
-class DBGenerateReport(tableName : String) extends DBQuery {
+class DBGenerateTextReport(tableName : String) extends DBQuery {
   override val table: String = tableName
   override def perform(connection: Connection): Unit = {
     val query1 = new DBGetTasksWithStatus(TaskStatus.DONE, tableName)
@@ -80,7 +80,7 @@ class DBGenerateReport(tableName : String) extends DBQuery {
         }
         bw.write("===================================================================================================")
         bw.close()
-        println(s"[DB]: report generated")
+        println(s"[DB]: text report generated")
       case None =>
         println(s"[DB]: nothing to generate")
     }

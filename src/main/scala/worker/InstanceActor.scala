@@ -1,7 +1,7 @@
 package worker
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
-import utils.db.GenerateReport
+import utils.db.GenerateTextReport
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages._
 
@@ -32,7 +32,7 @@ class InstanceActor extends Actor with ActorLogging{
     for (actor <- instances) {
       if (ref == actor._2) {
         // TODO: HTML report generator
-        context.system.actorSelection("/user/db") ! GenerateReport(actor._1)
+        context.system.actorSelection("/user/db") ! GenerateTextReport(actor._1)
       }
     }
   }
