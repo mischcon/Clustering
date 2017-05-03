@@ -75,7 +75,6 @@ class VMProxyActor extends Actor {
   }
 }
 
-
 object TestActorSystem extends App {
   val sys = ActorSystem("testActorSystem")
   val executor = sys.actorOf(Props[TaskExecutorActor], name="testActor")

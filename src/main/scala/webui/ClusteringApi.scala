@@ -13,7 +13,6 @@ import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.{ByteString, Timeout}
 import clustering.ClusterType
 import de.oth.clustering.java._
-import spray.json.DefaultJsonProtocol
 import spray.json.DefaultJsonProtocol._
 import utils.db.CreateTask
 import worker.messages.{AddTask, Task}
@@ -28,7 +27,7 @@ import scala.util.{Failure, Random, Success}
 
 case class UploadJar(content : Array[Byte])
 
-class ClusteringApi extends Actor with ActorLogging with Directives with SprayJsonSupport{
+class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives with SprayJsonSupport{
 
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = context.system.dispatcher
@@ -37,8 +36,8 @@ class ClusteringApi extends Actor with ActorLogging with Directives with SprayJs
 
   implicit val uploadJarForamt = jsonFormat1(UploadJar)
 
-  val instanceActor = context.system.actorSelection("/user/instances")
-  val dBActor = context.system.actorSelection("/user/db")
+  val instanceActor = context.actorSelection("/user/instances")
+  val dBActor = context.actorSelection("/user/db")
 
   val routes: Route =
     path("api"/"upload") {
@@ -88,6 +87,6 @@ class ClusteringApi extends Actor with ActorLogging with Directives with SprayJs
   }
 
   // Start the Server and configure it with the route config
-  val bindingFuture = Http().bindAndHandle(routes, "0.0.0.0", 8080)
-  log.info("JAR file upload now possible via 0.0.0.0:8080/api/upload")
+  val bindingFuture = Http().bindAndHandle(routes, ip, 8080)
+  log.info(s"JAR file upload now possible via $ip:8080/api/upload")
 }

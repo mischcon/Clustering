@@ -1,5 +1,6 @@
 import java.net.NetworkInterface
 import java.text.SimpleDateFormat
+import java.time.Clock
 import java.util.Date
 
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
@@ -7,8 +8,10 @@ import akka.cluster.Cluster
 import clustering.ClusterType
 import com.typesafe.config.ConfigFactory
 import de.oth.clustering.java._
+import utils._
 import utils.db.{CreateTask, DBActor}
-import utils.{ClusterOptionParser, Config, ExecutorDirectoryServiceActor, PrivateMethodExposer}
+import vm.messages._
+import vm.{NodeActor, NodeMasterActor, NodeMonitorActor}
 import webui.ClusteringApi
 import worker.InstanceActor
 import worker.messages.{AddTask, Task}
@@ -25,6 +28,15 @@ object ClusterMain extends App{
     case Some(cli_config) => {
 
       var config = ConfigFactory.load()
+
+      // logging
+      if(cli_config.verbose)
+        config = ConfigFactory.parseString("akka.loglevel = INFO").withFallback(config)
+      if(cli_config.debug)
+        config = ConfigFactory.parseString("akka.loglevel = DEBUG").withFallback(config)
+
+
+      // network interface for listening
       val interfaces = NetworkInterface.getNetworkInterfaces
       println("Choose ip for listening:")
       var counter = 0
@@ -39,35 +51,33 @@ object ClusterMain extends App{
         }
       }
 
-      // logging
-      if(cli_config.verbose)
-        config = ConfigFactory.parseString("akka.loglevel = INFO").withFallback(config)
-      if(cli_config.debug)
-        config = ConfigFactory.parseString("akka.loglevel = DEBUG").withFallback(config)
-
       var localIp = ips_list.reverse(StdIn.readInt())
       val hostnameConfig = ConfigFactory.parseString(s"akka.remote.netty.tcp.hostname = $localIp")
 
       // MASTER
       if (cli_config.mode == "master") {
         val system : ActorSystem = ActorSystem("the-cluster", hostnameConfig
-          .withFallback(config.getConfig("master").withFallback(config)))
+          .withFallback(config.getConfig("master")
+            .withFallback(ConfigFactory.parseString("akka.cluster.roles = [master, vm, executor]"))
+            .withFallback(config)))
 
         Cluster(system).join(Address("akka.tcp", "the-cluster", localIp, 2550))
         println(s"Cluster created! Seed node IP is $localIp")
 
-        //val distributorActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
         val instanceActor : ActorRef = system.actorOf(Props[InstanceActor], "instances")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
         val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
-        val testVMNodesActor : ActorRef = system.actorOf(Props[vm.VMProxyActor], "vmActor")
-        val apiActor : ActorRef = system.actorOf(Props[ClusteringApi], "api")
+        val apiActor : ActorRef = system.actorOf(Props(classOf[ClusteringApi], localIp), "api")
+        val globalStatus : ActorRef = system.actorOf(Props[GlobalStatusActor], "globalStatus")
+        val nodeMasterActor : ActorRef = system.actorOf(Props[NodeMasterActor], "nodeMasterActor")
+        nodeMasterActor ! IncludeNode(Cluster(system).selfAddress)
+
 
         // Load codebase
         if(cli_config.input != null) {
           val loader: TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
           val testMethods = loader.getClassClusterMethods
-
+          val version = loader.getVmConfig
           val datestring = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date())
           // Add Tasks
             for (a <- testMethods.asScala.toList) {
@@ -77,7 +87,7 @@ object ClusterMain extends App{
                 singleInstance = false
 
               // Add Task to dependency tree
-              instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
+              instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance), version)
 
               // Add Task to Database
               dBActor ! CreateTask(s"${a.classname}.${a.methodname}", datestring)
@@ -85,23 +95,20 @@ object ClusterMain extends App{
         }
 
         Thread.sleep(500)
-        println(new PrivateMethodExposer(system)('printTree)())
+        if(cli_config.debug)
+          println(new PrivateMethodExposer(system)('printTree)())
 
-        println("press key as soon as client has joined")
-        StdIn.readLine()
-
-        testVMNodesActor ! "get"
 
         println("Press any key to stop...")
         StdIn.readLine()
         println("Shutting down the Cluster...")
-        println(new PrivateMethodExposer(system)('printTree)())
+        if(cli_config.debug)
+          println(new PrivateMethodExposer(system)('printTree)())
         Await.result(system.terminate(), Duration.Inf)
         System.exit(0)
       }
       // CLIENT
       else {
-
         config = hostnameConfig.withFallback(config.getConfig("client").withFallback(config))
 
         var roles : List[String] = List("executor", "vm")
@@ -122,6 +129,7 @@ object ClusterMain extends App{
         if(cli_config.seednode != null) {
           println(s"using ${cli_config.seednode} as seed-node")
           Cluster(system).join(Address("akka.tcp", "the-cluster", cli_config.seednode.split(":").head, cli_config.seednode.split(":").reverse.head.toInt))
+
         }
 
         println("Press any key to gracefully stop the client...")

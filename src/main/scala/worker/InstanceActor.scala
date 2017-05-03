@@ -1,12 +1,13 @@
 package worker
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
+import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages._
 
 class InstanceActor extends Actor with ActorLogging{
 
-  // InstanceID + Ref of child + Version
-  var instances : List[(String, ActorRef, String)] = List.empty
+  // InstanceID + Ref of child + Version + VagrantEnvironmentConfig
+  var instances : List[(String, ActorRef, String, VagrantEnvironmentConfig)] = List.empty
 
   override def preStart(): Unit = {
     log.debug(s"Hello from ${self.path.name}")
@@ -20,7 +21,13 @@ class InstanceActor extends Actor with ActorLogging{
     case p : AddTask => handleAddTask(p)
     case p : GetTask => handleGetTask(p)
     case GetDeployInfo => handleGetDeployInfo()
-    case t : Terminated => instances = instances.filter(a => a._2 != t.actor)
+    case t : Terminated => handleRunComplete(); instances = instances.filter(a => a._2 != t.actor)
+  }
+
+  def handleRunComplete() : Unit = {
+    /*
+    * Enter code that should be executed once a run is complete here
+    * */
   }
 
   def handleAddTask(msg : AddTask): Unit ={
@@ -29,7 +36,7 @@ class InstanceActor extends Actor with ActorLogging{
       case Some(child) => child ! msg
       case None => {
         val ref = context.actorOf(Props(classOf[DistributorActor]), msg.instanceId)
-        instances = (msg.instanceId, ref, msg.version) :: instances
+        instances = (msg.instanceId, ref, msg.version.version(), msg.version) :: instances
         ref ! msg
 
         context.watch(ref)
@@ -38,17 +45,20 @@ class InstanceActor extends Actor with ActorLogging{
   }
 
   def handleGetTask(msg : GetTask): Unit = {
-    if(!instances.exists(a => a._3 == msg.version)){
+    log.debug(s"received GetTask: $msg")
+    if(!instances.exists(a => a._3 == msg.version.version())){
       log.debug("No more tasks available")
       sender() ! NoMoreTasks
     } else {
-      instances.filter(a => a._3 == msg.version).sortBy(a => a._1).head._2 forward msg
+      instances.filter(a => a._3 == msg.version.version()).sortBy(a => a._1).head._2 forward msg
     }
   }
 
   def handleGetDeployInfo() : Unit = {
+    log.debug("GetDeployInfo called")
     if(instances.nonEmpty){
-      val info = instances.sortBy(a => a._1).head._3
+      val info = instances.sortBy(a => a._1).head._4
+      log.debug(s"sending DeployInfo: $info")
       sender() ! DeployInfo(info)
     } else {
       sender() ! NoDeployInfo
