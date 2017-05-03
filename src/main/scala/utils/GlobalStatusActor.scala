@@ -16,13 +16,13 @@ class GlobalStatusActor extends Actor with ActorLogging {
   override def receive: Receive = {
     case RegisterNodeMonitorActor => registerNodeMonitorActor(sender())
     case DeregisterNodeMonitorActor => deregisterNodeMonitorActor(sender())
-    case SystemAttributes(attributes) => log.debug(attributes.mkString("\n"))
+    case SystemAttributes(attributes) => log.debug(s"got system Attributes from ${sender().path}")
   }
 
   private def registerNodeMonitorActor(nodeMonitorActor: ActorRef) = {
     log.debug(s"actor ${nodeMonitorActor.path} registered")
     import context.dispatcher
-    val cancellable = context.system.scheduler.schedule(5 seconds, 5 seconds, nodeMonitorActor, GetSystemAttributes)
+    val cancellable = context.system.scheduler.schedule(5 seconds, 60 seconds, nodeMonitorActor, GetSystemAttributes)
     nodeMonitorActors += nodeMonitorActor -> cancellable
   }
 

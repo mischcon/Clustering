@@ -13,13 +13,13 @@ object VagrantVmConfigUtils {
     portMappings.foreach(portMapping => {
       val portForwards = vmConfig.vagrantNetworkConfigs().asScala.filter({ case x: VagrantPortForwardingConfig => x.guestPort == portMapping._1 && x.protocol == Protocol.TCP }).map(x => x.asInstanceOf[VagrantPortForwardingConfig])
       if (portForwards.isEmpty && portMapping._1 == 22) {
-        vmConfig.vagrantNetworkConfigs().add(new VagrantPortForwardingConfig(false,
+        vmConfig.vagrantNetworkConfigs().add(new VagrantPortForwardingConfig(true,
           portMapping._1,
           null,
           portMapping._2,
           "127.0.0.1",
           Protocol.TCP,
-          Service.SSH,
+          "ssh",
           "ssh"));
       } else {
         portForwards.foreach(portForward => portForward.setHostPort(portMapping._2))

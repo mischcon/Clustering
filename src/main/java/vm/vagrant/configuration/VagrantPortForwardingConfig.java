@@ -13,10 +13,10 @@ public class VagrantPortForwardingConfig implements VagrantNetworkConfig {
     private Integer hostPort;
     private String hostIp;
     private Protocol protocol;
-    private Service service;
+    private String service;
     private String name;
 
-    public VagrantPortForwardingConfig(Boolean autoCorrect, Integer guestPort, String guestIp, Integer hostPort, String hostIp, Protocol protocol, Service service, String name) {
+    public VagrantPortForwardingConfig(Boolean autoCorrect, Integer guestPort, String guestIp, Integer hostPort, String hostIp, Protocol protocol, String service, String name) {
         this.autoCorrect = autoCorrect;
         this.guestPort = guestPort;
         this.guestIp = guestIp;
@@ -51,7 +51,7 @@ public class VagrantPortForwardingConfig implements VagrantNetworkConfig {
         return protocol;
     }
 
-    public Service service() {
+    public String service() {
         return service;
     }
 

@@ -45,4 +45,8 @@ public class VagrantProviderConfig {
     public String vmName() {
         return vmName;
     }
+
+    public void setVmName(String vmName) {
+        this.vmName = vmName;
+    }
 }
