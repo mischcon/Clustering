@@ -82,6 +82,10 @@ class DBActor extends Actor with ActorLogging {
     }
   }
 
+  /**
+    * = Generates report for all tasks w/ status ''DONE'' =
+    * @param tableName table name
+    */
   def generateReport(tableName : String): Unit = {
     performQuery(new DBGenerateReport(tableName))
   }
@@ -142,9 +146,11 @@ class DBActor extends Actor with ActorLogging {
   /**
     * = Answers w/ requested task =
     * Some([[utils.db.RequestedTask]]) or [[scala.None]]
+    *
     * @param method name of requested task
     * @param tableName table name
     */
+  //noinspection AccessorLikeMethodIsUnit
   def getTask(method : String, tableName: String): Unit = {
     performQuery(new DBGetTask(method, tableName))
   }
@@ -152,9 +158,11 @@ class DBActor extends Actor with ActorLogging {
   /**
     * = Answers w/ requested tasks =
     * Some(List[ [[utils.db.RequestedTask]] ]) or [[scala.None]]
+    *
     * @param methods list w/ names of requested tasks
     * @param tableName table name
     */
+  //noinspection AccessorLikeMethodIsUnit
   def getTasks(methods : List[String], tableName: String): Unit = {
     performQuery(new DBGetTasks(methods, tableName))
   }
@@ -162,9 +170,11 @@ class DBActor extends Actor with ActorLogging {
   /**
     * = Answers w/ requested tasks =
     * Some(List[ [[utils.db.RequestedTask]] ]) or [[scala.None]]
+    *
     * @param task_status requested status from [[utils.db.TaskStatus]]
     * @param tableName table name
     */
+  //noinspection AccessorLikeMethodIsUnit
   def getTasksWithStatus(task_status: TaskStatus, tableName: String): Unit = {
     performQuery(new DBGetTasksWithStatus(task_status, tableName))
   }

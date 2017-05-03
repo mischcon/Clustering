@@ -1,4 +1,4 @@
 /**
- * <strong>Contains request & response classes needed for communication between 2 parties</strong>
+ * <strong>Contains request & response classes required for communication between 2 parties.</strong>
  */
 package communication;

@@ -16,6 +16,7 @@ import java.util.Map;
 /**
  * <strong>Serializable container class for {@link org.apache.http.HttpResponse}</strong>
  */
+@SuppressWarnings("WeakerAccess")
 public class RestApiResponse implements Serializable {
     private Integer statusCode;
     private String statusText;
@@ -61,7 +62,6 @@ public class RestApiResponse implements Serializable {
             }
         }
     }
-
     public Integer getStatusCode() {
         return statusCode;
     }

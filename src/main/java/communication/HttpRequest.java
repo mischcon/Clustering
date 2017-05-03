@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 /**
  * <strong>Blueprint for CRUD requests</strong>
  */
+@SuppressWarnings({"UnusedReturnValue", "WeakerAccess"})
 public abstract class HttpRequest {
     private RequestMethod method;
     private String url;
