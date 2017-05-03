@@ -9,7 +9,7 @@ import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantVmConfig}
 /**
   * Created by oliver.ziegert on 22.04.17.
   */
-trait VmMessages
+trait VmMessages extends Serializable
 
 case object Init extends VmMessages
 
