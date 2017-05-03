@@ -1,7 +1,6 @@
 package services
 
 import java.util.concurrent.atomic.AtomicInteger
-import javax.inject._
 
 /**
  * This trait demonstrates how to create a component that is injected

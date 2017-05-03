@@ -1,7 +1,5 @@
 package utils.db
 
-import java.util.Calendar
-
 import akka.actor.{ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout

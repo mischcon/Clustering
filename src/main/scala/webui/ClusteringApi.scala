@@ -13,7 +13,6 @@ import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.{ByteString, Timeout}
 import clustering.ClusterType
 import de.oth.clustering.java._
-import spray.json.DefaultJsonProtocol
 import spray.json.DefaultJsonProtocol._
 import utils.db.CreateTask
 import worker.messages.{AddTask, Task}
@@ -37,8 +36,8 @@ class ClusteringApi extends Actor with ActorLogging with Directives with SprayJs
 
   implicit val uploadJarForamt = jsonFormat1(UploadJar)
 
-  val instanceActor = context.system.actorSelection("/user/instances")
-  val dBActor = context.system.actorSelection("/user/db")
+  val instanceActor = context.actorSelection("/user/instances")
+  val dBActor = context.actorSelection("/user/db")
 
   val routes: Route =
     path("api"/"upload") {

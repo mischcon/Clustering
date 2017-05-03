@@ -1,6 +1,6 @@
 package worker
 import akka.actor.{Props, Terminated}
-import worker.messages.{AddTask, GetTask, HasTask, NoMoreTasks}
+import worker.messages.{AddTask, GetTask}
 
 class DistributorActor extends WorkerTrait{
 

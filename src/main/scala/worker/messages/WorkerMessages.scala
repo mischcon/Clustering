@@ -1,12 +1,13 @@
 package worker.messages
 
 import akka.actor.ActorRef
+import vm.vagrant.configuration.VagrantEnvironmentConfig
 
 trait WorkerMessagesTrait
 
 /* TASK DEPENDENCY TREE CREATION AND RETRIEVAL / DELETION */
-case class AddTask(instanceId : String, group : List[String], task : Task, version : String = "DEFAULT") extends WorkerMessagesTrait
-case class GetTask(version : String = "DEFAULT") extends WorkerMessagesTrait
+case class AddTask(instanceId : String, group : List[String], task : Task, version : VagrantEnvironmentConfig = null) extends WorkerMessagesTrait
+case class GetTask(version : VagrantEnvironmentConfig = null) extends WorkerMessagesTrait
 case object HasTask extends WorkerMessagesTrait
 
 /* TASK SENDING AND RECEIVING */
@@ -26,7 +27,7 @@ case class PersistAndSuicide(reason : String) extends WorkerMessagesTrait
 
 /* DEPLOYMENT */
 case object GetDeployInfo extends WorkerMessagesTrait
-case class DeployInfo(deployInfo : Object) extends WorkerMessagesTrait
+case class DeployInfo(vagrantEnvironmentConfig : VagrantEnvironmentConfig) extends WorkerMessagesTrait
 case object NoDeployInfo extends WorkerMessagesTrait
 
 

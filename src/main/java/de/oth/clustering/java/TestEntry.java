@@ -2,7 +2,7 @@ package de.oth.clustering.java;
 
 import clustering.Clustering;
 
-public class TestEntry {
+public class TestEntry extends Entry{
     public String classname;
     public String methodname;
     public Clustering annotation;
