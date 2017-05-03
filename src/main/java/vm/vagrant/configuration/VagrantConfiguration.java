@@ -1,5 +1,6 @@
 package vm.vagrant.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
  * @author oliver.ziegert
  */
 
-public class VagrantConfiguration {
+public class VagrantConfiguration implements Serializable {
 
     private VagrantEnvironmentConfig environmentConfig;
     private List<VagrantFileTemplateConfiguration> fileTemplateConfigurations;

@@ -1,6 +1,5 @@
 import java.net.NetworkInterface
 import java.text.SimpleDateFormat
-import java.time.Clock
 import java.util.Date
 
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
@@ -11,14 +10,14 @@ import de.oth.clustering.java._
 import utils._
 import utils.db.{CreateTask, DBActor}
 import vm.messages._
-import vm.{NodeActor, NodeMasterActor, NodeMonitorActor}
+import vm.NodeMasterActor
 import webui.ClusteringApi
 import worker.InstanceActor
 import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, DurationInt}
 import scala.io.StdIn
 
 object ClusterMain extends App{
@@ -65,7 +64,6 @@ object ClusterMain extends App{
         val instanceActor : ActorRef = system.actorOf(Props[InstanceActor], "instances")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
         val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
-        //val testVMNodesActor : ActorRef = system.actorOf(Props[vm.VMProxyActor], "vmActor")
         val apiActor : ActorRef = system.actorOf(Props[ClusteringApi], "api")
         val globalStatus : ActorRef = system.actorOf(Props[GlobalStatusActor], "globalStatus")
         val nodeMasterActor : ActorRef = system.actorOf(Props[NodeMasterActor], "nodeMasterActor")
@@ -99,8 +97,6 @@ object ClusterMain extends App{
         println("press key as soon as client has joined")
         StdIn.readLine()
 
-        //testVMNodesActor ! "get"
-
         println("Press any key to stop...")
         StdIn.readLine()
         println("Shutting down the Cluster...")
@@ -130,7 +126,6 @@ object ClusterMain extends App{
         if(cli_config.seednode != null) {
           println(s"using ${cli_config.seednode} as seed-node")
           Cluster(system).join(Address("akka.tcp", "the-cluster", cli_config.seednode.split(":").head, cli_config.seednode.split(":").reverse.head.toInt))
-
         }
 
         println("Press any key to gracefully stop the client...")

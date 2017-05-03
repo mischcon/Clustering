@@ -1,6 +1,7 @@
 package vm.vagrant.configuration;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.URL;
 
 /**
@@ -11,7 +12,7 @@ import java.net.URL;
  * @author hendrikebbers
  * 
  */
-public class VagrantFileTemplateConfiguration {
+public class VagrantFileTemplateConfiguration implements Serializable {
 
 	//TODO: Das kopieren der Dateien sollte in eine Methode in dieser Klasse augelagert werden die das VagrantEnvironment als übergabeparameter bekommt.
 	

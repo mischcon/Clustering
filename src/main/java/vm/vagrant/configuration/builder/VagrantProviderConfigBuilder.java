@@ -3,13 +3,14 @@ package vm.vagrant.configuration.builder;
 import vm.vagrant.configuration.VagrantProviderConfig;
 import vm.vagrant.configuration.builder.util.VagrantBuilderException;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by oliver.ziegert on 20.04.17.
  */
-public class VagrantProviderConfigBuilder {
+public class VagrantProviderConfigBuilder implements Serializable {
     private String name;
     private Boolean guiMode;
     private Integer memory;

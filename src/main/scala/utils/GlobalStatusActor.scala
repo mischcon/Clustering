@@ -21,8 +21,7 @@ class GlobalStatusActor extends Actor with ActorLogging {
 
   private def registerNodeMonitorActor(nodeMonitorActor: ActorRef) = {
     log.debug(s"actor ${nodeMonitorActor.path} registered")
-    import context.dispatcher
-    val cancellable = context.system.scheduler.schedule(5 seconds, 60 seconds, nodeMonitorActor, GetSystemAttributes)
+    val cancellable = context.system.scheduler.schedule(5 seconds, 60 seconds, nodeMonitorActor, GetSystemAttributes)(context.dispatcher, self)
     nodeMonitorActors += nodeMonitorActor -> cancellable
   }
 

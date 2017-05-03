@@ -5,12 +5,13 @@ import vm.vagrant.configuration.builder.util.VagrantBuilderException;
 import vm.vagrant.util.ChecksumType;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class VagrantVmConfigBuilder {
+public class VagrantVmConfigBuilder implements Serializable {
     private String name;
     private String hostName;
     private String boxName;

@@ -3,10 +3,11 @@ package vm.vagrant.configuration.builder;
 import vm.vagrant.configuration.VagrantFileTemplateConfiguration;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class VagrantFileTemplateConfigurationBuilder {
+public class VagrantFileTemplateConfigurationBuilder implements Serializable {
 
     private File localFile;
     private URL urlTemplate;

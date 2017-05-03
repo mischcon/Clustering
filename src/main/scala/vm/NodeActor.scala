@@ -107,8 +107,7 @@ class NodeActor extends Actor with ActorLogging {
 
   private def registerGetDeployInfo = {
     if (cancellableGetDeployInfo == null) {
-      import context.dispatcher
-      cancellableGetDeployInfo = context.system.scheduler.schedule(15 seconds, 60 seconds, instanceActor, GetDeployInfo)
+      cancellableGetDeployInfo = context.system.scheduler.schedule(15 seconds, 60 seconds, instanceActor, GetDeployInfo)(context.dispatcher, self)
     }
   }
 
@@ -121,8 +120,7 @@ class NodeActor extends Actor with ActorLogging {
 
   private def registerAddVmActor = {
     if (cancellableAddVmActor == null) {
-      import context.dispatcher
-      cancellableAddVmActor = context.system.scheduler.schedule(30 seconds, 30 seconds, self, AddVmActor)
+      cancellableAddVmActor = context.system.scheduler.schedule(30 seconds, 30 seconds, self, AddVmActor)(context.dispatcher, self)
     }
   }
 
@@ -137,7 +135,22 @@ class NodeActor extends Actor with ActorLogging {
     val uuid = actor.path.name.split("_"){1}
     val actorType = actor.path.name.split("_"){0}
     if (vmActors.contains(uuid)) {
-
+      val entry = vmActors{uuid}
+      if (actorType.equals("vmProxyActor")) {
+        if (entry._1 == null)
+          vmActors -= (uuid)
+        else {
+          vmActors -= (uuid)
+          vmActors += uuid -> (entry._1, null)
+        }
+      } else if (actorType.equals("vmActor")) {
+        if (entry._2 == null)
+          vmActors -= (uuid)
+        else {
+          vmActors -= (uuid)
+          vmActors += uuid -> (null, entry._2)
+        }
+      }
     }
   }
 

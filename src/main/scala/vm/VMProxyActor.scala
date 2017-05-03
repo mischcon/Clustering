@@ -32,7 +32,6 @@ class VMProxyActor extends Actor with ActorLogging {
   private var cancellableGetVagrantEnvironmentConfig: Cancellable = _
   private var cancellableGetTask: Cancellable = _
   private var haveSpaceForTasks: Boolean = _
-  import context.dispatcher
 
   self ! Init
 
@@ -56,7 +55,7 @@ class VMProxyActor extends Actor with ActorLogging {
       haveSpaceForTasks = false
       log.debug("deregisterGetTask")
       deregisterGetTask
-      log.debug("send AcquireExecutor")
+      log.debug(s"send AcquireExecutor(${vagrantEnvironmentConfig.version()}, $self)")
       sender() ! AcquireExecutor(vagrantEnvironmentConfig.version(), self)
     }
     case SendTask(task) if !haveSpaceForTasks => log.debug(s"got SendTask, haveSpaceForTasks = $haveSpaceForTasks"); sender() ! Failure(new Exception("no more tasks!"))
@@ -131,8 +130,8 @@ class VMProxyActor extends Actor with ActorLogging {
 
   private def registerGetVagrantEnvironmentConfig = {
     if (cancellableGetVagrantEnvironmentConfig == null)
-      log.debug("register GetVagrantEnvironmentConfig scheduler")
-      cancellableGetVagrantEnvironmentConfig = context.system.scheduler.schedule(10 seconds, 60 seconds, vmActor, GetVagrantEnvironmentConfig)
+      log.debug(s"register GetVagrantEnvironmentConfig scheduler")
+      cancellableGetVagrantEnvironmentConfig = context.system.scheduler.schedule(10 seconds, 60 seconds, vmActor, GetVagrantEnvironmentConfig)(context.dispatcher, self)
   }
 
   private def deregisterGetVagrantEnvironmentConfig = {
@@ -145,8 +144,8 @@ class VMProxyActor extends Actor with ActorLogging {
 
   private def registerGetTask = {
     if (cancellableGetTask == null)
-      log.debug("register GetTask scheduler")
-      cancellableGetTask = context.system.scheduler.schedule(0 seconds, 10 seconds, instanceActor, GetTask)
+      log.debug(s"register GetTask scheduler with verion: ${vagrantEnvironmentConfig.version()}")
+      cancellableGetTask = context.system.scheduler.schedule(10 seconds, 10 seconds, instanceActor, GetTask(vagrantEnvironmentConfig.version()))(context.dispatcher, self)
   }
 
   private def deregisterGetTask = {
@@ -163,12 +162,17 @@ class VMProxyActor extends Actor with ActorLogging {
     log.debug("getting response")
     val req = httpRequest.getRequest
     log.debug(s"request: ${httpRequest.getUrl}")
-    val response = client.execute(req)
-    log.debug("parsing")
-    val output = new RestApiResponse(response)
-    log.debug("sending")
-    sender() ! output
-    response.close()
+    try {
+      val response = client.execute(req)
+      log.debug("parsing")
+      val output = new RestApiResponse(response)
+      log.debug("sending")
+      sender() ! output
+      response.close()
+    } catch {
+      case exception: Exception =>
+        sender() ! exception
+    }
     client.close()
   }
 

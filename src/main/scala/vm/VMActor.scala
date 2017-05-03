@@ -2,6 +2,7 @@ package vm
 
 
 import java.io.File
+import java.nio.file.Files
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
 import akka.util.Timeout
@@ -139,15 +140,14 @@ class VMActor extends Actor with ActorLogging {
   private def registerScheduler = {
     log.debug(s"got NoDeployInfo")
     if (cancellable != null) cancellable.cancel()
-    import context.dispatcher
-    cancellable = context.system.scheduler.schedule(10 seconds, 60 seconds, instanceActor, GetDeployInfo)
+    cancellable = context.system.scheduler.schedule(10 seconds, 60 seconds, instanceActor, GetDeployInfo)(context.dispatcher, self)
   }
 
   private def tasksDone = {
     val runnable: Runnable = () => {
       val vmActor = self
       vagrantEnvironment.destroy()
-      path.delete()
+      sbt.io.IO.delete(path)
       vmActor ! VmTaskResult(VmDestroy)
     }
     val vmActorHelper: ActorRef = context.actorOf(Props[VMActorHelper], "vmActorHelper")
@@ -161,7 +161,7 @@ class VMActor extends Actor with ActorLogging {
   override def postStop(): Unit = {
     if (vagrantEnvironment != null)
       vagrantEnvironment.destroy()
-    path.delete()
+    sbt.io.IO.delete(path)
     log.debug(s"goodbye from ${self.path.name}")
   }
 }

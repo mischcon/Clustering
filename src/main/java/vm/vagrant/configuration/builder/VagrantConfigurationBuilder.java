@@ -6,10 +6,11 @@ import vm.vagrant.configuration.VagrantFileTemplateConfiguration;
 import vm.vagrant.configuration.VagrantFolderTemplateConfiguration;
 import vm.vagrant.configuration.builder.util.VagrantBuilderException;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VagrantConfigurationBuilder {
+public class VagrantConfigurationBuilder implements Serializable {
 
     private VagrantEnvironmentConfig environmentConfig;
     private List<VagrantFileTemplateConfiguration> fileTemplateConfigurations;

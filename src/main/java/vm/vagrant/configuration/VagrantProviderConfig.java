@@ -1,11 +1,12 @@
 package vm.vagrant.configuration;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by oliver.ziegert on 20.04.17.
  */
-public class VagrantProviderConfig {
+public class VagrantProviderConfig implements Serializable {
     private String name;
     private Boolean guiMode;
     private Integer memory;
