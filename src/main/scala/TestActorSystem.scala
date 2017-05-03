@@ -2,7 +2,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import clustering.ClusteringTask
 import communication._
 import org.apache.http.impl.client.HttpClientBuilder
-import org.junit.runner.{JUnitCore, Request, Result}
+import org.junit.runner.{JUnitCore, Request}
 
 
 class TaskExecutorActor extends Actor {
@@ -77,17 +77,44 @@ class VMProxyActor extends Actor {
 
 
 object TestActorSystem extends App {
-  val system = ActorSystem("testActorSystem")
-  val executor = system.actorOf(Props[TaskExecutorActor], name="testActor")
+  val sys = ActorSystem("testActorSystem")
+  val executor = sys.actorOf(Props[TaskExecutorActor], name="testActor")
 
-  // val test : Tests = new Tests()
-  // executor ! test
+  var result = new JUnitCore().run(Request.method(classOf[JUnitTests], "testGetSuccess"))
+  var seconds : Double = result.getRunTime / 1000.0
+  if (result.wasSuccessful()) {
+    if (result.getIgnoreCount == 1)
+      println(s"IGNORE; $seconds")
+    else
+      println(s"SUCCESS; $seconds")
+  }
+  else {
+    println(s"FAIL; $seconds; ${result.getFailures.get(0).getTrace}")
+  }
 
-  val result : Result = new JUnitCore().run(Request.method(classOf[JUnitTests], "testGetSuccess"))
-  if (result.wasSuccessful)
-    println("Test successful")
-  else
-    println("Test failed : " + result.getFailures)
+  result = new JUnitCore().run(Request.method(classOf[JUnitTests], "testGetFailure"))
+  seconds = result.getRunTime / 1000.0
+  if (result.wasSuccessful()) {
+    if (result.getIgnoreCount == 1)
+      println(s"IGNORE; $seconds")
+    else
+      println(s"SUCCESS; $seconds")
+  }
+  else {
+    println(s"FAIL; $seconds; ${result.getFailures.get(0).getTrace}")
+  }
 
-  system.terminate()
+  result = new JUnitCore().run(Request.method(classOf[JUnitTests], "testPostFailure"))
+  seconds  = result.getRunTime / 1000.0
+  if (result.wasSuccessful()) {
+    if (result.getIgnoreCount == 1)
+      println(s"IGNORE; $seconds")
+    else
+      println(s"SUCCESS; $seconds")
+  }
+  else {
+    println(s"FAIL; $seconds; ${result.getFailures.get(0).getTrace}")
+  }
+
+  sys.terminate
 }

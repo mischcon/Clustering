@@ -44,14 +44,21 @@ public class JUnitTests implements ClusteringTask {
     }
 
     @Test
-    @Clustering(id="get_success", expectedDuration=2, members={"requests"})
+    @Clustering(id="get_success", members={"requests"})
     public void testGetSuccess() {
         Assert.assertEquals(res.getStatusText(), "HTTP/1.1 200 OK");
     }
 
+    @Ignore
     @Test
-    @Clustering(id="get_failure", expectedDuration=2, members={"requests"})
+    @Clustering(id="get_failure", members={"requests"})
     public void testGetFailure() {
+        Assert.assertEquals(res.getStatusText(), "HTTP/1.1 201 OK");
+    }
+
+    @Test
+    @Clustering(id="post_failure", members={"requests"})
+    public void testPostFailure() {
         Assert.assertEquals(res.getStatusText(), "HTTP/1.1 201 OK");
     }
 }

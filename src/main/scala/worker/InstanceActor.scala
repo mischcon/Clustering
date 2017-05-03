@@ -1,6 +1,5 @@
 package worker
 
-import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
 import worker.messages._
 
