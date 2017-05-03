@@ -60,6 +60,7 @@ class NodeActor extends Actor with ActorLogging {
       val uuid = UUID.randomUUID().toString
       val vmProxyActor = context.actorOf(Props[VMProxyActor], s"vmProxyActor_$uuid")
       val vmActor = context.actorOf(Props[VMActor], s"vmActor_$uuid")
+      log.debug("started VMActor!")
       vmActors += uuid -> (vmActor, vmProxyActor)
 
     }
