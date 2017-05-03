@@ -4,6 +4,13 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages._
 
+/**
+  * This Actor keeps track of all uploaded task runs / .jar files.
+  * For every uploaded file it creates a new  {@link worker#DistributorActor}.
+  * If an {@link vm#VMProxyActor} requests a new task than it sends its request together with information about what
+  * version is deployed on the VM - the InstanceActor then searches for a suitable instance
+  * (one with a matching version) an forwards the request.
+  */
 class InstanceActor extends Actor with ActorLogging{
 
   // InstanceID + Ref of child + Version + VagrantEnvironmentConfig
@@ -21,15 +28,25 @@ class InstanceActor extends Actor with ActorLogging{
     case p : AddTask => handleAddTask(p)
     case p : GetTask => handleGetTask(p)
     case GetDeployInfo => handleGetDeployInfo()
-    case t : Terminated => handleRunComplete(); instances = instances.filter(a => a._2 != t.actor)
+    case t : Terminated => handleRunComplete(t.actor); instances = instances.filter(a => a._2 != t.actor)
   }
 
-  def handleRunComplete() : Unit = {
+  /**
+    * This function will be called every time a task run is completed.
+    * With the help of the instance list the task run can be identified.
+    * @param ref ActorRef of terminated DistributorActor
+    */
+  def handleRunComplete(ref : ActorRef) : Unit = {
     /*
     * Enter code that should be executed once a run is complete here
     * */
   }
 
+  /**
+    * Creates a DistributorActor (if there are no suitable) and forwards incoming
+    * {@link worker.messages#AddTask} messages to it
+    * @param msg
+    */
   def handleAddTask(msg : AddTask): Unit ={
     log.debug("add task")
     context.child(msg.instanceId) match {
@@ -44,6 +61,11 @@ class InstanceActor extends Actor with ActorLogging{
     }
   }
 
+  /**
+    * Forwards {@link worker.messages#GetTask} messages to all its children with a suitable version.
+    * If no suitable child was found, then a NoMoreTasks message is sent as reply to the request.
+    * @param msg
+    */
   def handleGetTask(msg : GetTask): Unit = {
     log.debug(s"received GetTask: $msg")
     if(!instances.exists(a => a._3 == msg.version.version())){
@@ -54,6 +76,10 @@ class InstanceActor extends Actor with ActorLogging{
     }
   }
 
+  /**
+    * Sends the to-be-deployed version of a task run to the VMActor.
+    * If there are no task run instances it replies with a NoDeployInfo message.
+    */
   def handleGetDeployInfo() : Unit = {
     log.debug("GetDeployInfo called")
     if(instances.nonEmpty){
