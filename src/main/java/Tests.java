@@ -10,7 +10,7 @@ import communication.RestApiResponse;
  */
 public class Tests implements ClusteringTask {
 
-    @Clustering(id="get", expectedDuration=2, members={"requests"}) public void testGet() {
+    @Clustering(id="get", members={"requests"}) public void testGet() {
         JsonObject json = new JsonObject();
         json.addProperty("method", "get");
         RestApiRequest req =
@@ -22,7 +22,7 @@ public class Tests implements ClusteringTask {
         System.out.println(response);
     }
 
-    @Clustering(id="post", expectedDuration=2, members={"requests"}) public void testPost() {
+    @Clustering(id="post", members={"requests"}) public void testPost() {
         JsonObject json = new JsonObject();
         json.addProperty("method", "post");
         RestApiRequest req = new RestApiRequest(RequestMethod.POST, "https://httpbin.org/post");
@@ -33,7 +33,7 @@ public class Tests implements ClusteringTask {
         System.out.println(response);
     }
 
-    @Clustering(id="put", expectedDuration=2, members={"requests"}) public void testPut() {
+    @Clustering(id="put", members={"requests"}) public void testPut() {
         JsonObject json = new JsonObject();
         json.addProperty("method", "put");
         RestApiRequest req = new RestApiRequest(RequestMethod.PUT, "https://httpbin.org/put");
@@ -44,7 +44,7 @@ public class Tests implements ClusteringTask {
         System.out.println(response);
     }
 
-    @Clustering(id="delete", expectedDuration=2, members={"requests"}) public void testDelete() {
+    @Clustering(id="delete", members={"requests"}) public void testDelete() {
         JsonObject json = new JsonObject();
         json.addProperty("test", "delete");
         RestApiRequest req = new RestApiRequest(RequestMethod.DELETE, "https://httpbin.org/delete");

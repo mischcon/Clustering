@@ -1,51 +1,38 @@
 # Testing Cluster
-## Start / Arguments
-Cluster 0.1 alpha
-Usage: Cluster \[master|client\] \[options\]
+### WHAT IS THIS?
+We are proud to present our *Scala-Java-based Testing Cluster* to you!
+The basic idea is to run test agains multiple instances of an to-be-tested application.
+The instances of the application are run in virtual machines, since virtual machines make provisioning and reconfiguring very easy - and they also provide the ability to run anything you want (Linux, Windows, OSX, iOS, Android, ...) on anything you want (Linux, Windows, OSX, even your smartphone (Jup, Scala can be run on a smartphone)).
 
-  --debug                  Start in debug mode
-  --verbose                Verbose mode
-  --help                   prints this usage text
-Command: master \[options\]
-run as master
-  -i, --input \<task jar\>   jar file that contains the tasks
-Command: client \[options\]
-run as cluster client
-  -s, --seed-node \<seed-node-ip:seed-node-port\>
-                           manually choose seed node ip
-  --without-vm             client should not provide VMs
-  --without-executor       client should not provide Executors
+The cluster can be seen as three different parts that work together:
 
-Beispiel:
-  * MASTER: master -i TestJar.jar
-  * CLIENT: client -s 192.168.178.1:2550
+###### 1. Central Administration / "The Master"
+This part is responsible for providing the tasks, collecting / persisting the results, keeping track of all other parts, responding to failures / failure recovery and is the main entry point for all other parts.
 
-Beim Start muss ein Netzwerkinterface aus einer Liste ausgewählt werden - anschließend wird IP+PORT der Seednode angezeigt - diese beim client als Startparameter mit angeben
+###### 2. Executors
+This part is responsible for the actual execution of the tasks.
 
-## Ziel
-* Scala / Akka basiertes Framework für clustering / remoting / parallelism
-* Ausführen von in Java / Scala geschriebenen Einheiten / Tasks
-* Gruppierung / Single Instance / Depedency-Management
-* Failsafe
-* Scaling up / out (Automatisches Starten / Stoppen von VMs; Automatisches Deployment)
-* Loadbalancing
-* System Monitoring (Check welche Komponenten installiert sind (VirtualBox/Vagrant) - abhängig davon Anpassung der Aufgabenvergabe)
+###### 3. Virtual Machines
+This part is responsible for the hosting of the to-be-tested application. It also keeps track of its own workload and asks the Central Administration for new tasks (task "pulling").
 
-## Wie verbindung Java Task <-> Cluster?
-* Annotationen @Clustering(Group="/nodes", SingleInstance=False, ...)
+There is only one instance of the Central Administration, but there can be multiple instances of Executors and Virtual Machines.
+Usually there is at least one Virtual Machine (+ some Executors) located on the same physical node as the Central Administration, which means that the cluster can be run on a single physical node.
+If you add more physical nodes to the cluster, than those nodes will host Virtual Machines and Executors on them, which will increase the amount of tasks that are being run in parallel.
 
-## Fehler
-1. Cluster Error (z.B. "Node unreachable")
-  * Liste von Tasks / ausstehenden Ergebnissen im Master mitführen (not running, pending, done, error)
-2. Task Fehler
-  * rerun?
-  * logging + done?
-  * one-for-one / all-for-one supervision strategy
-3. VM Fehler / "System" Fehler
-  * all-for-one
+*The more physical nodes - the faster the execution of all tasks*
 
-## ActorHierarchy
-![Bild](diagrams/ActorHierarchy.png)
+![](diagrams/Master_Client.png)
 
-## Loadbalancing / "Pull" via GetTask (The Happy Path)
-![Bild](diagrams/GetTask(The Happy Path).png)
+### HOW DOES IT WORK?
+The Cluster is based on the [Akka Framework](http://akka.io). Akka is one implementation of the [Actor Model](https://en.wikipedia.org/wiki/Actor_model) - a model of concurrent computation that treats small, independent units (so called "actors") as the universal primitives. Those actors depend on each other (every actor has a parent actor that supervises it), which is why we used this model for our implementation since it is very resilient and "self healing". We keep the "core" on the Central Administration and everything else can be outsourced to other nodes - if one of those nodes looses its connection to the cluster than the "parent" recognizes that and can react accordingly.
+
+### HOW CAN I USE IT?
+Check our documentation!
+
+### CAN I DO OTHER THINGS APART FROM TESTING WITH THIS THING?
+Theoretically yes, but our main goal was to provide a testing cluster. If you read through the documentation you will get an idea about how this thing works ;)
+
+### DOCUMENTATION:
+* [Wiki](/../wikis/pages)
+* [FAQ](/../wikis/faq)
+* [ScalaDoc / JavaDoc](/../wikis/dev/how-to-generate-documentation)

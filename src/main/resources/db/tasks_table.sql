@@ -8,7 +8,5 @@ CREATE TABLE clustering.tasks (
   finished_at	TIMESTAMP    DEFAULT 0,
   time_spent	INT(10),
   PRIMARY KEY (id),
-  UNIQUE KEY method_UQ (method),
-  CONSTRAINT check_task_status CHECK (task_status IN ('NOT_STARTED', 'RUNNING', 'DONE')),
-  CONSTRAINT check_end_state CHECK (end_state IN (NULL, 'SUCCESS', 'FAILURE', 'ABANDONED', 'ERROR'))
+  UNIQUE KEY method_UQ (method)
 );

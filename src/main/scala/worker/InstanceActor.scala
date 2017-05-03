@@ -4,6 +4,10 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages._
 
+/**
+  * Actor that represents an instance of a task-run.
+  * Every added jar file has its own InstanceActor
+  */
 class InstanceActor extends Actor with ActorLogging{
 
   // InstanceID + Ref of child + Version + VagrantEnvironmentConfig
