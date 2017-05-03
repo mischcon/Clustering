@@ -21,7 +21,13 @@ class InstanceActor extends Actor with ActorLogging{
     case p : AddTask => handleAddTask(p)
     case p : GetTask => handleGetTask(p)
     case GetDeployInfo => handleGetDeployInfo()
-    case t : Terminated => instances = instances.filter(a => a._2 != t.actor)
+    case t : Terminated => handleRunComplete(); instances = instances.filter(a => a._2 != t.actor)
+  }
+
+  def handleRunComplete() : Unit = {
+    /*
+    * Enter code that should be executed once a run is complete here
+    * */
   }
 
   def handleAddTask(msg : AddTask): Unit ={
