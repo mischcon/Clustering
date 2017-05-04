@@ -73,9 +73,9 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
     */
   def handleSuccess(task : Task, result : Object, source : ActorRef): Unit ={
     /* DB Actor + write */
-    log.debug(s"writing ${result.toString} result to db")
+    log.debug(s"writing ${result} result to db")
     dbActor ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.DONE, EndState.SUCCESS,
-      if (result.toString == "IGNORE") result.toString else "", tablename)
+      if (result != null && result.toString == "IGNORE") result.toString else "", tablename)
 
     taskActors = taskActors.filter(x => x != source)
   }
@@ -176,6 +176,7 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
       log.debug(s"received GetTask - forwarding it to children (have ${context.children.size})")
       context.children.foreach(x => x forward msg)
     }
+    check_suicide()
   }
 
   override def preStart(): Unit = {

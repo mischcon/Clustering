@@ -3,6 +3,7 @@ package vm
 
 import java.io.File
 import java.nio.file.Files
+import java.util.Random
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
 import akka.util.Timeout
@@ -128,7 +129,7 @@ class VMActor extends Actor with ActorLogging {
       vagrantEnvironmentConfig.setVersion(version)
       vmActor ! VmTaskResult((vagrantEnvironment, output, vagrantEnvironmentConfig, vagrantEnvironment.status()))
     }
-    val vmActorHelper: ActorRef = context.actorOf(Props[VMActorHelper], "vmActorHelper")
+    val vmActorHelper: ActorRef = context.actorOf(Props[VMActorHelper], s"vmActorHelper_${new Random().nextLong()}")
     vmActorHelper ! VmTask(runnable)
   }
 
@@ -156,10 +157,11 @@ class VMActor extends Actor with ActorLogging {
     val runnable: Runnable = () => {
       val vmActor = self
       vagrantEnvironment.destroy()
-      sbt.io.IO.delete(path)
-      vmActor ! VmTaskResult(VmDestroy)
+      if(path != null)
+        sbt.io.IO.delete(path)
+      vmActor ! VmTaskResult(VmDestroy())
     }
-    val vmActorHelper: ActorRef = context.actorOf(Props[VMActorHelper], "vmActorHelper")
+    val vmActorHelper: ActorRef = context.actorOf(Props[VMActorHelper], s"vmActorHelper_${new Random().nextLong()}")
     vmActorHelper ! VmTask(runnable)
   }
 
@@ -170,7 +172,8 @@ class VMActor extends Actor with ActorLogging {
   override def postStop(): Unit = {
     if (vagrantEnvironment != null)
       vagrantEnvironment.destroy()
-    sbt.io.IO.delete(path)
+    if (path != null)
+      sbt.io.IO.delete(path)
     log.debug(s"goodbye from ${self.path.name}")
   }
 }
