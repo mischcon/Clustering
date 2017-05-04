@@ -14,12 +14,9 @@ val akkaVersion = "2.4.17"
 val akkaHttpVersion = "10.0.5"
 val jrubyVersion = "9.1.8.+"
 val sbtIoVersion = "1.0.0-+"
-<<<<<<< HEAD
 val junitVersion = "4.10"
 val json4sVersion = "3.5.1"
-=======
 val cloningVersion = "1.9.3"
->>>>>>> master
 
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.1"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
@@ -67,7 +64,7 @@ libraryDependencies ++= Seq(
   "org.scala-sbt" %% "io" % sbtIoVersion,
 
   //JUnit
-  "junit" % "junit" % junitVersion
+  "junit" % "junit" % junitVersion,
 
   // cloning
   "uk.com.robust-it" % "cloning" % cloningVersion
