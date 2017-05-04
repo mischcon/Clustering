@@ -11,6 +11,26 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.Random
 
+/**
+  * Those actors have two different purposes:
+  *   1) They act as an identifier - a SingleInstanceActor will always only be responsible for tasks that
+  *      should be run on a single instance, while a GroupActor will always only be responsible for tasks
+  *      that can be safely executed in parallel.
+  *   2) They are the core of the whole task-dependency-management (see the wiki for further information about how the task dependency works)
+  *
+  * Each SingleInstanceActor / GroupActor contains two lists:
+  *   1) A list that contains all children of type TaskActor (all tasks that are part of the current level in the dependency tree)
+  *   2) A list that contains all children of type SingleInstanceActor / GroupActor (the next level in the dependency tree)
+  *
+  * If a SingleInstanceActor / GroupActor receives a GetTask request it will forward it to all its TaskActors if
+  * there are any - if not, than this means that the current level in the dependency tree is done. In this case
+  * the request is forwarded to all its (SingleInstanceActor / GroupActor) children.
+  * If a SingleInstanceActor / GroupActor has no more children (neither TaskActor nor SingleInstanceActor / GroupActor)
+  * than this means that all tasks have been processed - in this case the actor kills itsself.
+  *
+  * @param group Member array of the task dependency tree
+  * @param tablename Name of the corresponding database table
+  */
 abstract class SubWorkerActor(var group : List[String], tablename : String) extends WorkerTrait{
 
   implicit val timeout = Timeout(1 seconds)
@@ -43,6 +63,14 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
     }
   }
 
+  /**
+    * Handles the success of a task.
+    * Writes the result with the updated status of the task to the database.
+    * Removes the ActorRef of the TaskActor from the taskActors list.
+    * @param task Task - needed to identify classname and methodname
+    * @param result Result of the task execution
+    * @param source ActorRef of TaskActor
+    */
   def handleSuccess(task : Task, result : Object, source : ActorRef): Unit ={
     /* DB Actor + write */
     log.debug(s"writing ${result.toString} result to db")
@@ -52,6 +80,17 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
     taskActors = taskActors.filter(x => x != source)
   }
 
+  /**
+    * Handles the failure of a task.
+    * Writes the result with the updated status of the task to the database.
+    * Removes the ActorRef of the TaskActor from the taskActors list.
+    *
+    * Since a failed task in the dependency tree should stop the execution of any task on the
+    * same level / on lower levels a PeristsAndSuicide message is sent to all children.
+    * @param task Task - needed to identify classname and methodname
+    * @param result Result of the task execution
+    * @param source ActorRef of TaskActor
+    */
   def handleFailure(task : Task, result : Throwable, source : ActorRef): Unit = {
     /* DB Actor + write */
     log.debug(s"writing FAILURE result to db")
@@ -69,6 +108,10 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
     context.children.foreach(x => x ! PersistAndSuicide(s"${task.classname}.${task.method}"))
   }
 
+  /**
+    * Checks if there are still children present.
+    * If not, than the actor kills itsself.
+    */
   def check_suicide(): Unit ={
     if(taskActors.isEmpty && context.children.isEmpty) {
       log.debug("no more tasks available and no more children present - performing suicide for the greater good")
@@ -78,6 +121,12 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
     }
   }
 
+  /**
+    * Creates SingleInstanceActors / GroupActors (if there are no suitable) and forwards incoming
+    * {@link worker.messages#AddTask} messages to them.
+    * Adds the ActorRef of the created actor to the taskActors list.
+    * @param msg
+    */
   def addTask(msg : AddTask) = {
     // create new worker
     if(msg.group.length > group.length){
@@ -110,6 +159,12 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
     }
   }
 
+  /**
+    * Forwards {@link worker.messages#GetTask} messages to all its TaskActor children.
+    * If there are no more TaskActor children left it will forward the message to all its
+    * SingleInstanceActor / GroupActor children.
+    * @param msg
+    */
   def getTask(msg : GetTask) = {
     // check if there is any free task actor left
     if(taskActors.nonEmpty) {

@@ -2,6 +2,15 @@ package worker
 import akka.actor.{Props, Terminated}
 import worker.messages.{AddTask, GetTask}
 
+/**
+  * Sometimes tasks might affect other tasks (e.g. if one task changes a global configuration than the concurrent
+  * execution of this task might affect other tasks that are being executed on the same machine), which is why a
+  * separation between tasks that should be run on a SINGLE_INSTANCE and tasks that can safely be executed together
+  * with other tasks in a GROUP is necessary. Every DistributorActor can have many instances of
+  * SingleInstanceActors / GroupActors as its children. If a DistributorActor has no more children,
+  * than this means that all tasks that belong to a specific task run have been processed -
+  * in this case the actor kills itsself.
+  */
 class DistributorActor extends WorkerTrait{
 
   override def preStart(): Unit = {
@@ -21,6 +30,11 @@ class DistributorActor extends WorkerTrait{
     case a => log.warning(s"received unexpected message: $a")
   }
 
+  /**
+    * Creates SingleInstanceActors / GroupActors (if there are no) and forwards incoming
+    * {@link worker.messages#AddTask} messages to them
+    * @param msg
+    */
   def addTask(msg : AddTask) = {
     val api = msg.group.head
     context.child(api) match {
@@ -35,6 +49,11 @@ class DistributorActor extends WorkerTrait{
     context.children.foreach(x => context.watch(x))
   }
 
+  /**
+    * Forwards {@link worker.messages#GetTask} messages to all its children.
+    * If there are no more children left this actor will be killed.
+    * @param msg
+    */
   def getTask(msg : GetTask) = {
     if(context.children.isEmpty){
       log.debug("No children present - stopping self")

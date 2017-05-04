@@ -71,7 +71,8 @@ class NodeActor extends Actor with ActorLogging {
     log.debug("addVm called")
     if (vagrantEnvironmentConfig != null && systemAttributes != null){
       nodeMonitorActor ! SetPath(vagrantEnvironmentConfig.path())
-      val memory = vagrantEnvironmentConfig.vmConfigs().asScala.map(_.provider().memory().toLong).sum
+      val memory = vagrantEnvironmentConfig.vmConfigs().asScala.map(_.provider().memory().toLong).sum * 1024 * 1024
+      log.debug(s"FreePhysicalMemorySize: ${systemAttributes {"FreePhysicalMemorySize"}}, memory: $memory")
       if (memory > 0 && systemAttributes {"FreePhysicalMemorySize"}.toLong >= memory) {
         log.debug("create new vmProxyActor")
         val uuid = UUID.randomUUID().toString
