@@ -120,7 +120,7 @@ class VMActor extends Actor with ActorLogging {
         case e: Exception => {
           vagrantEnvironment.destroy()
           sbt.io.IO.delete(path)
-          instanceActor.tell(GetDeployInfo, vmActor4)
+          instanceActor.tell(GetDeployInfo, vmActor)
         }
       }
       val vmConfigs = vagrantEnvironmentConfig.vmConfigs().asScala.map(vagrantEnvironment.getBoxePortMapping(_))
