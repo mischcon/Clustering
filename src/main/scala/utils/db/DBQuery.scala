@@ -29,7 +29,7 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
     statement.executeUpdate()
     println(s"[DB]: '$tableName' table created")
     sql =
-      s"CREATE OR REPLACE TRIGGER ${tableName}_update_timestamps " +
+      s"CREATE TRIGGER ${tableName}_update_timestamps " +
        "BEFORE UPDATE " +
         s"ON clustering.$tableName FOR EACH ROW " +
          "BEGIN " +
