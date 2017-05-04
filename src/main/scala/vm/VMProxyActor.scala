@@ -174,9 +174,19 @@ class VMProxyActor extends Actor with ActorLogging {
         sender() ! exception
     }
     client.close()
+    handleSuccess()
   }
 
-  def handleFailure(): Unit ={
+
+
+  private def handleSuccess(): Unit = {
+    log.debug("task successfull - ask for new task")
+    haveSpaceForTasks = true
+    instanceActor ! GetTask(vagrantEnvironmentConfig.version())
+    registerGetTask
+  }
+
+  private def handleFailure(): Unit ={
     log.debug("releasing task - now I have space for a new task!")
     haveSpaceForTasks = true
     registerGetTask
