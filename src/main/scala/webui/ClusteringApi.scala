@@ -65,7 +65,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
           val loader : TestingCodebaseLoader = new TestingCodebaseLoader(content)
           val testMethods = loader.getClassClusterMethods
           val datestring = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date())
-
+          val version = loader.getVmConfig
           for (a <- testMethods.asScala.toList) {
             println(s"adding task ${a.classname}.${a.methodname} to table $datestring")
             var singleInstance: Boolean = true
@@ -73,7 +73,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
               singleInstance = false
 
             // Add Task to dependency tree
-            instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance))
+            instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance), version)
 
             // Add Task to Database
             dBActor ! CreateTask(s"${a.classname}.${a.methodname}", datestring)

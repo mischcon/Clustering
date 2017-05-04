@@ -76,7 +76,7 @@ object ClusterMain extends App{
         if(cli_config.input != null) {
           val loader: TestingCodebaseLoader = new TestingCodebaseLoader(cli_config.input)
           val testMethods = loader.getClassClusterMethods
-          val version = loader.getVmConfig
+          var version = loader.getVmConfig
           val datestring = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date())
           // Add Tasks
             for (a <- testMethods.asScala.toList) {
@@ -97,10 +97,6 @@ object ClusterMain extends App{
         if(cli_config.debug)
           println(new PrivateMethodExposer(system)('printTree)())
 
-        println("press key as soon as client has joined")
-        StdIn.readLine()
-
-        //testVMNodesActor ! "get"
 
         println("Press any key to stop...")
         StdIn.readLine()
