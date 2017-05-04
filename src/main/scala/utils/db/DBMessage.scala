@@ -19,6 +19,12 @@ trait DBMessage
 case class GenerateTextReport(tableName : String) extends DBMessage
 
 /**
+  * = Request html report from database for ''DONE'' tasks =
+  * @param tableName table name
+  */
+case class GenerateHtmlReport(tableName : String) extends DBMessage
+
+/**
   * = Request ''task_status - amount'' relation =
   * __Example__:
   * {{{
@@ -152,6 +158,12 @@ case class DeleteTasks(methods : List[String], tableName: String) extends DBMess
 /*
  * RESPONSE MESSAGES
  */
+
+/**
+  * = Response message for [[utils.db.GenerateHtmlReport]] =
+  * @param text contains report text
+  */
+case class HtmlReport(text : String) extends DBMessage
 
 /**
   * = Response message for [[utils.db.CountTaskStatus]] =

@@ -4,6 +4,7 @@ import java.io._
 import java.text.SimpleDateFormat
 import java.util.Date
 
+import akka.pattern.ask
 import akka.actor.{Actor, ActorLogging}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
@@ -14,10 +15,11 @@ import akka.util.{ByteString, Timeout}
 import clustering.ClusterType
 import de.oth.clustering.java._
 import spray.json.DefaultJsonProtocol._
-import utils.db.CreateTask
+import utils.db.{CreateTask, GenerateHtmlReport, HtmlReport}
 import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success}
 
@@ -26,6 +28,8 @@ import scala.util.{Failure, Random, Success}
   */
 
 case class UploadJar(content : Array[Byte])
+case object GetTaskSets
+case class GetTaskSet(name : String)
 
 class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives with SprayJsonSupport{
 
@@ -39,8 +43,13 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   val instanceActor = context.actorSelection("/user/instances")
   val dBActor = context.actorSelection("/user/db")
 
-  val routes: Route =
-    path("api"/"upload") {
+  val routes : Route =
+    path("") {
+      get {
+        complete("WELCOME TO THE CLUSTER API.")
+      }
+    } ~
+    path("api" / "upload") {
       post {
         withoutSizeLimit {
           extractDataBytes {
@@ -48,10 +57,21 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
           }
         }
       }
+    } ~
+    path("api" / "reporting") {
+      get {
+        complete(report)
+      }
     }
 
   override def receive: Receive = {
     case a => println(s"received $a")
+  }
+
+  def report(): String  = {
+    val future = dBActor ? GenerateHtmlReport("tasks")
+    val result = Await.result(future, timeout.duration).asInstanceOf[HtmlReport]
+    result.text
   }
 
   def handleUpload(bytes : Source[ByteString, Any]) ={

@@ -87,6 +87,47 @@ class DBGenerateTextReport(tableName : String) extends DBQuery {
   }
 }
 
+class DBGenerateHtmlReport(tableName : String) extends DBQuery {
+  override val table: String = tableName
+  override def perform(connection: Connection): HtmlReport = {
+    val query1 = new DBGetTasksWithStatus(TaskStatus.DONE, tableName)
+    val doneTasks = query1.perform(connection)
+    val query2 = new DBCountEndState(tableName)
+    val endStateOfTasks = query2.perform(connection)
+    doneTasks match {
+      case Some(tasks) =>
+        val sb = new StringBuilder
+        sb.append(s"TASK SET : $tableName\n\n")
+        for ((k, v) <- endStateOfTasks.result) {
+          if (k == EndState.ABANDONED)
+            sb.append(s"$k\t$v\n")
+          else
+            sb.append(s"$k\t\t$v\n")
+        }
+        sb.append("\n")
+        for (task <- tasks) {
+          sb.append("===================================================================================================\n")
+          sb.append(task.end_state.toString + "\n\n")
+          var paramsAsString = ""
+          for ((name, value) <- task.params)
+            paramsAsString += name + "=" + value + "; "
+          paramsAsString dropRight 1
+          sb.append(s"METHOD     : ${task.method} ($paramsAsString)\n")
+          sb.append(s"STARTED @  : ${task.started_at}\n")
+          sb.append(s"FINISHED @ : ${task.finished_at}\n")
+          sb.append(s"TIME SPENT : ${task.time_spent} SEC\n")
+          sb.append(s"RESULT :\n${task.task_result}\n")
+        }
+        sb.append("===================================================================================================")
+        println(s"[DB]: text report generated")
+        HtmlReport(sb.toString)
+      case None =>
+        println(s"[DB]: nothing to generate")
+        HtmlReport("nothing to generate")
+    }
+  }
+}
+
 class DBCountTaskStatus(tableName : String) extends DBQuery {
   override val table: String = tableName
   override def perform(connection: Connection): CountedTaskStatus = {
