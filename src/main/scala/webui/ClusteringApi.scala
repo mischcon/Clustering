@@ -27,7 +27,7 @@ import scala.util.{Failure, Random, Success}
 
 case class UploadJar(content : Array[Byte])
 
-class ClusteringApi extends Actor with ActorLogging with Directives with SprayJsonSupport{
+class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives with SprayJsonSupport{
 
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = context.system.dispatcher
@@ -87,6 +87,6 @@ class ClusteringApi extends Actor with ActorLogging with Directives with SprayJs
   }
 
   // Start the Server and configure it with the route config
-  val bindingFuture = Http().bindAndHandle(routes, "0.0.0.0", 8080)
-  log.info("JAR file upload now possible via 0.0.0.0:8080/api/upload")
+  val bindingFuture = Http().bindAndHandle(routes, ip, 8080)
+  log.info(s"JAR file upload now possible via $ip:8080/api/upload")
 }
