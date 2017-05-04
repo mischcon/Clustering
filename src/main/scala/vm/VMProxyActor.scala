@@ -101,7 +101,7 @@ class VMProxyActor extends Actor with ActorLogging {
     uuid = self.path.name.split("_"){1}
     nodeActor = context.parent
     haveSpaceForTasks = true
-    nodeActor ! GetVmActor
+    nodeActor ! GetVmActor(self)
     nodeActor ! GetInstanceActor
   }
 

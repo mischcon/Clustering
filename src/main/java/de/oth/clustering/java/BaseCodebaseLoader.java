@@ -9,10 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -94,7 +91,11 @@ public abstract class BaseCodebaseLoader<T extends Entry> extends ClassLoader im
             throw new ClassNotFoundException("no class that implement VmEnvironment.class found") ;
 
         VmEnvironment env = (VmEnvironment)configClass.newInstance();
-        return env.createEnvironment();
+        VagrantEnvironmentConfig vaenv = env.createEnvironment();
+        if(vaenv.version() == null){
+            vaenv.setVersion(Objects.toString(new Random().nextLong()));
+        }
+        return vaenv;
     }
 
 }
