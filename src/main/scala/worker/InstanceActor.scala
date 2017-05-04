@@ -35,6 +35,7 @@ class InstanceActor extends Actor with ActorLogging{
       case None => {
         val ref = context.actorOf(Props(classOf[DistributorActor]), msg.instanceId)
         instances = (msg.instanceId, ref, msg.version.version(), msg.version) :: instances
+        log.debug(s"added task: ${msg.instanceId}, $ref, ${msg.version.version()}, ${msg.version}")
         ref ! msg
 
         context.watch(ref)
