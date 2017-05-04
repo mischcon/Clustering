@@ -48,7 +48,15 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   val routes : Route =
     path("api") {
       get {
-        complete("WELCOME TO THE CLUSTER API.")
+        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`,
+          "<html>" +
+          "<title>Cluster API</title>" +
+          "<body>" +
+          s"<h1>Welcome to ze Cluster API</h1><br>" +
+          s"<a href='http://$ip:8080/api/reporting' style='font-size: 20px;'>reporting</a><br><br>" +
+          s"<a href='http://$ip:8080/api/tree' style='font-size: 20px;'>tree</a>" +
+          "</body>" +
+          "</html>"))
       }
     } ~
     path("api" / "upload") {
