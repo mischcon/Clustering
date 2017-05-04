@@ -15,10 +15,11 @@ public class VagrantPortForwardingConfigBuilder implements IVagrantNetworkConfig
     private Integer hostPort;
     private String hostIp;
     private Protocol protocol;
-    private Service service;
+    private String service;
     private String name;
 
     public VagrantPortForwardingConfigBuilder() {
+        hostIp = "127.0.0.1";
     }
 
     public VagrantPortForwardingConfigBuilder withAutoCorrect(Boolean autoCorrect) {
@@ -51,7 +52,7 @@ public class VagrantPortForwardingConfigBuilder implements IVagrantNetworkConfig
         return this;
     }
 
-    public VagrantPortForwardingConfigBuilder withService(Service service) {
+    public VagrantPortForwardingConfigBuilder withService(String service) {
         this.service = service;
         return this;
     }

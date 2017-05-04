@@ -2,20 +2,21 @@ package vm
 
 
 import java.io.File
+import java.nio.file.Files
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable}
-import akka.pattern._
+import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
 import akka.util.Timeout
+import com.rits.cloning.Cloner
 import vm.messages._
 import vm.vagrant.Vagrant
-import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantVmConfig}
+import vm.vagrant.configuration.VagrantEnvironmentConfig
 import vm.vagrant.model.VagrantEnvironment
 import vm.vagrant.util.VagrantException
 import worker.messages.{DeployInfo, GetDeployInfo, NoDeployInfo}
 
 import scala.collection.JavaConverters.{asJavaIterableConverter, iterableAsScalaIterableConverter}
-import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+
 
 /**
   * Created by mischcon on 3/20/17.
@@ -30,12 +31,17 @@ class VMActor extends Actor with ActorLogging {
   private var vmProxyActor: ActorRef = _
   private var vmProvisioned: Boolean = _
   private var cancellable: Cancellable = _
+  private var path: File = _
+  private var version: String = _
+  implicit val timeout = Timeout(5 seconds)
 
   self ! Init
 
   override def receive: Receive = {
     case Init => init
     case GetVagrantEnvironmentConfig if vmProvisioned => sender() ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
+    case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor; initGetDeployInfo
+    case SetVmProxyActor(vmProxyActor) => this.vmProxyActor = vmProxyActor; initGetDeployInfo
     case VmUp(box) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.up(box))
     case VmDestroy(box) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.destroy(box))
     case VmHalt(box) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.halt(box))
@@ -52,56 +58,100 @@ class VMActor extends Actor with ActorLogging {
     case VmAddBoxe(boxName) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.addBoxe(boxName))
     case VmRemoveBoxes(boxName) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.removeBoxes(boxName))
     case VmUpdateBoxes(boxName) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.updateBoxes(boxName))
-    case _ if !vmProvisioned => sender() ! NotReadyJet
     case DeployInfo(vagrantEnvironmentConfig) => {
       log.debug("received DeployInfo")
-      this.vagrantEnvironmentConfig = vagrantEnvironmentConfig
+      this.vagrantEnvironmentConfig = new Cloner().deepClone(vagrantEnvironmentConfig)
       if (cancellable != null) cancellable.cancel()
-      provisionVm
+      startProvisionVm
     }
     case NoDeployInfo => registerScheduler
+    case VmTaskResult(any) => {
+      any match {
+        case x: (VagrantEnvironment, String, VagrantEnvironmentConfig, Iterator[(String, vm.vagrant.model.VmStatus.Value)]) => endProvisionVm(x)
+        case x: VmDestroy => nodeActor ! RemoveVmActor(self)
+      }
+    }
+    case TasksDone => tasksDone
+    case _ if !vmProvisioned => sender() ! NotReadyJet
   }
 
   private def init = {
+    log.debug("init called")
     uuid = self.path.name.split("_"){1}
     nodeActor = context.parent
     vmProvisioned = false
-    implicit val timeout = Timeout(5 seconds)
-    val instanceActorFuture = nodeActor ? GetInstanceActor
-    Await.result(instanceActorFuture, timeout.duration) match {
-      case SetInstanceActor(instanceActor) => this.instanceActor = instanceActor
-      case _ => ???
-    }
-    val vmProxyActorFuture = nodeActor ? GetVmProxyActor
-    Await.result(vmProxyActorFuture, timeout.duration) match {
-      case SetVmProxyActor(vmProxyActor) => this.vmProxyActor = vmProxyActor
-      case _ => ???
-    }
-    instanceActor ! GetDeployInfo
+    nodeActor ! GetInstanceActor
+    nodeActor ! GetVmProxyActor(self)
   }
 
-  private def provisionVm = {
+  private def initGetDeployInfo = {
+    if (instanceActor != null && vmProxyActor != null)
+      instanceActor ! GetDeployInfo
+  }
+
+  private def startProvisionVm = {
+    log.debug("provisionVm called")
+    log.debug(s"path is ${vagrantEnvironmentConfig.path()}")
     if (!vagrantEnvironmentConfig.path().isDirectory)
       throw new VagrantException("path is not a directory!")
-    if (vagrantEnvironmentConfig.path().canWrite)
-      throw new VagrantException("can not write in path")
-    val path = new File(vagrantEnvironmentConfig.path(), uuid)
-    val version = vagrantEnvironmentConfig.version()
+    path = new File(vagrantEnvironmentConfig.path(), uuid)
+    version = vagrantEnvironmentConfig.version()
     path.mkdirs()
-    vagrantEnvironment = new Vagrant().createEnvironment(vagrantEnvironmentConfig)
-    vagrantEnvironment.up()
-    var vmConfigs = vagrantEnvironmentConfig.vmConfigs().asScala.map(vagrantEnvironment.getBoxePortMapping(_))
-    vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vmConfigs.asJava, vagrantEnvironmentConfig.path())
+    vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vagrantEnvironmentConfig.vmConfigs(), path)
     vagrantEnvironmentConfig.setVersion(version)
-    vmProvisioned = true
-    nodeActor ! VmProvisioned
-    vmProxyActor ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
+
+    var vmCounter = 0
+    vagrantEnvironmentConfig.vmConfigs().asScala.foreach(d => {
+      if (d.provider().vmName() != null && d.provider().vmName().length > 0 )
+        d.provider().setVmName(s"${d.provider().vmName()}_$uuid")
+      else {
+        vmCounter += 1
+        d.provider().setVmName(s"${uuid}_$vmCounter")
+      }
+    })
+    val runnable: Runnable = () => {
+      val vmActor = self
+      vagrantEnvironment = new Vagrant().createEnvironment(vagrantEnvironmentConfig)
+      vagrantEnvironment.destroy()
+      var output = vagrantEnvironment.up()
+      val vmConfigs = vagrantEnvironmentConfig.vmConfigs().asScala.map(vagrantEnvironment.getBoxePortMapping(_))
+      vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vmConfigs.asJava, vagrantEnvironmentConfig.path())
+      vagrantEnvironmentConfig.setVersion(version)
+      vmActor ! VmTaskResult((vagrantEnvironment, output, vagrantEnvironmentConfig, vagrantEnvironment.status()))
+    }
+    val vmActorHelper: ActorRef = context.actorOf(Props[VMActorHelper], "vmActorHelper")
+    vmActorHelper ! VmTask(runnable)
+  }
+
+  private def endProvisionVm(x: (VagrantEnvironment, String, VagrantEnvironmentConfig, Iterator[(String, vm.vagrant.model.VmStatus.Value)])) = {
+    if (x._4.exists(_._2 != vm.vagrant.model.VmStatus.running)) {
+      log.debug("vm not provisioned")
+      log.debug(x._2)
+      vmProvisioned = false
+    } else {
+      log.debug("vm provisioned")
+      log.debug(x._2)
+      vmProvisioned = true
+      nodeActor ! VmProvisioned
+      vmProxyActor ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
+    }
   }
 
   private def registerScheduler = {
+    log.debug(s"got NoDeployInfo")
     if (cancellable != null) cancellable.cancel()
-    import context.dispatcher
-    cancellable = context.system.scheduler.schedule(10 seconds, 60 seconds, instanceActor, GetDeployInfo)
+    cancellable = context.system.scheduler.schedule(10 seconds, 60 seconds, instanceActor, GetDeployInfo)(context.dispatcher, self)
+  }
+
+  private def tasksDone = {
+    val runnable: Runnable = () => {
+      val vmActor = self
+      vagrantEnvironment.destroy()
+      sbt.io.IO.delete(path)
+      vmActor ! VmTaskResult(VmDestroy)
+    }
+    val vmActorHelper: ActorRef = context.actorOf(Props[VMActorHelper], "vmActorHelper")
+    vmActorHelper ! VmTask(runnable)
   }
 
   override def preStart(): Unit = {
@@ -111,6 +161,7 @@ class VMActor extends Actor with ActorLogging {
   override def postStop(): Unit = {
     if (vagrantEnvironment != null)
       vagrantEnvironment.destroy()
+    sbt.io.IO.delete(path)
     log.debug(s"goodbye from ${self.path.name}")
   }
 }

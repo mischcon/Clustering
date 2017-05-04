@@ -7,7 +7,7 @@ trait WorkerMessagesTrait
 
 /* TASK DEPENDENCY TREE CREATION AND RETRIEVAL / DELETION */
 case class AddTask(instanceId : String, group : List[String], task : Task, version : VagrantEnvironmentConfig = null) extends WorkerMessagesTrait
-case class GetTask(version : VagrantEnvironmentConfig = null) extends WorkerMessagesTrait
+case class GetTask(version : String) extends WorkerMessagesTrait
 case object HasTask extends WorkerMessagesTrait
 
 /* TASK SENDING AND RECEIVING */

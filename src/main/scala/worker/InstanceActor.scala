@@ -5,6 +5,10 @@ import utils.db.GenerateTextReport
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages._
 
+/**
+  * Actor that represents an instance of a task-run.
+  * Every added jar file has its own InstanceActor
+  */
 class InstanceActor extends Actor with ActorLogging{
 
   // InstanceID + Ref of child + Version + VagrantEnvironmentConfig
@@ -53,11 +57,11 @@ class InstanceActor extends Actor with ActorLogging{
 
   def handleGetTask(msg : GetTask): Unit = {
     log.debug(s"received GetTask: $msg")
-    if(!instances.exists(a => a._3 == msg.version.version())){
+    if(!instances.exists(a => a._3 == msg.version)){
       log.debug("No more tasks available")
       sender() ! NoMoreTasks
     } else {
-      instances.filter(a => a._3 == msg.version.version()).sortBy(a => a._1).head._2 forward msg
+      instances.filter(a => a._3 == msg.version).sortBy(a => a._1).head._2 forward msg
     }
   }
 

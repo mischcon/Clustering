@@ -5,10 +5,11 @@ import vm.vagrant.configuration.VagrantVmConfig;
 import vm.vagrant.configuration.builder.util.VagrantBuilderException;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VagrantEnvironmentConfigBuilder {
+public class VagrantEnvironmentConfigBuilder implements Serializable {
 
     private List<VagrantVmConfig> vmConfigs;
     private File path;

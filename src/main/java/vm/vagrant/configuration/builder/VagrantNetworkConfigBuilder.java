@@ -1,11 +1,13 @@
 package vm.vagrant.configuration.builder;
 
+import java.io.Serializable;
+
 /**
  * Created by oliver.ziegert on 20.04.17.
  */
 
 
-public class VagrantNetworkConfigBuilder {
+public class VagrantNetworkConfigBuilder implements Serializable {
     public static VagrantPrivateNetworkConfigBuilder createPrivateNetworkConfig() {
         return new VagrantPrivateNetworkConfigBuilder();
     }

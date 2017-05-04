@@ -1,5 +1,7 @@
 package vm
 
+import java.util.UUID
+
 import akka.actor.{Actor, ActorLogging, ActorPath, ActorRef, Address, Deploy, Props}
 import akka.cluster.{Cluster, Member}
 import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberJoined, UnreachableMember}
@@ -29,8 +31,8 @@ class NodeMasterActor extends Actor with ActorLogging {
     case GetGlobalStatusActor => sender() ! SetGlobalStatusActor(globalStatusActor)
     case GetInstanceActor => sender() ! SetInstanceActor(instanceActor)
     case DeregisterNodeActor => excludeNode
-    case IncludeNode(address) => includeNode(address)
-    case MemberJoined(member) => handleMemberJoined(member)
+    case IncludeNode(address) => log.debug(s"got IncludeNode($address)"); includeNode(address)
+    case MemberJoined(member) => log.debug(s"got MemberJoined($member)"); includeNode(member.address)
   }
 
   private def init = {
@@ -39,7 +41,7 @@ class NodeMasterActor extends Actor with ActorLogging {
   }
 
   def includeNode(address: Address) = {
-    nodeActors +:= context.actorOf(Props[NodeActor].withDeploy(Deploy(scope = RemoteScope(address))), "nodeActor")
+    nodeActors +:= context.actorOf(Props[NodeActor].withDeploy(Deploy(scope = RemoteScope(address))), s"nodeActor_${address.host.getOrElse(UUID.randomUUID().toString)}:${address.port.getOrElse("")}")
   }
 
   def excludeNode = {
@@ -55,12 +57,6 @@ class NodeMasterActor extends Actor with ActorLogging {
     }
     log.debug(s"could not find $path")
     return None
-  }
-
-  def handleMemberJoined(member : Member) = {
-    if(member.hasRole("vm")){
-      includeNode(member.address)
-    }
   }
 
   override def preStart(): Unit = {

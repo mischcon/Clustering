@@ -1,6 +1,5 @@
 import java.net.NetworkInterface
 import java.text.SimpleDateFormat
-import java.time.Clock
 import java.util.Date
 
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
@@ -11,14 +10,14 @@ import de.oth.clustering.java._
 import utils._
 import utils.db.{CreateTask, DBActor}
 import vm.messages._
-import vm.{NodeActor, NodeMasterActor, NodeMonitorActor}
+import vm.NodeMasterActor
 import webui.ClusteringApi
 import worker.InstanceActor
 import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, DurationInt}
 import scala.io.StdIn
 
 object ClusterMain extends App{
@@ -28,15 +27,6 @@ object ClusterMain extends App{
     case Some(cli_config) => {
 
       var config = ConfigFactory.load()
-
-      // logging
-      if(cli_config.verbose)
-        config = ConfigFactory.parseString("akka.loglevel = INFO").withFallback(config)
-      if(cli_config.debug)
-        config = ConfigFactory.parseString("akka.loglevel = DEBUG").withFallback(config)
-
-
-      // network interface for listening
       val interfaces = NetworkInterface.getNetworkInterfaces
       println("Choose ip for listening:")
       var counter = 0
@@ -51,6 +41,12 @@ object ClusterMain extends App{
         }
       }
 
+      // logging
+      if(cli_config.verbose)
+        config = ConfigFactory.parseString("akka.loglevel = INFO").withFallback(config)
+      if(cli_config.debug)
+        config = ConfigFactory.parseString("akka.loglevel = DEBUG").withFallback(config)
+
       var localIp = ips_list.reverse(StdIn.readInt())
       val hostnameConfig = ConfigFactory.parseString(s"akka.remote.netty.tcp.hostname = $localIp")
 
@@ -64,10 +60,11 @@ object ClusterMain extends App{
         Cluster(system).join(Address("akka.tcp", "the-cluster", localIp, 2550))
         println(s"Cluster created! Seed node IP is $localIp")
 
+        //val distributorActor : ActorRef = system.actorOf(Props[DistributorActor], "distributor")
         val instanceActor : ActorRef = system.actorOf(Props[InstanceActor], "instances")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
         val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
-        val apiActor : ActorRef = system.actorOf(Props(classOf[ClusteringApi], localIp), "api")
+        val apiActor : ActorRef = system.actorOf(Props[ClusteringApi], "api")
         val globalStatus : ActorRef = system.actorOf(Props[GlobalStatusActor], "globalStatus")
         val nodeMasterActor : ActorRef = system.actorOf(Props[NodeMasterActor], "nodeMasterActor")
         nodeMasterActor ! IncludeNode(Cluster(system).selfAddress)
@@ -95,15 +92,15 @@ object ClusterMain extends App{
         }
 
         Thread.sleep(500)
-        if(cli_config.debug)
-          println(new PrivateMethodExposer(system)('printTree)())
+        println(new PrivateMethodExposer(system)('printTree)())
 
+        println("press key as soon as client has joined")
+        StdIn.readLine()
 
         println("Press any key to stop...")
         StdIn.readLine()
         println("Shutting down the Cluster...")
-        if(cli_config.debug)
-          println(new PrivateMethodExposer(system)('printTree)())
+        println(new PrivateMethodExposer(system)('printTree)())
         Await.result(system.terminate(), Duration.Inf)
         System.exit(0)
       }
@@ -129,7 +126,6 @@ object ClusterMain extends App{
         if(cli_config.seednode != null) {
           println(s"using ${cli_config.seednode} as seed-node")
           Cluster(system).join(Address("akka.tcp", "the-cluster", cli_config.seednode.split(":").head, cli_config.seednode.split(":").reverse.head.toInt))
-
         }
 
         println("Press any key to gracefully stop the client...")

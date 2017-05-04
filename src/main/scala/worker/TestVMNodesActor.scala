@@ -22,7 +22,7 @@ class TestVMNodesActor(vmInfo : Object) extends WorkerTrait{
   override def receive: Receive = {
     case "get" => {
       log.debug("sent GetTask to distributor")
-      context.system.actorSelection("/user/instances") ! GetTask()
+      context.system.actorSelection("/user/instances") ! GetTask("asdasd")
     }
     case t : SendTask if haveSpaceForTasks => {
       log.debug("received SendTask and I still have space for tasks!")

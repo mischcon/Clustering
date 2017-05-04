@@ -3,6 +3,7 @@ package vm.vagrant.configuration;
 import vm.vagrant.util.ChecksumType;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
  *
  * @author oliver.ziegert
  */
-public class VagrantVmConfig {
+public class VagrantVmConfig implements Serializable {
 
     private String name;
     private String hostName;

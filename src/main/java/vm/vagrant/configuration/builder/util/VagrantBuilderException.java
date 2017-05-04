@@ -1,11 +1,13 @@
 package vm.vagrant.configuration.builder.util;
 
+import java.io.Serializable;
+
 /**
  * The default Exception for all builder classes.
  * @author oliver.ziegert
  *
  */
-public class VagrantBuilderException extends RuntimeException {
+public class VagrantBuilderException extends RuntimeException implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

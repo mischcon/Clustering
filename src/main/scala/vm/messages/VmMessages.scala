@@ -1,6 +1,7 @@
 package vm.messages
 
 import java.io.File
+import java.util.concurrent.{Callable, FutureTask}
 
 import akka.actor.{ActorRef, Address}
 import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantVmConfig}
@@ -8,7 +9,7 @@ import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantVmConfig}
 /**
   * Created by oliver.ziegert on 22.04.17.
   */
-trait VmMessages
+trait VmMessages extends Serializable
 
 case object Init extends VmMessages
 
@@ -30,11 +31,11 @@ case class IncludeNode(address: Address) extends VmMessages
 
 case class SetVmProxyActor(vmProxyActor: ActorRef) extends VmMessages
 
-case object GetVmProxyActor extends VmMessages
+case class GetVmProxyActor(sender: ActorRef) extends VmMessages
 
 case class SetVmActor(vmActor: ActorRef) extends VmMessages
 
-case object GetVmActor extends VmMessages
+case class GetVmActor(sender: ActorRef) extends VmMessages
 
 case object VmProvisioned extends VmMessages
 
@@ -49,6 +50,14 @@ case class SetDistributorActor(distributor: ActorRef) extends VmMessages
 case object GetDistributorActor extends VmMessages
 
 case object AddVmActor extends VmMessages
+
+case class RemoveVmActor(self: ActorRef) extends VmMessages
+
+case class VmTask(runnable: Runnable) extends VmMessages
+
+case class VmTaskResult(any: Any) extends VmMessages
+
+case object TasksDone extends VmMessages
 
 
 

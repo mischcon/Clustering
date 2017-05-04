@@ -4,9 +4,10 @@ import vm.vagrant.configuration.VagrantFolderTemplateConfiguration;
 import vm.vagrant.configuration.builder.util.VagrantBuilderException;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.URI;
 
-public class VagrantFolderTemplateConfigurationBuilder {
+public class VagrantFolderTemplateConfigurationBuilder implements Serializable {
 
 	private File localFolder;
 	private String pathInVagrantFolder;
