@@ -13,6 +13,11 @@ trait DBMessage
  */
 
 /**
+  * = Request all table names from database =
+  */
+case object GetTables extends DBMessage
+
+/**
   * = Request text report from database for ''DONE'' tasks =
   * @param tableName table name
   */
@@ -191,3 +196,9 @@ case class CountedEndState(result : Map[EndState, Int]) extends DBMessage
 case class RequestedTask(method : String, params : Map[String, String], task_status : TaskStatus, end_state : EndState,
                          task_result : String, started_at : Timestamp, finished_at : Timestamp, time_spent : Int)
   extends DBMessage
+
+/**
+  * = Response message for [[utils.db.GetTables]] =
+  * @param names contains all table names in the clustering database
+  */
+case class Tables(names : List[String]) extends DBMessage

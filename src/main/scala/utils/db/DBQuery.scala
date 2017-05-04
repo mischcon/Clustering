@@ -9,6 +9,23 @@ trait DBQuery {
   def perform(connection: Connection) : Any
 }
 
+class DBGetTables extends DBQuery {
+  override val table: String = ""
+  override def perform(connection: Connection): Tables = {
+    val sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='clustering' ORDER BY table_name ASC;"
+    val statement : PreparedStatement = connection.prepareStatement(sql)
+    val resultSet = statement.executeQuery()
+    var tables = List[String]()
+    while (resultSet.next()) {
+      val tableName = resultSet.getString("table_name")
+      tables = tableName :: tables
+    }
+    for (table <- tables)
+      println(s"[DB]: table - $table")
+    Tables(tables)
+  }
+}
+
 class DBCreateTasksTable(tableName : String) extends DBQuery {
   override val table: String = tableName
   override def perform(connection: Connection): Unit = {

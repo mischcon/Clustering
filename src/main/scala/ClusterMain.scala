@@ -9,15 +9,15 @@ import com.typesafe.config.ConfigFactory
 import de.oth.clustering.java._
 import utils._
 import utils.db.{CreateTask, DBActor}
-import vm.messages._
 import vm.NodeMasterActor
+import vm.messages._
 import webui.ClusteringApi
 import worker.InstanceActor
 import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
-import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.duration.Duration
 import scala.io.StdIn
 
 object ClusterMain extends App{

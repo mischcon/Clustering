@@ -8,6 +8,7 @@ import akka.pattern.ask
 import akka.actor.{Actor, ActorLogging}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Source}
@@ -15,7 +16,8 @@ import akka.util.{ByteString, Timeout}
 import clustering.ClusterType
 import de.oth.clustering.java._
 import spray.json.DefaultJsonProtocol._
-import utils.db.{CreateTask, GenerateHtmlReport, HtmlReport}
+import utils.PrivateMethodExposer
+import utils.db._
 import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
@@ -35,7 +37,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
 
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = context.system.dispatcher
-  implicit val timeout = Timeout(2 seconds)
+  implicit val timeout = Timeout(5 seconds)
   implicit val system = context.system
 
   implicit val uploadJarForamt = jsonFormat1(UploadJar)
@@ -44,7 +46,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   val dBActor = context.actorSelection("/user/db")
 
   val routes : Route =
-    path("") {
+    path("api") {
       get {
         complete("WELCOME TO THE CLUSTER API.")
       }
@@ -60,7 +62,21 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     } ~
     path("api" / "reporting") {
       get {
-        complete(report)
+        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`,
+          s"<html><title>Reporting</title><body>${report()}</body></html>"))
+      }
+    } ~
+    path("api" / "reporting" / Segment) {
+      (name) =>
+        get {
+          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`,
+            s"${report(name)}"))
+        }
+    } ~
+    path("api" / "tree") {
+      get {
+        complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`,
+          s"${printTree()}"))
       }
     }
 
@@ -68,8 +84,30 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     case a => println(s"received $a")
   }
 
-  def report(): String  = {
-    val future = dBActor ? GenerateHtmlReport("tasks")
+  def printTree(): String = {
+    new PrivateMethodExposer(system)('printTree)().toString
+  }
+
+  def report(): String = {
+    val future = dBActor ? GetTables
+    val result = Await.result(future, timeout.duration).asInstanceOf[Tables]
+    val sb = new StringBuilder
+    for (name <- result.names) {
+      sb.append("<a href='http://")
+      sb.append(ip)
+      sb.append(":8080")
+      sb.append("/api/reporting/")
+      sb.append(name)
+      sb.append("' style='font-size: 20px;'>")
+      sb.append(name)
+      sb.append("</a>")
+      sb.append("<br><br>")
+    }
+    sb.toString()
+  }
+
+  def report(tableName : String): String = {
+    val future = dBActor ? GenerateHtmlReport(tableName)
     val result = Await.result(future, timeout.duration).asInstanceOf[HtmlReport]
     result.text
   }

@@ -70,8 +70,11 @@ class DBActor extends Actor with ActorLogging {
   def performQuery(query : DBQuery): Unit = {
     connect match {
       case Some(connection) =>
-        if (!checkTableExistence(connection, query.table))
-          new DBCreateTasksTable(query.table).perform(connection)
+        if (!checkTableExistence(connection, query.table)) {
+          if (query.getClass != classOf[DBGetTables]) {
+            new DBCreateTasksTable(query.table).perform(connection)
+          }
+        }
         query.perform(connection) match {
           case ()  =>
           case msg => sender() ! msg
@@ -83,11 +86,26 @@ class DBActor extends Actor with ActorLogging {
   }
 
   /**
+    *
+    */
+  def getTables(): Unit = {
+    performQuery(new DBGetTables)
+  }
+
+  /**
     * = Generates text report for all tasks w/ status ''DONE'' =
     * @param tableName table name
     */
   def generateTextReport(tableName : String): Unit = {
     performQuery(new DBGenerateTextReport(tableName))
+  }
+
+  /**
+    * = Generates html report for all tasks w/ status ''DONE'' =
+    * @param tableName table name
+    */
+  def generateHtmlReport(tableName : String): Unit = {
+    performQuery(new DBGenerateHtmlReport(tableName))
   }
 
   /**
@@ -244,8 +262,12 @@ class DBActor extends Actor with ActorLogging {
   }
 
   override def receive: Receive = {
+    case GetTables =>
+      getTables()
     case GenerateTextReport(tableName) =>
       generateTextReport(tableName)
+    case GenerateHtmlReport(tableName) =>
+      generateHtmlReport(tableName)
     case CountTaskStatus(tableName) =>
       countTaskStatus(tableName)
     case CountEndState(tableName) =>
