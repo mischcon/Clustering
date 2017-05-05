@@ -14,6 +14,16 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success}
 
+/**
+  * There is one actor of this kind for every task. If it is free (its task is currently to being executed)
+  * it will offer itsself if it receives a GetTask request from a VMProxyActor. If the sender is happy with
+  * this task than the TaskActor will request the address of a physical node from the ExecutorDirectoryServiceActor
+  * in order to create a new remote ExecutorActor. After that the task is passed to the ExecutorActor which
+  * itsself executes the task against the target VMProxyActor.
+  *
+  * @param task The actual task
+  * @param tablename The corresponding tablename / run id
+  */
 class TaskActor(task : Task, tablename : String) extends WorkerTrait{
 
   var isTaken : Boolean = false
@@ -35,6 +45,15 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
     log.debug(s"Goodbye from ${self.path.name}")
   }
 
+  /**
+    * Whether or not a task was successful an exception (TestSuccessException or TestFailException)
+    * will be thrown by the TaskExecutorActor.
+    * In case the task was successful the 'taskDone' flag is set to true.
+    * In case the task was unsuccessful the 'taskDone' flag also set to true.
+    * Only in case of an unexpected exception the 'taskDone' flag is set to false, resulting
+    * in the task being executed again.
+    * @return
+    */
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
     case t : TestSuccessException => {
       log.debug("received TestSuccessException!")
@@ -65,6 +84,16 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
     }
   }
 
+  /**
+    * If the TaskActor receives a 'Terminated' message from the actor system than this means
+    * that either the VMActor or the ExecutorActor died / has been disconnected from the cluster.
+    * In case the 'taskDone' flag is set to true this is the desired behaviour since the ExecutorActor
+    * is stopped after the execution of a task.
+    * In case the 'taskDone' flag is set to false this means that either the VMActor or the ExecutorActor died, which
+    * results in removing the connection to the VMActor / Executor Actor and resetting the task so that it can
+    * be executed again.
+    * @param t The Terminated message - used for identifying the terminated actor.
+    */
   def handleTermianted(t : Terminated) = {
     if(taskDone) {
       log.debug("Terminated + task done --> shutting down self")
@@ -96,6 +125,22 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
     }
   }
 
+  /**
+    * If a new task is requested and the task has not been taken / reserved yet than the TaskActor
+    * will offer itself (SendTask to requester). To avoid being executed twice the 'isTaken' flag is set to true -
+    * in case the requester has chosen a different task the 'isTaken' flag is set to false, resulting in the task
+    * to be available again.
+    *
+    * In case the requester chose this task the TaskActor will watch / supervise the requester (in order to
+    * reset the task in case of a failure of the requester) and will request an executor from the ExecutorDirectoryService.
+    *
+    * If no executor is available the requester is informed about that and the task is being resetted.
+    * If an executor is available the TaskActor will watch / supervise the executor (in order to reset the task and
+    * the requester in case of a failure of the executor) and will send the reference of the executor to the requester.
+    *
+    * If the connection between requester (targetVM), executor and TaskActor has been established the task is sent
+    * to the executor for its execution.
+    */
   def handleGetTask() = {
     log.debug(s"received GetTask and I am not taken! - sending SendTask to ${sender().path.toString}")
     isTaken = true
