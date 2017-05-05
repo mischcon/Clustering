@@ -7,9 +7,3 @@ import worker.messages.Task
   */
 case class TestFailException(task : Task, result: Throwable) extends Throwable
 case class TestSuccessException(task : Task, result : Object) extends Throwable
-
-class DependencyFailException(cause : Throwable) extends Throwable {
-  override def toString: String = {
-    s"Dependency Failed: \n${cause.getCause.toString}"
-  }
-}
