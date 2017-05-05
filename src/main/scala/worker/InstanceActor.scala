@@ -6,8 +6,8 @@ import worker.messages._
 
 /**
   * This Actor keeps track of all uploaded task runs / .jar files.
-  * For every uploaded file it creates a new  {@link worker#DistributorActor}.
-  * If an {@link vm#VMProxyActor} requests a new task than it sends its request together with information about what
+  * For every uploaded file it creates a new  {@link worker#DistributorActor DistributorActor}.
+  * If an {@link vm#VMProxyActor VMProxyActor} requests a new task than it sends its request together with information about what
   * version is deployed on the VM - the InstanceActor then searches for a suitable instance
   * (one with a matching version) an forwards the request.
   */
@@ -52,7 +52,7 @@ class InstanceActor extends Actor with ActorLogging{
 
   /**
     * Creates a DistributorActor (if there are no suitable) and forwards incoming
-    * {@link worker.messages#AddTask} messages to it
+    * {@link worker.messages#AddTask AddTask} messages to it
     * @param msg
     */
   def handleAddTask(msg : AddTask): Unit ={
@@ -71,8 +71,8 @@ class InstanceActor extends Actor with ActorLogging{
   }
 
   /**
-    * Forwards {@link worker.messages#GetTask} messages to all its children with a suitable version.
-    * If no suitable child was found, then a NoMoreTasks message is sent as reply to the request.
+    * Forwards {@link worker.messages#GetTask GetTask} messages to all its children with a suitable version.
+    * If no suitable child was found, then a {@link worker.messages#NoMoreTasks NoMoreTasks} message is sent as reply to the request.
     * @param msg
     */
   def handleGetTask(msg : GetTask): Unit = {
@@ -86,8 +86,8 @@ class InstanceActor extends Actor with ActorLogging{
   }
 
   /**
-    * Sends the to-be-deployed version of a task run to the VMActor.
-    * If there are no task run instances it replies with a NoDeployInfo message.
+    * Sends the to-be-deployed version of a task run to the {@link vm#VMActor VMActor}.
+    * If there are no task run instances it replies with a {@link worker.messages#NoDeployInfo NoDeployInfo} message.
     */
   def handleGetDeployInfo() : Unit = {
     log.debug("GetDeployInfo called")

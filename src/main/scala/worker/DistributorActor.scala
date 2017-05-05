@@ -7,7 +7,7 @@ import worker.messages.{AddTask, GetTask}
   * execution of this task might affect other tasks that are being executed on the same machine), which is why a
   * separation between tasks that should be run on a SINGLE_INSTANCE and tasks that can safely be executed together
   * with other tasks in a GROUP is necessary. Every DistributorActor can have many instances of
-  * SingleInstanceActors / GroupActors as its children. If a DistributorActor has no more children,
+  * {@link worker.SingleInstanceActor SingleInstanceActors} / {@link worker.GroupActor GroupActors} as its children. If a DistributorActor has no more children,
   * than this means that all tasks that belong to a specific task run have been processed -
   * in this case the actor kills itsself.
   */
@@ -31,7 +31,7 @@ class DistributorActor extends WorkerTrait{
   }
 
   /**
-    * Creates SingleInstanceActors / GroupActors (if there are no) and forwards incoming
+    * Creates {@link worker.SingleInstanceActor SingleInstanceActors} / {@link worker.GroupActor GroupActors} (if there are no) and forwards incoming
     * {@link worker.messages#AddTask} messages to them
     * @param msg
     */
