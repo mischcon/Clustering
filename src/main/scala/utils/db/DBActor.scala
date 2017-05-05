@@ -101,11 +101,11 @@ class DBActor extends Actor with ActorLogging {
   }
 
   /**
-    * = Generates html report for all tasks w/ status ''DONE'' =
+    * = Generates json report for all tasks w/ status ''DONE'' =
     * @param tableName table name
     */
-  def generateHtmlReport(tableName : String): Unit = {
-    performQuery(new DBGenerateHtmlReport(tableName))
+  def generateJsonReport(tableName : String): Unit = {
+    performQuery(new DBGenerateJsonReport(tableName))
   }
 
   /**
@@ -266,8 +266,8 @@ class DBActor extends Actor with ActorLogging {
       getTables()
     case GenerateTextReport(tableName) =>
       generateTextReport(tableName)
-    case GenerateHtmlReport(tableName) =>
-      generateHtmlReport(tableName)
+    case GenerateJsonReport(tableName) =>
+      generateJsonReport(tableName)
     case CountTaskStatus(tableName) =>
       countTaskStatus(tableName)
     case CountEndState(tableName) =>

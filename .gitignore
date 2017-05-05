@@ -1,6 +1,6 @@
 .idea/
 log/
 target/
-/src/main/resources/db.conf
+src/main/resources/db.conf
 project/project/
-/doc/
+src/main/resources/webui/data.json

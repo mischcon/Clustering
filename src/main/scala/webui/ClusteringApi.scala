@@ -45,16 +45,35 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   val instanceActor = context.actorSelection("/user/instances")
   val dBActor = context.actorSelection("/user/db")
 
+  val port = 8080
+
   val routes : Route =
+    path("files" / "data.json") {
+      get {
+        getFromFile("src/main/resources/webui/data.json")
+      }
+    } ~
+    path("images" / "details_open.png") {
+      get {
+        getFromFile("src/main/resources/webui/images/details_open.png")
+      }
+    } ~
+    path("images" / "details_close.png") {
+      get {
+        getFromFile("src/main/resources/webui/images/details_close.png")
+      }
+    } ~
     path("api") {
       get {
         complete(HttpEntity(ContentTypes.`text/html(UTF-8)`,
           "<html>" +
           "<title>Cluster API</title>" +
           "<body>" +
-          s"<h1>Welcome to ze Cluster API</h1><br>" +
-          s"<a href='http://$ip:8080/api/reporting' style='font-size: 20px;'>reporting</a><br><br>" +
-          s"<a href='http://$ip:8080/api/tree' style='font-size: 20px;'>tree</a>" +
+          s"<h1>welcome to cluster API</h1><br>" +
+           "<ul><h3>available endpoints</h3>" +
+          s"<li><a href='http://$ip:$port/api/reporting' style='font-size: 20px;'>/reporting</a></li>" +
+          s"<li><a href='http://$ip:$port/api/tree' style='font-size: 20px;'>/tree</a></li>" +
+           "</ul>" +
           "</body>" +
           "</html>"))
       }
@@ -71,14 +90,111 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     path("api" / "reporting") {
       get {
         complete(HttpEntity(ContentTypes.`text/html(UTF-8)`,
-          s"<html><title>Reporting</title><body>${report()}</body></html>"))
+          s"""
+<!DOCTYPE html>
+<html>
+  <title>Reporting</title>
+  <body>
+    <h1>available sets</h1>
+    ${report()}
+  </body>
+</html>"""))
       }
     } ~
     path("api" / "reporting" / Segment) {
       (name) =>
         get {
-          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`,
-            s"<html><title>Reporting $name</title><body>${report(name)}</body></html>"))
+          report(name)
+          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, s"""
+<!DOCTYPE html>
+<html>
+  <title>Reporting $name</title>
+  <head>
+    <script language='javascript' type='text/javascript' src='https://code.jquery.com/jquery-1.12.4.min.js'></script>
+    <script language='javascript' type='text/javascript' src='https://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js'></script>
+    <link rel='stylesheet' href='https://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css'>
+  </head>
+  <style>
+    td.details-control {
+        background: url('http://$ip:$port/images/details_open.png') no-repeat center center;
+        cursor: pointer;
+    }
+    tr.shown td.details-control {
+        background: url('http://$ip:$port/images/details_close.png') no-repeat center center;
+    }
+  </style>
+  <script>
+    function format ( d ) {
+        // `d` is the original data object for the row
+        return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
+            '<tr>'+
+                '<td align="right">'+d.result+'</td>'+
+            '</tr>'+
+        '</table>';
+    }
+
+     $$(document).ready(function() {
+        var table =  $$('#report').DataTable( {
+            "ajax": "http://$ip:$port/files/data.json",
+            "columns": [
+                {
+                    "className":      'details-control',
+                    "orderable":      false,
+                    "data":           null,
+                    "defaultContent": ''
+                },
+                { "data": "end_state" },
+                { "data": "method" },
+                { "data": "started_at" },
+                { "data": "finished_at" },
+                { "data": "time_spent" }
+            ],
+            "order": [[1, 'asc']]
+        } );
+
+        // Add event listener for opening and closing details
+         $$('#report tbody').on('click', 'td.details-control', function () {
+            var tr =  $$(this).closest('tr');
+            var row = table.row( tr );
+
+            if ( row.child.isShown() ) {
+                // This row is already open - close it
+                row.child.hide();
+                tr.removeClass('shown');
+            }
+            else {
+                // Open this row
+                row.child( format(row.data()) ).show();
+                tr.addClass('shown');
+            }
+        } );
+    } );
+  </script>
+  <body>
+    <table id='report' class='display' cellspacing='0' width='100%'>
+      <thead>
+        <tr align="center">
+          <th></th>
+          <th>end state</th>
+          <th>method</th>
+          <th>started @</th>
+          <th>finished @</th>
+          <th>time spent</th>
+        </tr>
+      </thead>
+      <tfoot>
+        <tr align="center">
+          <th></th>
+          <th>end state</th>
+          <th>method</th>
+          <th>started @</th>
+          <th>finished @</th>
+          <th>time spent</th>
+        </tr>
+      </tfoot>
+    </table>
+  </body>
+</html>"""))
         }
     } ~
     path("api" / "tree") {
@@ -100,24 +216,26 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     val future = dBActor ? GetTables
     val result = Await.result(future, timeout.duration).asInstanceOf[Tables]
     val sb = new StringBuilder
+    sb.append("<ul>")
     for (name <- result.names) {
-      sb.append("<a href='http://")
+      sb.append("<li><a href='http://")
       sb.append(ip)
-      sb.append(":8080")
+      sb.append(":")
+      sb.append(port)
       sb.append("/api/reporting/")
       sb.append(name)
-      sb.append("' style='font-size: 20px;'>")
+      sb.append("' style='font-size: 16px;'>")
       sb.append(name)
-      sb.append("</a>")
-      sb.append("<br><br>")
+      sb.append("</a></li>")
     }
+    sb.append("</ul>")
     sb.toString()
   }
 
-  def report(tableName : String): String = {
-    val future = dBActor ? GenerateHtmlReport(tableName)
-    val result = Await.result(future, timeout.duration).asInstanceOf[HtmlReport]
-    result.text
+  def report(tableName : String): Unit = {
+    val future = dBActor ? GenerateJsonReport(tableName)
+    val result = Await.result(future, timeout.duration).asInstanceOf[OK]
+    dBActor ! GenerateJsonReport
   }
 
   def handleUpload(bytes : Source[ByteString, Any]) ={
@@ -153,6 +271,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   }
 
   // Start the Server and configure it with the route config
-  val bindingFuture = Http().bindAndHandle(routes, ip, 8080)
-  log.info(s"JAR file upload now possible via $ip:8080/api/upload")
+  val bindingFuture = Http().bindAndHandle(routes, ip, port)
+  log.info(s"API is now available visit http://$ip:$port/api")
+  log.info(s"JAR file upload now possible via $ip:$port/api/upload")
 }

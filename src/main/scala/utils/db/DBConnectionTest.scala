@@ -67,7 +67,7 @@ object DBConnectionTest extends App {
   db ! UpdateTask(method, TaskStatus.DONE, EndState.SUCCESS, "IGNORE", tableName)
   db ! UpdateTasks(methods, TaskStatus.DONE, EndState.SUCCESS, "", tableName)
   db ! UpdateTasks(methodsWithParams.keys.toList, TaskStatus.DONE, EndState.FAILURE,
-    new RuntimeException("A wild exception appears. What you gonna do?").getMessage, tableName)
+    new RuntimeException("a wild exception appears").getMessage, tableName)
 
   val future4 = db ? GetTasks(method :: methods, tableName)
   val result4 = Await.result(future4, timeout.duration).asInstanceOf[Option[List[RequestedTask]]]
@@ -90,7 +90,8 @@ object DBConnectionTest extends App {
 //  db ! DeleteTask(method, tableName)
 //  db ! DeleteTasks(methods, tableName)
 
-  db ! GenerateTextReport(tableName)
+//  db ! GenerateTextReport(tableName)
+  db ! GenerateJsonReport(tableName)
 
   sys.terminate
 }

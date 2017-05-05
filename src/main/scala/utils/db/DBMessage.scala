@@ -24,10 +24,10 @@ case object GetTables extends DBMessage
 case class GenerateTextReport(tableName : String) extends DBMessage
 
 /**
-  * = Request html report from database for ''DONE'' tasks =
+  * = Request json report from database for ''DONE'' tasks =
   * @param tableName table name
   */
-case class GenerateHtmlReport(tableName : String) extends DBMessage
+case class GenerateJsonReport(tableName : String) extends DBMessage
 
 /**
   * = Request ''task_status - amount'' relation =
@@ -165,12 +165,6 @@ case class DeleteTasks(methods : List[String], tableName: String) extends DBMess
  */
 
 /**
-  * = Response message for [[utils.db.GenerateHtmlReport]] =
-  * @param text contains report text
-  */
-case class HtmlReport(text : String) extends DBMessage
-
-/**
   * = Response message for [[utils.db.CountTaskStatus]] =
   * @param result contains (task_status -> amount) key-value pairs
   */
@@ -202,3 +196,5 @@ case class RequestedTask(method : String, params : Map[String, String], task_sta
   * @param names contains all table names in the clustering database
   */
 case class Tables(names : List[String]) extends DBMessage
+
+case class OK() extends DBMessage
