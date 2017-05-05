@@ -77,8 +77,8 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     path("api" / "reporting" / Segment) {
       (name) =>
         get {
-          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`,
-            s"${report(name)}"))
+          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`,
+            s"<html><title>Reporting $name</title><body>${report(name)}</body></html>"))
         }
     } ~
     path("api" / "tree") {
