@@ -19,10 +19,10 @@ import scala.util.Random
   *   2) They are the core of the whole task-dependency-management (see the wiki for further information about how the task dependency works)
   *
   * Each SingleInstanceActor / GroupActor contains two lists:
-  *   1) A list that contains all children of type TaskActor (all tasks that are part of the current level in the dependency tree)
+  *   1) A list that contains all children of type {@link worker.TaskActor TaskActor} (all tasks that are part of the current level in the dependency tree)
   *   2) A list that contains all children of type SingleInstanceActor / GroupActor (the next level in the dependency tree)
   *
-  * If a SingleInstanceActor / GroupActor receives a GetTask request it will forward it to all its TaskActors if
+  * If a SingleInstanceActor / GroupActor receives a {@link worker.messages#GetTask GetTask} request it will forward it to all its @link worker.TaskActor TaskActors} if
   * there are any - if not, than this means that the current level in the dependency tree is done. In this case
   * the request is forwarded to all its (SingleInstanceActor / GroupActor) children.
   * If a SingleInstanceActor / GroupActor has no more children (neither TaskActor nor SingleInstanceActor / GroupActor)
@@ -42,7 +42,6 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
-    case HasTask => taskActors.foreach(t => t forward HasTask)
     case t : Terminated => check_suicide()
     case x : PersistAndSuicide => {
       taskActors = List.empty
@@ -51,6 +50,17 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
     case x => log.warning(s"${self.path.name} received something unexpected: $x")
   }
 
+  /**
+    * Whether or not a task was successful an exception ({@link Exceptions#TestSuccessException TestSuccessException} or
+    * {@link Exceptions#TestFailException TestFailException})
+    * will be thrown by the {@link worker#TaskExecutorActor TaskExecutorActor} and escalated to its parent GroupActor or SingleInstanceActor.
+    *
+    * In case of a success, see {@link worker.SubWorkerActor#handleSuccess handleSuccess()}.
+    * In case of a failure, see {@link worker.SubWorkerActor#handleFailure handleFailure()}.
+    *
+    * In both cases the TaskActor should be stopped.
+    * @return
+    */
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
     case t : TestFailException => {
       /* Test as failed - this means that the entire node should be stopped */
@@ -66,7 +76,7 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
   /**
     * Handles the success of a task.
     * Writes the result with the updated status of the task to the database.
-    * Removes the ActorRef of the TaskActor from the taskActors list.
+    * Removes the ActorRef of the {@link worker#TaskActor TaskActor} from the taskActors list.
     * @param task Task - needed to identify classname and methodname
     * @param result Result of the task execution
     * @param source ActorRef of TaskActor
@@ -83,13 +93,13 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
   /**
     * Handles the failure of a task.
     * Writes the result with the updated status of the task to the database.
-    * Removes the ActorRef of the TaskActor from the taskActors list.
+    * Removes the ActorRef of the {@link worker#TaskActor TaskActor} from the taskActors list.
     *
     * Since a failed task in the dependency tree should stop the execution of any task on the
-    * same level / on lower levels a PeristsAndSuicide message is sent to all children.
+    * same level / on lower levels a {@link worker.messages#PersistAndSuicide PersistAndSuicide} message is sent to all children.
     * @param task Task - needed to identify classname and methodname
     * @param result Result of the task execution
-    * @param source ActorRef of TaskActor
+    * @param source ActorRef of {@link worker#TaskActor TaskActor}
     */
   def handleFailure(task : Task, result : Throwable, source : ActorRef): Unit = {
     /* DB Actor + write */
@@ -160,8 +170,8 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
   }
 
   /**
-    * Forwards {@link worker.messages#GetTask} messages to all its TaskActor children.
-    * If there are no more TaskActor children left it will forward the message to all its
+    * Forwards {@link worker.messages#GetTask} messages to all its {@link worker#TaskActor TaskActor} children.
+    * If there are no more {@link worker#TaskActor TaskActor} children left it will forward the message to all its
     * SingleInstanceActor / GroupActor children.
     * @param msg
     */

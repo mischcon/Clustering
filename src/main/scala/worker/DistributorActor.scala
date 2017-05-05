@@ -1,13 +1,13 @@
 package worker
 import akka.actor.{Props, Terminated}
-import worker.messages.{AddTask, GetTask}
+import worker.messages.{AddTask, GetTask, PersistAndSuicide}
 
 /**
   * Sometimes tasks might affect other tasks (e.g. if one task changes a global configuration than the concurrent
   * execution of this task might affect other tasks that are being executed on the same machine), which is why a
   * separation between tasks that should be run on a SINGLE_INSTANCE and tasks that can safely be executed together
   * with other tasks in a GROUP is necessary. Every DistributorActor can have many instances of
-  * SingleInstanceActors / GroupActors as its children. If a DistributorActor has no more children,
+  * {@link worker.SingleInstanceActor SingleInstanceActors} / {@link worker.GroupActor GroupActors} as its children. If a DistributorActor has no more children,
   * than this means that all tasks that belong to a specific task run have been processed -
   * in this case the actor kills itsself.
   */
@@ -19,6 +19,8 @@ class DistributorActor extends WorkerTrait{
   }
 
   override def postStop(): Unit = {
+    // persists the current status
+    context.children.foreach(x => x ! PersistAndSuicide)
     super.postStop()
     log.debug("Goodbye from distributor!")
   }
@@ -31,7 +33,7 @@ class DistributorActor extends WorkerTrait{
   }
 
   /**
-    * Creates SingleInstanceActors / GroupActors (if there are no) and forwards incoming
+    * Creates {@link worker.SingleInstanceActor SingleInstanceActors} / {@link worker.GroupActor GroupActors} (if there are no) and forwards incoming
     * {@link worker.messages#AddTask} messages to them
     * @param msg
     */

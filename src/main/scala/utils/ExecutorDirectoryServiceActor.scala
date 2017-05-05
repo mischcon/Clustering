@@ -7,10 +7,21 @@ import utils.messages.{ExecutorAddress, GetExecutorAddress}
 
 import scala.util.Random
 
+/**
+  * Executor Directory Service
+  *
+  * Keeps track of all physical nodes of the cluster that have the 'executor' role.
+  *
+  * Reacts to 'MemberJoined' and 'UnreachableMember' cluster events.
+  *
+  * {@link utils.messages#GetExecutorAddress GetExecutorAddress} result in returning the address of
+  * a suitable physical node through a {@link utils.messages#ExecutorAddress ExecutorAddress} message.
+  */
 class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
 
   val cluster = Cluster(context.system)
 
+  /** Executor directory - value of the map can be used for loadbalancing purposes **/
   var directory : Map[Address, Object] = Map(self.path.address -> null)
 
   override def receive: Receive = {
@@ -32,6 +43,11 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
     case a => log.warning(s"received unexpected message: $a")
   }
 
+  /**
+    * Return the address of a physical node that can be used to create a new
+    * {@link worker.TaskExecutorActor TaskExecutorActor} through a
+    * {@link utils.messages#ExecutorAddress ExecutorAddress} message
+    */
   def getMember() = {
     /* until a health status is available we simply use a random approach */
     log.debug("received GetExecutorAddress - returning ExecutorAddress")
