@@ -76,7 +76,6 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
 
   override def receive: Receive = {
     case p : GetTask if ! isTaken => handleGetTask()
-    case p : GetTask if isTaken => sender() ! InUse
     case t : Terminated => handleTermianted(t)
     case a : PersistAndSuicide => {
       log.debug("received PersistAndSuicide")
