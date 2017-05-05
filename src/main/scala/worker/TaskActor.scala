@@ -16,10 +16,10 @@ import scala.util.{Failure, Random, Success}
 
 /**
   * There is one actor of this kind for every task. If it is free (its task is currently to being executed)
-  * it will offer itsself if it receives a GetTask request from a VMProxyActor. If the sender is happy with
-  * this task than the TaskActor will request the address of a physical node from the ExecutorDirectoryServiceActor
-  * in order to create a new remote ExecutorActor. After that the task is passed to the ExecutorActor which
-  * itsself executes the task against the target VMProxyActor.
+  * it will offer itsself if it receives a GetTask request from a {@link vm#VMProxyActor VMProxyActor}. If the sender is happy with
+  * this task than the {@link worker.TaskActor TaskActor} will request the address of a physical node from the {@link utils.ExecutorDirectoryServiceActor ExecutorDirectoryServiceActor}
+  * in order to create a new remote {@link worker.TaskExecutorActor TaskExecutorActor}. After that the task is passed to the {@link worker.TaskExecutorActor TaskExecutorActor} which
+  * itsself executes the task against the target {@link vm#VMProxyActor VMProxyActor}.
   *
   * @param task The actual task
   * @param tablename The corresponding tablename / run id
@@ -46,8 +46,9 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
   }
 
   /**
-    * Whether or not a task was successful an exception (TestSuccessException or TestFailException)
-    * will be thrown by the TaskExecutorActor.
+    * Whether or not a task was successful an exception ({@link Exceptions#TestSuccessException TestSuccessException}
+    * or {@link Exceptions#TestFailException TestFailException})
+    * will be thrown by the {@link worker.TaskExecutorActor TaskExecutorActor}.
     * In case the task was successful the 'taskDone' flag is set to true.
     * In case the task was unsuccessful the 'taskDone' flag also set to true.
     * Only in case of an unexpected exception the 'taskDone' flag is set to false, resulting
@@ -85,12 +86,12 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
   }
 
   /**
-    * If the TaskActor receives a 'Terminated' message from the actor system than this means
-    * that either the VMActor or the ExecutorActor died / has been disconnected from the cluster.
-    * In case the 'taskDone' flag is set to true this is the desired behaviour since the ExecutorActor
+    * If the {@link worker.TaskActor TaskActor} receives a 'Terminated' message from the actor system than this means
+    * that either the {@link vm#VMActor VMActor} or the {@link worker.TaskExecutorActor TaskExecutorActor} died / has been disconnected from the cluster.
+    * In case the 'taskDone' flag is set to true this is the desired behaviour since the {@link worker.TaskExecutorActor TaskExecutorActor}
     * is stopped after the execution of a task.
-    * In case the 'taskDone' flag is set to false this means that either the VMActor or the ExecutorActor died, which
-    * results in removing the connection to the VMActor / Executor Actor and resetting the task so that it can
+    * In case the 'taskDone' flag is set to false this means that either the {@link vm#VMActor VMActor} or the {@link worker.TaskExecutorActor TaskExecutorActor} died, which
+    * results in removing the connection to the {@link vm#VMActor VMActor} / {@link worker.TaskExecutorActor TaskExecutorActor} and resetting the task so that it can
     * be executed again.
     * @param t The Terminated message - used for identifying the terminated actor.
     */
@@ -126,19 +127,19 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
   }
 
   /**
-    * If a new task is requested and the task has not been taken / reserved yet than the TaskActor
-    * will offer itself (SendTask to requester). To avoid being executed twice the 'isTaken' flag is set to true -
+    * If a new task is requested and the task has not been taken / reserved yet than the {@link worker.TaskActor TaskActor}
+    * will offer itself ({@link worker.messages#SendTask SendTask} to requester). To avoid being executed twice the 'isTaken' flag is set to true -
     * in case the requester has chosen a different task the 'isTaken' flag is set to false, resulting in the task
     * to be available again.
     *
-    * In case the requester chose this task the TaskActor will watch / supervise the requester (in order to
-    * reset the task in case of a failure of the requester) and will request an executor from the ExecutorDirectoryService.
+    * In case the requester chose this task the {@link worker.TaskActor TaskActor} will watch / supervise the requester (in order to
+    * reset the task in case of a failure of the requester) and will request an executor from the {@link utils.ExecutorDirectoryServiceActor ExecutorDirectoryServiceActor}.
     *
     * If no executor is available the requester is informed about that and the task is being resetted.
-    * If an executor is available the TaskActor will watch / supervise the executor (in order to reset the task and
+    * If an executor is available the {@link worker.TaskActor TaskActor} will watch / supervise the executor (in order to reset the task and
     * the requester in case of a failure of the executor) and will send the reference of the executor to the requester.
     *
-    * If the connection between requester (targetVM), executor and TaskActor has been established the task is sent
+    * If the connection between requester (targetVM), executor and {@link worker.TaskActor TaskActor} has been established the task is sent
     * to the executor for its execution.
     */
   def handleGetTask() = {
