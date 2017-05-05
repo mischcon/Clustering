@@ -8,6 +8,10 @@ import org.junit.Test
 import org.junit.runner.{JUnitCore, Request, Result}
 import worker.messages.ExecuteTask
 
+/**
+  * Actor responsible for executing tasks. Is created by a TaskActor and is being supervised / watched by
+  * the creating TaskActor and the task target (VMProxyActor)
+  */
 class TaskExecutorActor extends WorkerTrait{
 
   override def preStart(): Unit = {
@@ -25,6 +29,22 @@ class TaskExecutorActor extends WorkerTrait{
     case a => log.warning(s"received unexpected message: $a")
   }
 
+  /**
+    * A task and a target are passed to this function.
+    * The actual task class is loaded through a classloader and is being analyzed -
+    * if the class implements the ClusteringTask interface then the target is being injected
+    * into the object, resulting in the task to sent all its requests to the target rather than
+    * performing them locally.
+    *
+    * The method also checks whether or not the task is a JUnit test (@Test annotation) -
+    * in this case the task is not simply being executed but passed to a JUnitCore testrunner.
+    *
+    * In case the execution of the task was successfully a TestSuccessException /
+    * unsuccessfully a TestFailException will be thrown and passed
+    * to the parent actor (TaskActor).
+    *
+    * @param msg ExecuteTask message containing the task and the target
+    */
   def run(msg : ExecuteTask): Unit ={
     log.debug(s"EXECUTING ${msg.task.method}")
     try {
