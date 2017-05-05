@@ -14,7 +14,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * Created by mischcon on 22.04.2017.
+ * Baseclass for loading jar files that contain tasks and configs
+ * @param <T> Defines the container type - needs to be extended from {@link de.oth.clustering.java.Entry Entry}
  */
 public abstract class BaseCodebaseLoader<T extends Entry> extends ClassLoader implements CodebaseLoaderIF {
 
@@ -28,17 +29,32 @@ public abstract class BaseCodebaseLoader<T extends Entry> extends ClassLoader im
 
     public BaseCodebaseLoader(){}
 
+    /**
+     * BasCodebaseLoader constructor - loads classes from jar file
+     * @param path path to jar
+     * @throws IOException
+     */
     public BaseCodebaseLoader(String path) throws IOException {
         this(Files.readAllBytes(Paths.get(path)));
         this.path = path;
     }
 
+    /**
+     * BaseCodebaseLoader constructor - loads classes from the ByteArray representation of a jar file
+     * @param jar ByteArray representation of a jar file
+     * @throws IOException
+     */
     public BaseCodebaseLoader(byte[] jar) throws IOException {
         this.jar = jar;
         createClassRawMap(jar);
         fillMethodsList();
     }
 
+    /**
+     * Opens the ByteArray representation of a jar file and creates a 'classname' -> 'ByteArray representation of the class' map
+     * @param jar ByteArray representation of a jar file
+     * @throws IOException
+     */
     public void createClassRawMap(byte[] jar) throws IOException {
         ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(jar));
         for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
@@ -69,14 +85,31 @@ public abstract class BaseCodebaseLoader<T extends Entry> extends ClassLoader im
         }
     }
 
+    /**
+     * Creates a Class from a given ByteArray representation of a class and the classname
+     * @param raw_class ByteArray representation of a class
+     * @param classname Name of the class
+     * @return Class
+     */
     public Class getClassFromByte(byte[] raw_class, String classname){
         return defineClass(classname, raw_class, 0, raw_class.length);
     }
 
+    /**
+     * Returns a list of all cluster tasks / methods
+     * @return
+     */
     public List<T> getClassClusterMethods(){
         return this.classClusterMethods;
     }
 
+    /**
+     * Returns the VM deploy info used for deploying virtual machines
+     * @return
+     * @throws ClassNotFoundException Either no or more than one deploy info was found
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
     public VagrantEnvironmentConfig getVmConfig() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         Class configClass = null;
         for(Class cls : classList){
