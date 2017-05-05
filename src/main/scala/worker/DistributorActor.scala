@@ -1,6 +1,6 @@
 package worker
 import akka.actor.{Props, Terminated}
-import worker.messages.{AddTask, GetTask}
+import worker.messages.{AddTask, GetTask, PersistAndSuicide}
 
 /**
   * Sometimes tasks might affect other tasks (e.g. if one task changes a global configuration than the concurrent
@@ -19,6 +19,8 @@ class DistributorActor extends WorkerTrait{
   }
 
   override def postStop(): Unit = {
+    // persists the current status
+    context.children.foreach(x => x ! PersistAndSuicide)
     super.postStop()
     log.debug("Goodbye from distributor!")
   }
