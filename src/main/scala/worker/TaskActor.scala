@@ -10,7 +10,7 @@ import utils.db.{EndState, TaskStatus, UpdateTask, UpdateTaskStatus}
 import utils.messages.{ExecutorAddress, GetExecutorAddress}
 import worker.messages._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success}
 
@@ -53,19 +53,46 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
     * In case the task was unsuccessful the 'taskDone' flag also set to true.
     * Only in case of an unexpected exception the 'taskDone' flag is set to false, resulting
     * in the task being executed again.
+    *
+    * What happens if the targetVm dies?
+    * 1) The cluster will realize that --> Terminated message
+    * 2) The executor will realize that (since some unexpected exceptions will occur) --> TestFailException will be thrown
+    *
+    * But what happens if those messages reach the TaskActor?:
+    *   1) Executor(Success) > VM(Termianted) --> all good, since Executor(Success) causes the 'taskDone' flag to be set to True
+    *   2) Executor(Failure) > VM(Termianted) --> nothing good, since we need to provide a directive BEFORE we can
+    *   handle the Terminated message without knowing if the VM died or not (without being able to check whether or
+    *   not there is a Termianted message); In this case we 'ask' the VMProxyActor if it is still alive / still can
+    *   connect to the VM -- if so, then everything is good, if not - reset the task and execute it once more
+    *   on a different VM
+    *   3) VM(Terminated) > Executor(Success) --> all good, we do not trust the TestSuccessException and reset the task
+    *   4) VM(Terminated) > Executor(Failure) --> all good, simply reset the task
+    *
     * @return
     */
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
+    case _ if !isTaken => {
+      /* There is only one condition under which this could happen:
+      *   The vm died (isTaken = false) and the executor has been stopped (context.stop()), but the
+      *   Exception is already in the mailbox - in this case it is irrelevant what directive you choose,
+      *   since the executor already died. To be on the safe side we chose 'Stop' */
+      Stop
+    }
     case t : TestSuccessException => {
       log.debug("received TestSuccessException!")
       taskDone = true
       Escalate
     }
     case t : TestFailException => {
-      // TODO: check whether or not the VM has failed - in this case this TestFailException might not be caused by a "failed" test, but because of the failed VM
       log.debug("received TestFailException!")
-      taskDone = true
-      Escalate
+
+      //ask the vm if it is still alive
+      val stillAliveFuture = targetVm ? StillAlive
+      val alive = Await.result(stillAliveFuture, 3 seconds)
+      alive match {
+        case Success(true) => log.debug("vm is still alive - escalating..."); taskDone = true; Escalate
+        case _ => log.debug("vm is NOT alive anymore - the TestFailException seems to be caused by this - resetting the task..."); taskDone = false; Stop
+      }
     }
     case a => {
       log.debug(s"received an unexpected exception - resetting: ${a}")
@@ -102,18 +129,12 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
       log.debug("Terminated + NOT task done --> isTaken = false + targetVm = null")
       isTaken = false
 
-      /* TODO: if the VM dies the test will fail probably because of an IO Exception or something like that.
-      * In this case the Test has not failed because of some assertation error or things like that, which means
-      * that the task is not done / the test needs to be rerun
-      *
-      * NEEDS TO BE IMPLEMENTED!
-      * */
-
       // check what crashed - the targetVM or the executor
       if(t.actor == targetVm){
         // vm died - kill the executor, but unwatch it first
         context.unwatch(executorActor)
-        executorActor ! Kill
+        //executorActor ! Kill
+        context.stop(executorActor)
         executorActor = null
       }
 
