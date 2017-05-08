@@ -76,6 +76,7 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
       *   The vm died (isTaken = false) and the executor has been stopped (context.stop()), but the
       *   Exception is already in the mailbox - in this case it is irrelevant what directive you choose,
       *   since the executor already died. To be on the safe side we chose 'Stop' */
+      log.debug("racy racy race-condition - received an exception from a (hopefully) dead executor... how scary oO")
       Stop
     }
     case t : TestSuccessException => {
