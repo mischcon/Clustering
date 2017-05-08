@@ -94,7 +94,23 @@ class VMProxyActor extends Actor with ActorLogging {
           val httpDelete: DeleteRequest = new DeleteRequest(request)
           sendRequest(httpDelete)
       }
+    case StillAlive => sender() ! checkVMStillAlive
 
+  }
+
+  private def checkVMStillAlive() = {
+    /**
+      * @Oliver
+      *        bitte prüfe an dieser Stelle, ob die VM an sich (und für SSP: ob der tomcat) noch läuft
+      *        und erreichbar ist. Ist für mich sehr wichtig, weil ich keine ahnung habe, ob eine "TestFailException"
+      *        geworfen worden ist, weil der Test wirklich gefailed ist - oder weil die VM nicht erreichbar ist (z.B. IOException)
+      *
+      *        Wenn ja: @return true
+      *        Wenn nein: @return false
+      *
+      *        Merci!
+      */
+    true
   }
 
   private def init = {

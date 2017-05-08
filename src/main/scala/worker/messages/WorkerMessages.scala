@@ -81,6 +81,11 @@ case object CannotGetExecutor extends WorkerMessagesTrait
   */
 case class PersistAndSuicide(reason : String) extends WorkerMessagesTrait
 
+/**
+  * Asks a {@link vm#VMProxyActor VMProxyActor} if it is still alive
+  */
+case object StillAlive extends WorkerMessagesTrait
+
 /* DEPLOYMENT */
 /**
   * Request message that asks for deploy information.
