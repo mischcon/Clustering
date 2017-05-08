@@ -107,14 +107,20 @@
       
     </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="ClusteringApi.html" title=""></a>
-                        <a href="ClusteringApi.html" title="">
+                        <a class="class" href="ClusteringApi.html" title="Available @ HtmlTag(&lt;code&gt;http://[ip]:8080/api&lt;/code&gt;)
+HtmlTag(&lt;br&gt;)
+HtmlTag(&lt;br&gt;)
+Endpoints:HtmlTag(&lt;/code&gt;)"></a>
+                        <a href="ClusteringApi.html" title="Available @ HtmlTag(&lt;code&gt;http://[ip]:8080/api&lt;/code&gt;)
+HtmlTag(&lt;br&gt;)
+HtmlTag(&lt;br&gt;)
+Endpoints:HtmlTag(&lt;/code&gt;)">
                           ClusteringApi
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="UploadJar.html" title="Created by mischcon on 10.04.17."></a>
-                        <a href="UploadJar.html" title="Created by mischcon on 10.04.17.">
+                        <a class="class" href="UploadJar.html" title=""></a>
+                        <a href="UploadJar.html" title="">
                           UploadJar
                         </a>
                       </li>
@@ -156,7 +162,7 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="webui.ClusteringApi" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="webui.ClusteringApi" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ClusteringApiextendsActorwithActorLoggingwithDirectiveswithSprayJsonSupport"></a><a id="ClusteringApi:ClusteringApi"></a>
       <span class="permalink">
       <a href="../webui/index.html#ClusteringApiextendsActorwithActorLoggingwithDirectiveswithSprayJsonSupport" title="Permalink">
@@ -168,12 +174,33 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="ClusteringApi.html">
+        <a title="Available @ HtmlTag(&lt;code&gt;http://[ip]:8080/api&lt;/code&gt;)
+HtmlTag(&lt;br&gt;)
+HtmlTag(&lt;br&gt;)
+Endpoints:HtmlTag(&lt;/code&gt;)" href="ClusteringApi.html">
               <span class="name">ClusteringApi</span>
             </a><span class="result"> extends <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.Actor" class="extype" target="_top">Actor</a> with <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.ActorLogging" class="extype" target="_top">ActorLogging</a> with <span class="extype" name="akka.http.scaladsl.server.Directives">Directives</span> with <span class="extype" name="akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport">SprayJsonSupport</span></span>
       </span>
       
-      
+      <p class="shortcomment cmt">Available @ <code>http://[ip]:8080/api</code>
+<br>
+<br>
+Endpoints:</code></p><div class="fullcomment"><div class="comment cmt"><h3> Cluster API </h3><p>Available @ <code>http://[ip]:8080/api</code>
+<br>
+<br>
+Endpoints:</p><ul><li><b>GET /api</b> - landing page</li><li>
+<pre>
+<b>POST /api/upload</b>                    <i>.jar</i> file upload
+</pre></li><li>
+<pre>
+<b>GET  /api/reporting</b>                 reporting API; check available task sets
+</pre></li><li>
+<pre>
+<b>GET  /api/reporting/[table name]</b>    single report for requested task set; check status of done tasks
+</pre></li><li>
+<pre>
+<b>GET  /api/tree</b>                      actor tree w/i the cluster
+</pre></li></ul></div></div>
     </li><li name="webui.UploadJar" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="UploadJarextendsProductwithSerializable"></a><a id="UploadJar:UploadJar"></a>
       <span class="permalink">
@@ -186,12 +213,12 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="Created by mischcon on 10.04.17." href="UploadJar.html">
+        <a title="" href="UploadJar.html">
               <span class="name">UploadJar</span>
             </a><span class="params">(<span name="content">content: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Array" class="extype" target="_top">Array</a>[<a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>)</span><span class="result"> extends <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Product" class="extype" target="_top">Product</a> with <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Serializable" class="extype" target="_top">Serializable</a></span>
       </span>
       
-      <p class="shortcomment cmt">Created by mischcon on 10.04.17.</p>
+      
     </li></ol>
             </div>
 

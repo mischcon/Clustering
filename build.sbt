@@ -6,6 +6,8 @@ scalaVersion := "2.12.1"
 scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits")
 javacOptions  in (Compile,doc) ++= Seq("-notimestamp", "-linksource")
 autoAPIMappings := true
+// set documentation target directory
+target in Compile in doc := baseDirectory.value / "docs"
 
 // The Typesafe repository
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"

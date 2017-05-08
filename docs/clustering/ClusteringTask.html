@@ -103,19 +103,19 @@
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="trait" href="" title="HtmlTag(&lt;strong&gt;Main clustering interface&lt;/strong&gt;)HtmlTag(&lt;br&gt;)
-Every task class (w/ network communication) should implement it.HtmlTag(&lt;br&gt;)
-Establishes the communication between task &amp; proxy HtmlTag(&lt;i&gt;cluster or local VM&lt;/i&gt;).HtmlTag(&lt;/i&gt;)HtmlTag(&lt;/strong&gt;)"></a>
-                        <a href="" title="HtmlTag(&lt;strong&gt;Main clustering interface&lt;/strong&gt;)HtmlTag(&lt;br&gt;)
-Every task class (w/ network communication) should implement it.HtmlTag(&lt;br&gt;)
-Establishes the communication between task &amp; proxy HtmlTag(&lt;i&gt;cluster or local VM&lt;/i&gt;).HtmlTag(&lt;/i&gt;)HtmlTag(&lt;/strong&gt;)">
+                        <a class="trait" href="" title="HtmlTag(&lt;strong&gt;Main clustering interface&lt;/strong&gt;)HtmlTag(&lt;br&gt;)HtmlTag(&lt;br&gt;)
+Every test class (w/ network communication) must implement it.HtmlTag(&lt;br&gt;)
+Establishes the communication between task &amp; proxy (cluster¹ or local VM²).HtmlTag(&lt;br&gt;)HtmlTag(&lt;/strong&gt;)"></a>
+                        <a href="" title="HtmlTag(&lt;strong&gt;Main clustering interface&lt;/strong&gt;)HtmlTag(&lt;br&gt;)HtmlTag(&lt;br&gt;)
+Every test class (w/ network communication) must implement it.HtmlTag(&lt;br&gt;)
+Establishes the communication between task &amp; proxy (cluster¹ or local VM²).HtmlTag(&lt;br&gt;)HtmlTag(&lt;/strong&gt;)">
                           ClusteringTask
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="TrafficLoad.html" title="HtmlTag(&lt;strong&gt;Indicates traffic usage of a task&lt;/strong&gt;)HtmlTag(&lt;br&gt;)
+                        <a class="class" href="TrafficLoad.html" title="HtmlTag(&lt;strong&gt;Indicates traffic usage of a task&lt;/strong&gt;)HtmlTag(&lt;br&gt;)HtmlTag(&lt;br&gt;)
 e.g.HtmlTag(&lt;/strong&gt;)"></a>
-                        <a href="TrafficLoad.html" title="HtmlTag(&lt;strong&gt;Indicates traffic usage of a task&lt;/strong&gt;)HtmlTag(&lt;br&gt;)
+                        <a href="TrafficLoad.html" title="HtmlTag(&lt;strong&gt;Indicates traffic usage of a task&lt;/strong&gt;)HtmlTag(&lt;br&gt;)HtmlTag(&lt;br&gt;)
 e.g.HtmlTag(&lt;/strong&gt;)">
                           TrafficLoad
                         </a>
@@ -147,9 +147,16 @@ e.g.HtmlTag(&lt;/strong&gt;)">
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p><strong>Main clustering interface</strong><br>
-Every task class (w/ network communication) should implement it.<br>
-Establishes the communication between task &amp; proxy <i>cluster or local VM</i>.
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p><strong>Main clustering interface</strong><br><br>
+Every test class (w/ network communication) must implement it.<br>
+Establishes the communication between task &amp; proxy (cluster¹ or local VM²).<br></p><p>e.g. scenario for HTTP requests</p><ul><li>
+<pre>
+cluster¹  : Java <-----> Scala <-----> VM <-----> Internet 🌐
+</pre></li><li>
+<pre>
+local VM² : Java <-------------------> VM <-----> Internet 🌐
+</pre></li></ul><p>Usage:<br><br>
+Call <i>request.getResponse('request object')</i> to execute your request and getting a response.
 </p></div><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
@@ -159,7 +166,7 @@ Establishes the communication between task &amp; proxy <i>cluster or local VM</i
             <span class="toggle">
               Known Subclasses
             </span>
-            <div class="subClasses hiddenContent"><a href="../Tests.html" class="extype" name="Tests">Tests</a></div>
+            <div class="subClasses hiddenContent"><a href="../JUnitTests.html" class="extype" name="JUnitTests">JUnitTests</a>, <a href="../Tests.html" class="extype" name="Tests">Tests</a></div>
           </div></div>
         
 

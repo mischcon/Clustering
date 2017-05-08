@@ -145,6 +145,24 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="de.oth.clustering">clustering</a></dd></dl></div>
     </li><li class="current-entities indented4">
                         <span class="separator"></span>
+                        <a class="class" href="BaseCodebaseLoader.html" title="Baseclass for loading jar files that contain tasks and configs"></a>
+                        <a href="BaseCodebaseLoader.html" title="Baseclass for loading jar files that contain tasks and configs">
+                          BaseCodebaseLoader
+                        </a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
+                        <a class="trait" href="CodebaseLoaderIF.html" title=""></a>
+                        <a href="CodebaseLoaderIF.html" title="">
+                          CodebaseLoaderIF
+                        </a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
+                        <a class="class" href="Entry.html" title=""></a>
+                        <a href="Entry.html" title="">
+                          Entry
+                        </a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
                         <a class="class" href="TestEntry.html" title=""></a>
                         <a href="TestEntry.html" title="">
                           TestEntry
@@ -178,7 +196,7 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">TestingCodebaseLoader</span><span class="result"> extends <span class="extype" name="java.lang.ClassLoader">ClassLoader</span></span>
+        <span class="name">TestingCodebaseLoader</span><span class="result"> extends <a href="BaseCodebaseLoader.html" class="extype" name="de.oth.clustering.java.BaseCodebaseLoader">BaseCodebaseLoader</a>[<a href="TestEntry.html" class="extype" name="de.oth.clustering.java.TestEntry">TestEntry</a>]</span>
       </span>
       </h4>
 
@@ -187,7 +205,7 @@
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><span class="extype" name="java.lang.ClassLoader">ClassLoader</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><a href="BaseCodebaseLoader.html" class="extype" name="de.oth.clustering.java.BaseCodebaseLoader">BaseCodebaseLoader</a>[<a href="TestEntry.html" class="extype" name="de.oth.clustering.java.TestEntry">TestEntry</a>], <a href="CodebaseLoaderIF.html" class="extype" name="de.oth.clustering.java.CodebaseLoaderIF">CodebaseLoaderIF</a>, <span class="extype" name="java.lang.ClassLoader">ClassLoader</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -213,7 +231,7 @@
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="de.oth.clustering.java.TestingCodebaseLoader"><span>TestingCodebaseLoader</span></li><li class="in" name="java.lang.ClassLoader"><span>ClassLoader</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="de.oth.clustering.java.TestingCodebaseLoader"><span>TestingCodebaseLoader</span></li><li class="in" name="de.oth.clustering.java.BaseCodebaseLoader"><span>BaseCodebaseLoader</span></li><li class="in" name="de.oth.clustering.java.CodebaseLoaderIF"><span>CodebaseLoaderIF</span></li><li class="in" name="java.lang.ClassLoader"><span>ClassLoader</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
                   <span class="filtertype">Implicitly<br />
@@ -441,6 +459,22 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="de.oth.clustering.java.BaseCodebaseLoader#createClassRawMap" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createClassRawMap(jar:Array[Byte]):Unit"></a><a id="createClassRawMap(Array[Byte]):Unit"></a>
+      <span class="permalink">
+      <a href="../../../../de/oth/clustering/java/TestingCodebaseLoader.html#createClassRawMap(jar:Array[Byte]):Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createClassRawMap</span><span class="params">(<span name="jar">jar: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Array" class="extype" target="_top">Array</a>[<a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">Opens the ByteArray representation of a jar file and creates a 'classname' -&gt; 'ByteArray representation of the class' map</p><div class="fullcomment"><div class="comment cmt"><p>Opens the ByteArray representation of a jar file and creates a 'classname' -&gt; 'ByteArray representation of the class' map</p></div><dl class="paramcmts block"><dt class="param">jar</dt><dd class="cmt"><p>ByteArray representation of a jar file</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="BaseCodebaseLoader.html" class="extype" name="de.oth.clustering.java.BaseCodebaseLoader">BaseCodebaseLoader</a></dd><dt>Exceptions thrown</dt><dd><span class="cmt"></span></dd></dl></div>
     </li><li name="java.lang.ClassLoader#defineClass" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="defineClass(x$1:String,x$2:java.nio.ByteBuffer,x$3:java.security.ProtectionDomain):Class[_]"></a><a id="defineClass(String,ByteBuffer,ProtectionDomain):Class[_]"></a>
       <span class="permalink">
@@ -641,6 +675,24 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="de.oth.clustering.java.TestingCodebaseLoader#fillMethodsList" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fillMethodsList():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../de/oth/clustering/java/TestingCodebaseLoader.html#fillMethodsList():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fillMethodsList</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">Used to fill out the <code><span class="extype" name="de.oth.clustering.java.BaseCodebaseLoader#classClusterMethods">classClusterMethods</span></code> list.</p><div class="fullcomment"><div class="comment cmt"><p>Used to fill out the <code><span class="extype" name="de.oth.clustering.java.BaseCodebaseLoader#classClusterMethods">classClusterMethods</span></code> list.
+Define your logic for filtering classes / methods from the loaded jar file here.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="de.oth.clustering.java.TestingCodebaseLoader">TestingCodebaseLoader</a> → <a href="CodebaseLoaderIF.html" class="extype" name="de.oth.clustering.java.CodebaseLoaderIF">CodebaseLoaderIF</a></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
@@ -816,10 +868,10 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="de.oth.clustering.java.TestingCodebaseLoader#getClassClusterMethods" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="getClassClusterMethods():java.util.List[de.oth.clustering.java.TestEntry]"></a><a id="getClassClusterMethods():List[TestEntry]"></a>
+    </li><li name="de.oth.clustering.java.BaseCodebaseLoader#getClassClusterMethods" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClassClusterMethods():java.util.List[T]"></a><a id="getClassClusterMethods():List[TestEntry]"></a>
       <span class="permalink">
-      <a href="../../../../de/oth/clustering/java/TestingCodebaseLoader.html#getClassClusterMethods():java.util.List[de.oth.clustering.java.TestEntry]" title="Permalink">
+      <a href="../../../../de/oth/clustering/java/TestingCodebaseLoader.html#getClassClusterMethods():java.util.List[T]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -831,8 +883,8 @@
         <span class="name">getClassClusterMethods</span><span class="params">()</span><span class="result">: <span class="extype" name="java.util.List">List</span>[<a href="TestEntry.html" class="extype" name="de.oth.clustering.java.TestEntry">TestEntry</a>]</span>
       </span>
       
-      
-    </li><li name="de.oth.clustering.java.TestingCodebaseLoader#getClassFromByte" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt">Returns a list of all cluster tasks / methods</p><div class="fullcomment"><div class="comment cmt"><p>Returns a list of all cluster tasks / methods</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="BaseCodebaseLoader.html" class="extype" name="de.oth.clustering.java.BaseCodebaseLoader">BaseCodebaseLoader</a></dd></dl></div>
+    </li><li name="de.oth.clustering.java.BaseCodebaseLoader#getClassFromByte" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClassFromByte(raw_class:Array[Byte],classname:String):Class[_]"></a><a id="getClassFromByte(Array[Byte],String):Class[_]"></a>
       <span class="permalink">
       <a href="../../../../de/oth/clustering/java/TestingCodebaseLoader.html#getClassFromByte(raw_class:Array[Byte],classname:String):Class[_]" title="Permalink">
@@ -847,7 +899,7 @@
         <span class="name">getClassFromByte</span><span class="params">(<span name="raw_class">raw_class: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Array" class="extype" target="_top">Array</a>[<a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Byte" class="extype" target="_top">Byte</a>]</span>, <span name="classname">classname: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       
-      
+      <p class="shortcomment cmt">Creates a Class from a given ByteArray representation of a class and the classname</p><div class="fullcomment"><div class="comment cmt"><p>Creates a Class from a given ByteArray representation of a class and the classname</p></div><dl class="paramcmts block"><dt class="param">raw_class</dt><dd class="cmt"><p>ByteArray representation of a class</p></dd><dt class="param">classname</dt><dd class="cmt"><p>Name of the class</p></dd><dt>returns</dt><dd class="cmt"><p>Class</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="BaseCodebaseLoader.html" class="extype" name="de.oth.clustering.java.BaseCodebaseLoader">BaseCodebaseLoader</a></dd></dl></div>
     </li><li name="java.lang.ClassLoader#getClassLoadingLock" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClassLoadingLock(x$1:String):Object"></a><a id="getClassLoadingLock(String):AnyRef"></a>
       <span class="permalink">
@@ -985,6 +1037,22 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="de.oth.clustering.java.BaseCodebaseLoader#getVmConfig" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getVmConfig():vm.vagrant.configuration.VagrantEnvironmentConfig"></a><a id="getVmConfig():VagrantEnvironmentConfig"></a>
+      <span class="permalink">
+      <a href="../../../../de/oth/clustering/java/TestingCodebaseLoader.html#getVmConfig():vm.vagrant.configuration.VagrantEnvironmentConfig" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getVmConfig</span><span class="params">()</span><span class="result">: <a href="../../../../vm/vagrant/configuration/VagrantEnvironmentConfig.html" class="extype" name="vm.vagrant.configuration.VagrantEnvironmentConfig">VagrantEnvironmentConfig</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">Returns the VM deploy info used for deploying virtual machines</p><div class="fullcomment"><div class="comment cmt"><p>Returns the VM deploy info used for deploying virtual machines</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="BaseCodebaseLoader.html" class="extype" name="de.oth.clustering.java.BaseCodebaseLoader">BaseCodebaseLoader</a></dd><dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="ClassNotFoundException"><code>ClassNotFoundException</code></span> Either no or more than one deploy info was found</p></span><span class="cmt"></span><span class="cmt"></span></dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
@@ -1346,7 +1414,11 @@
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="java.lang.ClassLoader">
+        <div class="parent" name="de.oth.clustering.java.BaseCodebaseLoader">
+              <h3>Inherited from <a href="BaseCodebaseLoader.html" class="extype" name="de.oth.clustering.java.BaseCodebaseLoader">BaseCodebaseLoader</a>[<a href="TestEntry.html" class="extype" name="de.oth.clustering.java.TestEntry">TestEntry</a>]</h3>
+            </div><div class="parent" name="de.oth.clustering.java.CodebaseLoaderIF">
+              <h3>Inherited from <a href="CodebaseLoaderIF.html" class="extype" name="de.oth.clustering.java.CodebaseLoaderIF">CodebaseLoaderIF</a></h3>
+            </div><div class="parent" name="java.lang.ClassLoader">
               <h3>Inherited from <span class="extype" name="java.lang.ClassLoader">ClassLoader</span></h3>
             </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>

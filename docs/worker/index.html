@@ -107,8 +107,8 @@
       
     </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="DistributorActor.html" title=""></a>
-                        <a href="DistributorActor.html" title="">
+                        <a class="class" href="DistributorActor.html" title="Sometimes tasks might affect other tasks (e.g."></a>
+                        <a href="DistributorActor.html" title="Sometimes tasks might affect other tasks (e.g.">
                           DistributorActor
                         </a>
                       </li><li class="current-entities indented1">
@@ -119,8 +119,8 @@
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="InstanceActor.html" title=""></a>
-                        <a href="InstanceActor.html" title="">
+                        <a class="class" href="InstanceActor.html" title="This Actor keeps track of all uploaded task runs / .jar files."></a>
+                        <a href="InstanceActor.html" title="This Actor keeps track of all uploaded task runs / .jar files.">
                           InstanceActor
                         </a>
                       </li><li class="current-entities indented1">
@@ -131,27 +131,27 @@
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="SubWorkerActor.html" title=""></a>
-                        <a href="SubWorkerActor.html" title="">
+                        <a class="class" href="SubWorkerActor.html" title="Those actors have two different purposes:
+  1) They act as an identifier - a SingleInstanceActor will always only be responsible for tasks that
+     should be run on a single instance, while a GroupActor will always only be responsible for tasks
+     that can be safely executed in parallel."></a>
+                        <a href="SubWorkerActor.html" title="Those actors have two different purposes:
+  1) They act as an identifier - a SingleInstanceActor will always only be responsible for tasks that
+     should be run on a single instance, while a GroupActor will always only be responsible for tasks
+     that can be safely executed in parallel.">
                           SubWorkerActor
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="TaskActor.html" title=""></a>
-                        <a href="TaskActor.html" title="">
+                        <a class="class" href="TaskActor.html" title="There is one actor of this kind for every task."></a>
+                        <a href="TaskActor.html" title="There is one actor of this kind for every task.">
                           TaskActor
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="TaskExecutorActor.html" title=""></a>
-                        <a href="TaskExecutorActor.html" title="">
+                        <a class="class" href="TaskExecutorActor.html" title="Actor responsible for executing tasks."></a>
+                        <a href="TaskExecutorActor.html" title="Actor responsible for executing tasks.">
                           TaskExecutorActor
-                        </a>
-                      </li><li class="current-entities indented1">
-                        <span class="separator"></span>
-                        <a class="class" href="TestVMNodesActor.html" title="Created by mischcon on 26.03.2017."></a>
-                        <a href="TestVMNodesActor.html" title="Created by mischcon on 26.03.2017.">
-                          TestVMNodesActor
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
@@ -198,7 +198,7 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="worker.DistributorActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="worker.DistributorActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="DistributorActorextendsWorkerTrait"></a><a id="DistributorActor:DistributorActor"></a>
       <span class="permalink">
       <a href="../worker/index.html#DistributorActorextendsWorkerTrait" title="Permalink">
@@ -210,12 +210,19 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="DistributorActor.html">
+        <a title="Sometimes tasks might affect other tasks (e.g." href="DistributorActor.html">
               <span class="name">DistributorActor</span>
             </a><span class="result"> extends <a href="WorkerTrait.html" class="extype" name="worker.WorkerTrait">WorkerTrait</a></span>
       </span>
       
-      
+      <p class="shortcomment cmt">Sometimes tasks might affect other tasks (e.g.</p><div class="fullcomment"><div class="comment cmt"><p>Sometimes tasks might affect other tasks (e.g. if one task changes a global configuration than the concurrent
+execution of this task might affect other tasks that are being executed on the same machine), which is why a
+separation between tasks that should be run on a SINGLE_INSTANCE and tasks that can safely be executed together
+with other tasks in a GROUP is necessary. Every DistributorActor can have many instances of
+<code><a href="SingleInstanceActor.html" class="extype" name="worker.SingleInstanceActor">SingleInstanceActors</a></code> / <code><a href="GroupActor.html" class="extype" name="worker.GroupActor">GroupActors</a></code> as its children. If a DistributorActor has no more children,
+than this means that all tasks that belong to a specific task run have been processed -
+in this case the actor kills itsself.
+</p></div></div>
     </li><li name="worker.GroupActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="GroupActorextendsSubWorkerActor"></a><a id="GroupActor:GroupActor"></a>
       <span class="permalink">
@@ -234,7 +241,7 @@
       </span>
       
       
-    </li><li name="worker.InstanceActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="worker.InstanceActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="InstanceActorextendsActorwithActorLogging"></a><a id="InstanceActor:InstanceActor"></a>
       <span class="permalink">
       <a href="../worker/index.html#InstanceActorextendsActorwithActorLogging" title="Permalink">
@@ -246,12 +253,17 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="InstanceActor.html">
+        <a title="This Actor keeps track of all uploaded task runs / .jar files." href="InstanceActor.html">
               <span class="name">InstanceActor</span>
             </a><span class="result"> extends <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.Actor" class="extype" target="_top">Actor</a> with <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.ActorLogging" class="extype" target="_top">ActorLogging</a></span>
       </span>
       
-      
+      <p class="shortcomment cmt">This Actor keeps track of all uploaded task runs / .jar files.</p><div class="fullcomment"><div class="comment cmt"><p>This Actor keeps track of all uploaded task runs / .jar files.
+For every uploaded file it creates a new  <code><a href="DistributorActor.html" class="extype" name="worker.DistributorActor">DistributorActor</a></code>.
+If an <code><a href="../vm/VMProxyActor.html" class="extype" name="vm.VMProxyActor">VMProxyActor</a></code> requests a new task than it sends its request together with information about what
+version is deployed on the VM - the InstanceActor then searches for a suitable instance
+(one with a matching version) an forwards the request.
+</p></div></div>
     </li><li name="worker.SingleInstanceActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="SingleInstanceActorextendsSubWorkerActor"></a><a id="SingleInstanceActor:SingleInstanceActor"></a>
       <span class="permalink">
@@ -270,7 +282,7 @@
       </span>
       
       
-    </li><li name="worker.SubWorkerActor" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+    </li><li name="worker.SubWorkerActor" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="SubWorkerActorextendsWorkerTrait"></a><a id="SubWorkerActor:SubWorkerActor"></a>
       <span class="permalink">
       <a href="../worker/index.html#SubWorkerActorextendsWorkerTrait" title="Permalink">
@@ -282,13 +294,30 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="SubWorkerActor.html">
+        <a title="Those actors have two different purposes:
+  1) They act as an identifier - a SingleInstanceActor will always only be responsible for tasks that
+     should be run on a single instance, while a GroupActor will always only be responsible for tasks
+     that can be safely executed in parallel." href="SubWorkerActor.html">
               <span class="name">SubWorkerActor</span>
             </a><span class="result"> extends <a href="WorkerTrait.html" class="extype" name="worker.WorkerTrait">WorkerTrait</a></span>
       </span>
       
-      
-    </li><li name="worker.TaskActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt">Those actors have two different purposes:
+  1) They act as an identifier - a SingleInstanceActor will always only be responsible for tasks that
+     should be run on a single instance, while a GroupActor will always only be responsible for tasks
+     that can be safely executed in parallel.</p><div class="fullcomment"><div class="comment cmt"><p>Those actors have two different purposes:
+  1) They act as an identifier - a SingleInstanceActor will always only be responsible for tasks that
+     should be run on a single instance, while a GroupActor will always only be responsible for tasks
+     that can be safely executed in parallel.
+  2) They are the core of the whole task-dependency-management (see the wiki for further information about how the task dependency works)</p><p>Each SingleInstanceActor / GroupActor contains two lists:
+  1) A list that contains all children of type <code><a href="TaskActor.html" class="extype" name="worker.TaskActor">TaskActor</a></code> (all tasks that are part of the current level in the dependency tree)
+  2) A list that contains all children of type SingleInstanceActor / GroupActor (the next level in the dependency tree)</p><p>If a SingleInstanceActor / GroupActor receives a <code><a href="messages/GetTask.html" class="extype" name="worker.messages.GetTask">GetTask</a></code> request it will forward it to all its @link worker.TaskActor TaskActors} if
+there are any - if not, than this means that the current level in the dependency tree is done. In this case
+the request is forwarded to all its (SingleInstanceActor / GroupActor) children.
+If a SingleInstanceActor / GroupActor has no more children (neither TaskActor nor SingleInstanceActor / GroupActor)
+than this means that all tasks have been processed - in this case the actor kills itsself.
+</p></div></div>
+    </li><li name="worker.TaskActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="TaskActorextendsWorkerTrait"></a><a id="TaskActor:TaskActor"></a>
       <span class="permalink">
       <a href="../worker/index.html#TaskActorextendsWorkerTrait" title="Permalink">
@@ -300,13 +329,18 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="TaskActor.html">
+        <a title="There is one actor of this kind for every task." href="TaskActor.html">
               <span class="name">TaskActor</span>
             </a><span class="result"> extends <a href="WorkerTrait.html" class="extype" name="worker.WorkerTrait">WorkerTrait</a></span>
       </span>
       
-      
-    </li><li name="worker.TaskExecutorActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt">There is one actor of this kind for every task.</p><div class="fullcomment"><div class="comment cmt"><p>There is one actor of this kind for every task. If it is free (its task is currently to being executed)
+it will offer itsself if it receives a GetTask request from a <code><a href="../vm/VMProxyActor.html" class="extype" name="vm.VMProxyActor">VMProxyActor</a></code>. If the sender is happy with
+this task than the <code><a href="TaskActor.html" class="extype" name="worker.TaskActor">TaskActor</a></code> will request the address of a physical node from the <code><a href="../utils/ExecutorDirectoryServiceActor.html" class="extype" name="utils.ExecutorDirectoryServiceActor">ExecutorDirectoryServiceActor</a></code>
+in order to create a new remote <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code>. After that the task is passed to the <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code> which
+itsself executes the task against the target <code><a href="../vm/VMProxyActor.html" class="extype" name="vm.VMProxyActor">VMProxyActor</a></code>.
+</p></div></div>
+    </li><li name="worker.TaskExecutorActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="TaskExecutorActorextendsWorkerTrait"></a><a id="TaskExecutorActor:TaskExecutorActor"></a>
       <span class="permalink">
       <a href="../worker/index.html#TaskExecutorActorextendsWorkerTrait" title="Permalink">
@@ -318,30 +352,14 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="TaskExecutorActor.html">
+        <a title="Actor responsible for executing tasks." href="TaskExecutorActor.html">
               <span class="name">TaskExecutorActor</span>
             </a><span class="result"> extends <a href="WorkerTrait.html" class="extype" name="worker.WorkerTrait">WorkerTrait</a></span>
       </span>
       
-      
-    </li><li name="worker.TestVMNodesActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="TestVMNodesActorextendsWorkerTrait"></a><a id="TestVMNodesActor:TestVMNodesActor"></a>
-      <span class="permalink">
-      <a href="../worker/index.html#TestVMNodesActorextendsWorkerTrait" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">class</span>
-      </span>
-      <span class="symbol">
-        <a title="Created by mischcon on 26.03.2017." href="TestVMNodesActor.html">
-              <span class="name">TestVMNodesActor</span>
-            </a><span class="result"> extends <a href="WorkerTrait.html" class="extype" name="worker.WorkerTrait">WorkerTrait</a></span>
-      </span>
-      
-      <p class="shortcomment cmt">Created by mischcon on 26.03.2017.</p>
+      <p class="shortcomment cmt">Actor responsible for executing tasks.</p><div class="fullcomment"><div class="comment cmt"><p>Actor responsible for executing tasks. Is created by a TaskActor and is being supervised / watched by
+the creating TaskActor and the task target (VMProxyActor)
+</p></div></div>
     </li><li name="worker.WorkerTrait" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="WorkerTraitextendsActorwithActorLogging"></a><a id="WorkerTrait:WorkerTrait"></a>
       <span class="permalink">

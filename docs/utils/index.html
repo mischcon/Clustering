@@ -137,8 +137,8 @@
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="ExecutorDirectoryServiceActor.html" title=""></a>
-                        <a href="ExecutorDirectoryServiceActor.html" title="">
+                        <a class="class" href="ExecutorDirectoryServiceActor.html" title="Executor Directory Service"></a>
+                        <a href="ExecutorDirectoryServiceActor.html" title="Executor Directory Service">
                           ExecutorDirectoryServiceActor
                         </a>
                       </li><li class="current-entities indented1">
@@ -234,7 +234,7 @@
       </span>
       
       
-    </li><li name="utils.ExecutorDirectoryServiceActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="utils.ExecutorDirectoryServiceActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ExecutorDirectoryServiceActorextendsActorwithActorLogging"></a><a id="ExecutorDirectoryServiceActor:ExecutorDirectoryServiceActor"></a>
       <span class="permalink">
       <a href="../utils/index.html#ExecutorDirectoryServiceActorextendsActorwithActorLogging" title="Permalink">
@@ -246,16 +246,18 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="ExecutorDirectoryServiceActor.html">
+        <a title="Executor Directory Service" href="ExecutorDirectoryServiceActor.html">
               <span class="name">ExecutorDirectoryServiceActor</span>
             </a><span class="result"> extends <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.Actor" class="extype" target="_top">Actor</a> with <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.ActorLogging" class="extype" target="_top">ActorLogging</a></span>
       </span>
       
-      
+      <p class="shortcomment cmt">Executor Directory Service</p><div class="fullcomment"><div class="comment cmt"><p>Executor Directory Service</p><p>Keeps track of all physical nodes of the cluster that have the 'executor' role.</p><p>Reacts to 'MemberJoined' and 'UnreachableMember' cluster events.</p><p><code><a href="messages/GetExecutorAddress$.html" class="extype" name="utils.messages.GetExecutorAddress">GetExecutorAddress</a></code> result in returning the address of
+a suitable physical node through a <code><a href="messages/ExecutorAddress.html" class="extype" name="utils.messages.ExecutorAddress">ExecutorAddress</a></code> message.
+</p></div></div>
     </li><li name="utils.GlobalStatusActor" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="GlobalStatusActorextendsAnyRef"></a><a id="GlobalStatusActor:GlobalStatusActor"></a>
+      <a id="GlobalStatusActorextendsActorwithActorLogging"></a><a id="GlobalStatusActor:GlobalStatusActor"></a>
       <span class="permalink">
-      <a href="../utils/index.html#GlobalStatusActorextendsAnyRef" title="Permalink">
+      <a href="../utils/index.html#GlobalStatusActorextendsActorwithActorLogging" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -266,7 +268,7 @@
       <span class="symbol">
         <a title="Created by mischcon on 3/20/17." href="GlobalStatusActor.html">
               <span class="name">GlobalStatusActor</span>
-            </a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+            </a><span class="result"> extends <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.Actor" class="extype" target="_top">Actor</a> with <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.ActorLogging" class="extype" target="_top">ActorLogging</a></span>
       </span>
       
       <p class="shortcomment cmt">Created by mischcon on 3/20/17.</p>

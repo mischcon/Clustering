@@ -27,11 +27,22 @@ import scala.util.{Failure, Random, Success}
 
 
 case class UploadJar(content : Array[Byte])
-case object GetTaskSets
-case class GetTaskSet(name : String)
 
 /**
-  * @todo documentation
+  * = Cluster API =
+  * Available @ <code>http://[ip]:8080/api</code>
+  * <br>
+  * <br>
+  * Endpoints:
+  * <ul>
+  *   <li><b>GET /api</b> - landing page</li>
+  *   <ul>
+  *     <li><pre><b>POST /api/upload</b>                    <i>.jar</i> file upload</pre></li>
+  *     <li><pre><b>GET  /api/reporting</b>                 reporting API; check available task sets</pre></li>
+  *     <li><pre><b>GET  /api/reporting/[table name]</b>    single report for requested task set; check status of done tasks</pre></li>
+  *     <li><pre><b>GET  /api/tree</b>                      actor tree w/i the cluster</pre></li>
+  *   </ul>
+  *  </ul>
   * @param ip ip to bind API on
   */
 class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives with SprayJsonSupport{
@@ -48,66 +59,39 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
 
   val port = 8080
 
-  // TODO: outsource this shit, it's ugly af
-  val routes : Route =
-    path("files" / "data.json") {
-      get {
-        getFromFile("src/main/resources/reports/data.json")
-      }
-    } ~
-    path("images" / "details_open.png") {
-      get {
-        getFromFile("src/main/resources/webui/images/details_open.png")
-      }
-    } ~
-    path("images" / "details_close.png") {
-      get {
-        getFromFile("src/main/resources/webui/images/details_close.png")
-      }
-    } ~
-    path("api") {
-      get {
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`,
-          "<html>" +
-          "<title>Cluster API</title>" +
-          "<body>" +
-          s"<h1>welcome to cluster API</h1><br>" +
-           "<ul><h3>available endpoints</h3>" +
-          s"<li><a href='http://$ip:$port/api/reporting' style='font-size: 20px;'>/reporting</a></li>" +
-          s"<li><a href='http://$ip:$port/api/tree' style='font-size: 20px;'>/tree</a></li>" +
-           "</ul>" +
-          "</body>" +
-          "</html>"))
-      }
-    } ~
-    path("api" / "upload") {
-      post {
-        withoutSizeLimit {
-          extractDataBytes {
-            bytes => handleUpload(bytes)
-          }
-        }
-      }
-    } ~
-    path("api" / "reporting") {
-      get {
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`,
-          s"""
+  val contentTypeHtml = ContentTypes.`text/html(UTF-8)`
+  val contentTypeText = ContentTypes.`text/plain(UTF-8)`
+
+  def getApiContent: String = {
+    s"""
+<!DOCTYPE html>
+<html>
+  <title>Cluster API</title>
+  <body>
+    <h1>welcome to cluster API</h1>
+    <br>
+    <ul><h3>available endpoints</h3>
+      <li><a href='http://$ip:$port/api/reporting' style='font-size: 20px;'>/reporting</a></li>
+      <li><a href='http://$ip:$port/api/tree' style='font-size: 20px;'>/tree</a></li>
+    </ul>
+  </body>
+</html>"""
+  }
+
+  def getApiReportingContent: String = {
+    s"""
 <!DOCTYPE html>
 <html>
   <title>Reporting</title>
   <body>
     <h1>available sets</h1>
-    ${report()}
+    ${report}
   </body>
-</html>"""))
-      }
-    } ~
-    path("api" / "reporting" / Segment) {
-      (name) =>
-        get {
-          report(name)
-          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, s"""
+</html>"""
+  }
+
+  def getApiSingleReportContent(name : String): String = {
+    s"""
 <!DOCTYPE html>
 <html>
   <title>Reporting $name</title>
@@ -196,25 +180,10 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
       </tfoot>
     </table>
   </body>
-</html>"""))
-        }
-    } ~
-    path("api" / "tree") {
-      get {
-        complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`,
-          s"${printTree()}"))
-      }
-    }
-
-  override def receive: Receive = {
-    case a => println(s"received $a")
+</html>"""
   }
 
-  def printTree(): String = {
-    new PrivateMethodExposer(system)('printTree)().toString
-  }
-
-  def report(): String = {
+  def report: String = {
     val future = dBActor ? GetTables
     val result = Await.result(future, timeout.duration).asInstanceOf[Tables]
     val sb = new StringBuilder
@@ -237,7 +206,68 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   def report(tableName : String): Unit = {
     val future = dBActor ? GenerateJsonReport(tableName)
     val result = Await.result(future, timeout.duration).asInstanceOf[OK]
-    // TODO: error handling, what happends if not OK
+    result match {
+      case OK() =>
+        log.debug("API is able to access report data.")
+      case _ =>
+        log.debug("Something went wrong. API cannot access report data.")
+    }
+  }
+
+  def printTree: String = {
+    new PrivateMethodExposer(system)('printTree)().toString
+  }
+
+  val routes : Route =
+    path("files" / "data.json") {
+      get {
+        getFromFile("src/main/resources/reports/data.json")
+      }
+    } ~
+    path("images" / "details_open.png") {
+      get {
+        getFromFile("src/main/resources/webui/images/details_open.png")
+      }
+    } ~
+    path("images" / "details_close.png") {
+      get {
+        getFromFile("src/main/resources/webui/images/details_close.png")
+      }
+    } ~
+    path("api") {
+      get {
+        complete(HttpEntity(contentTypeHtml, getApiContent))
+      }
+    } ~
+    path("api" / "upload") {
+      post {
+        withoutSizeLimit {
+          extractDataBytes {
+            bytes => handleUpload(bytes)
+          }
+        }
+      }
+    } ~
+    path("api" / "reporting") {
+      get {
+        complete(HttpEntity(contentTypeHtml, getApiReportingContent))
+      }
+    } ~
+    path("api" / "reporting" / Segment) {
+      (name) =>
+        get {
+          report(name)
+          complete(HttpEntity(contentTypeHtml, getApiSingleReportContent(name)))
+        }
+    } ~
+    path("api" / "tree") {
+      get {
+        complete(HttpEntity(contentTypeText, printTree))
+      }
+    }
+
+  override def receive: Receive = {
+    case a => println(s"received $a")
   }
 
   def handleUpload(bytes : Source[ByteString, Any]) ={

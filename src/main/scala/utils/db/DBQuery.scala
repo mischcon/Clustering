@@ -1,6 +1,6 @@
 package utils.db
 
-import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
+import java.io.{File, PrintWriter}
 import java.sql.{Connection, PreparedStatement, Types}
 
 

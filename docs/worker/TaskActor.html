@@ -109,8 +109,8 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="worker">worker</a></dd></dl></div>
     </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="DistributorActor.html" title=""></a>
-                        <a href="DistributorActor.html" title="">
+                        <a class="class" href="DistributorActor.html" title="Sometimes tasks might affect other tasks (e.g."></a>
+                        <a href="DistributorActor.html" title="Sometimes tasks might affect other tasks (e.g.">
                           DistributorActor
                         </a>
                       </li><li class="current-entities indented1">
@@ -121,8 +121,8 @@
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="InstanceActor.html" title=""></a>
-                        <a href="InstanceActor.html" title="">
+                        <a class="class" href="InstanceActor.html" title="This Actor keeps track of all uploaded task runs / .jar files."></a>
+                        <a href="InstanceActor.html" title="This Actor keeps track of all uploaded task runs / .jar files.">
                           InstanceActor
                         </a>
                       </li><li class="current-entities indented1">
@@ -133,27 +133,27 @@
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="SubWorkerActor.html" title=""></a>
-                        <a href="SubWorkerActor.html" title="">
+                        <a class="class" href="SubWorkerActor.html" title="Those actors have two different purposes:
+  1) They act as an identifier - a SingleInstanceActor will always only be responsible for tasks that
+     should be run on a single instance, while a GroupActor will always only be responsible for tasks
+     that can be safely executed in parallel."></a>
+                        <a href="SubWorkerActor.html" title="Those actors have two different purposes:
+  1) They act as an identifier - a SingleInstanceActor will always only be responsible for tasks that
+     should be run on a single instance, while a GroupActor will always only be responsible for tasks
+     that can be safely executed in parallel.">
                           SubWorkerActor
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="" title=""></a>
-                        <a href="" title="">
+                        <a class="class" href="" title="There is one actor of this kind for every task."></a>
+                        <a href="" title="There is one actor of this kind for every task.">
                           TaskActor
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="TaskExecutorActor.html" title=""></a>
-                        <a href="TaskExecutorActor.html" title="">
+                        <a class="class" href="TaskExecutorActor.html" title="Actor responsible for executing tasks."></a>
+                        <a href="TaskExecutorActor.html" title="Actor responsible for executing tasks.">
                           TaskExecutorActor
-                        </a>
-                      </li><li class="current-entities indented1">
-                        <span class="separator"></span>
-                        <a class="class" href="TestVMNodesActor.html" title="Created by mischcon on 26.03.2017."></a>
-                        <a href="TestVMNodesActor.html" title="Created by mischcon on 26.03.2017.">
-                          TestVMNodesActor
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
@@ -189,7 +189,12 @@
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>There is one actor of this kind for every task. If it is free (its task is currently to being executed)
+it will offer itsself if it receives a GetTask request from a <code><a href="../vm/VMProxyActor.html" class="extype" name="vm.VMProxyActor">VMProxyActor</a></code>. If the sender is happy with
+this task than the <code><a href="" class="extype" name="worker.TaskActor">TaskActor</a></code> will request the address of a physical node from the <code><a href="../utils/ExecutorDirectoryServiceActor.html" class="extype" name="utils.ExecutorDirectoryServiceActor">ExecutorDirectoryServiceActor</a></code>
+in order to create a new remote <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code>. After that the task is passed to the <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code> which
+itsself executes the task against the target <code><a href="../vm/VMProxyActor.html" class="extype" name="vm.VMProxyActor">VMProxyActor</a></code>.
+</p></div><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -244,7 +249,7 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="worker.TaskActor#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="worker.TaskActor#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="&lt;init&gt;(task:worker.messages.Task,tablename:String):worker.TaskActor"></a><a id="&lt;init&gt;:TaskActor"></a>
       <span class="permalink">
       <a href="../worker/TaskActor.html#&lt;init&gt;(task:worker.messages.Task,tablename:String):worker.TaskActor" title="Permalink">
@@ -259,7 +264,7 @@
         <span class="name">TaskActor</span><span class="params">(<span name="task">task: <a href="messages/Task.html" class="extype" name="worker.messages.Task">Task</a></span>, <span name="tablename">tablename: <span class="extype" name="scala.Predef.String">String</span></span>)</span>
       </span>
       
-      
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">task</dt><dd class="cmt"><p>The actual task</p></dd><dt class="param">tablename</dt><dd class="cmt"><p>The corresponding tablename / run id</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -719,7 +724,7 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="worker.TaskActor#handleGetTask" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="worker.TaskActor#handleGetTask" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="handleGetTask():Unit"></a>
       <span class="permalink">
       <a href="../worker/TaskActor.html#handleGetTask():Unit" title="Permalink">
@@ -734,8 +739,17 @@
         <span class="name">handleGetTask</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      
-    </li><li name="worker.TaskActor#handleTermianted" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt">If a new task is requested and the task has not been taken / reserved yet than the <code><a href="" class="extype" name="worker.TaskActor">TaskActor</a></code>
+will offer itself (<code><a href="messages/SendTask.html" class="extype" name="worker.messages.SendTask">SendTask</a></code> to requester).</p><div class="fullcomment"><div class="comment cmt"><p>If a new task is requested and the task has not been taken / reserved yet than the <code><a href="" class="extype" name="worker.TaskActor">TaskActor</a></code>
+will offer itself (<code><a href="messages/SendTask.html" class="extype" name="worker.messages.SendTask">SendTask</a></code> to requester). To avoid being executed twice the 'isTaken' flag is set to true -
+in case the requester has chosen a different task the 'isTaken' flag is set to false, resulting in the task
+to be available again.</p><p>In case the requester chose this task the <code><a href="" class="extype" name="worker.TaskActor">TaskActor</a></code> will watch / supervise the requester (in order to
+reset the task in case of a failure of the requester) and will request an executor from the <code><a href="../utils/ExecutorDirectoryServiceActor.html" class="extype" name="utils.ExecutorDirectoryServiceActor">ExecutorDirectoryServiceActor</a></code>.</p><p>If no executor is available the requester is informed about that and the task is being resetted.
+If an executor is available the <code><a href="" class="extype" name="worker.TaskActor">TaskActor</a></code> will watch / supervise the executor (in order to reset the task and
+the requester in case of a failure of the executor) and will send the reference of the executor to the requester.</p><p>If the connection between requester (targetVM), executor and <code><a href="" class="extype" name="worker.TaskActor">TaskActor</a></code> has been established the task is sent
+to the executor for its execution.
+</p></div></div>
+    </li><li name="worker.TaskActor#handleTermianted" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="handleTermianted(t:akka.actor.Terminated):Unit"></a><a id="handleTermianted(Terminated):Unit"></a>
       <span class="permalink">
       <a href="../worker/TaskActor.html#handleTermianted(t:akka.actor.Terminated):Unit" title="Permalink">
@@ -750,7 +764,14 @@
         <span class="name">handleTermianted</span><span class="params">(<span name="t">t: <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.Terminated" class="extype" target="_top">Terminated</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      
+      <p class="shortcomment cmt">If the <code><a href="" class="extype" name="worker.TaskActor">TaskActor</a></code> receives a 'Terminated' message from the actor system than this means
+that either the <code><a href="../vm/VMActor.html" class="extype" name="vm.VMActor">VMActor</a></code> or the <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code> died / has been disconnected from the cluster.</p><div class="fullcomment"><div class="comment cmt"><p>If the <code><a href="" class="extype" name="worker.TaskActor">TaskActor</a></code> receives a 'Terminated' message from the actor system than this means
+that either the <code><a href="../vm/VMActor.html" class="extype" name="vm.VMActor">VMActor</a></code> or the <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code> died / has been disconnected from the cluster.
+In case the 'taskDone' flag is set to true this is the desired behaviour since the <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code>
+is stopped after the execution of a task.
+In case the 'taskDone' flag is set to false this means that either the <code><a href="../vm/VMActor.html" class="extype" name="vm.VMActor">VMActor</a></code> or the <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code> died, which
+results in removing the connection to the <code><a href="../vm/VMActor.html" class="extype" name="vm.VMActor">VMActor</a></code> / <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code> and resetting the task so that it can
+be executed again.</p></div><dl class="paramcmts block"><dt class="param">t</dt><dd class="cmt"><p>The Terminated message - used for identifying the terminated actor.</p></dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
@@ -1002,7 +1023,26 @@
         <span class="name">supervisorStrategy</span><span class="result">: <span class="extype" name="akka.actor.SupervisorStrategy">SupervisorStrategy</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="worker.TaskActor">TaskActor</a> → Actor</dd></dl></div>
+      <p class="shortcomment cmt">Whether or not a task was successful an exception (<code><a href="../Exceptions/TestSuccessException.html" class="extype" name="Exceptions.TestSuccessException">TestSuccessException</a></code>
+or <code><a href="../Exceptions/TestFailException.html" class="extype" name="Exceptions.TestFailException">TestFailException</a></code>)
+will be thrown by the <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code>.</p><div class="fullcomment"><div class="comment cmt"><p>Whether or not a task was successful an exception (<code><a href="../Exceptions/TestSuccessException.html" class="extype" name="Exceptions.TestSuccessException">TestSuccessException</a></code>
+or <code><a href="../Exceptions/TestFailException.html" class="extype" name="Exceptions.TestFailException">TestFailException</a></code>)
+will be thrown by the <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code>.
+In case the task was successful the 'taskDone' flag is set to true.
+In case the task was unsuccessful the 'taskDone' flag also set to true.
+Only in case of an unexpected exception the 'taskDone' flag is set to false, resulting
+in the task being executed again.</p><p>What happens if the targetVm dies?
+1) The cluster will realize that --&gt; Terminated message
+2) The executor will realize that (since some unexpected exceptions will occur) --&gt; TestFailException will be thrown</p><p>But what happens if those messages reach the TaskActor?:
+  1) Executor(Success) &gt; VM(Termianted) --&gt; all good, since Executor(Success) causes the 'taskDone' flag to be set to True
+  2) Executor(Failure) &gt; VM(Termianted) --&gt; nothing good, since we need to provide a directive BEFORE we can
+  handle the Terminated message without knowing if the VM died or not (without being able to check whether or
+  not there is a Termianted message); In this case we 'ask' the VMProxyActor if it is still alive / still can
+  connect to the VM -- if so, then everything is good, if not - reset the task and execute it once more
+  on a different VM
+  3) VM(Terminated) &gt; Executor(Success) --&gt; all good, we do not trust the TestSuccessException and reset the task
+  4) VM(Terminated) &gt; Executor(Failure) --&gt; all good, simply reset the task
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="worker.TaskActor">TaskActor</a> → Actor</dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">

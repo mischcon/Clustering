@@ -109,14 +109,20 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="webui">webui</a></dd></dl></div>
     </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="" title=""></a>
-                        <a href="" title="">
+                        <a class="class" href="" title="Available @ HtmlTag(&lt;code&gt;http://[ip]:8080/api&lt;/code&gt;)
+HtmlTag(&lt;br&gt;)
+HtmlTag(&lt;br&gt;)
+Endpoints:HtmlTag(&lt;/code&gt;)"></a>
+                        <a href="" title="Available @ HtmlTag(&lt;code&gt;http://[ip]:8080/api&lt;/code&gt;)
+HtmlTag(&lt;br&gt;)
+HtmlTag(&lt;br&gt;)
+Endpoints:HtmlTag(&lt;/code&gt;)">
                           ClusteringApi
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="UploadJar.html" title="Created by mischcon on 10.04.17."></a>
-                        <a href="UploadJar.html" title="Created by mischcon on 10.04.17.">
+                        <a class="class" href="UploadJar.html" title=""></a>
+                        <a href="UploadJar.html" title="">
                           UploadJar
                         </a>
                       </li>
@@ -147,7 +153,22 @@
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><h3> Cluster API </h3><p>Available @ <code>http://[ip]:8080/api</code>
+<br>
+<br>
+Endpoints:</p><ul><li><b>GET /api</b> - landing page</li><li>
+<pre>
+<b>POST /api/upload</b>                    <i>.jar</i> file upload
+</pre></li><li>
+<pre>
+<b>GET  /api/reporting</b>                 reporting API; check available task sets
+</pre></li><li>
+<pre>
+<b>GET  /api/reporting/[table name]</b>    single report for requested task set; check status of done tasks
+</pre></li><li>
+<pre>
+<b>GET  /api/tree</b>                      actor tree w/i the cluster
+</pre></li></ul></div><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -202,10 +223,10 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="webui.ClusteringApi#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;():webui.ClusteringApi"></a><a id="&lt;init&gt;:ClusteringApi"></a>
+              <ol><li name="webui.ClusteringApi#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="&lt;init&gt;(ip:String):webui.ClusteringApi"></a><a id="&lt;init&gt;:ClusteringApi"></a>
       <span class="permalink">
-      <a href="../webui/ClusteringApi.html#&lt;init&gt;():webui.ClusteringApi" title="Permalink">
+      <a href="../webui/ClusteringApi.html#&lt;init&gt;(ip:String):webui.ClusteringApi" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -214,10 +235,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">ClusteringApi</span><span class="params">()</span>
+        <span class="name">ClusteringApi</span><span class="params">(<span name="ip">ip: <span class="extype" name="scala.Predef.String">String</span></span>)</span>
       </span>
       
-      
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">ip</dt><dd class="cmt"><p>ip to bind API on</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -347,7 +368,7 @@
         <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <span class="name">RequestToSourceUnmarshaller</span><span class="tparams">[<span name="T">T</span>]</span><span class="result alias"> = <span class="extype" name="akka.http.scaladsl.unmarshalling.Unmarshaller">Unmarshaller</span>[<span class="extype" name="akka.http.scaladsl.model.HttpRequest">HttpRequest</span>, <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<span class="extype" name="akka.http.scaladsl.server.directives.FramedEntityStreamingDirectives.RequestToSourceUnmarshaller.T">T</span>, <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.NotUsed" class="extype" target="_top">NotUsed</a>]]</span>
+        <span class="name">RequestToSourceUnmarshaller</span><span class="tparams">[<span name="T">T</span>]</span><span class="result alias"> = <span class="extype" name="akka.http.scaladsl.unmarshalling.Unmarshaller">Unmarshaller</span>[<span class="extype" name="akka.http.scaladsl.model.HttpRequest">HttpRequest</span>, <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.stream.scaladsl.Source" class="extype" target="_top">Source</a>[<span class="extype" name="akka.http.scaladsl.server.directives.FramedEntityStreamingDirectives.RequestToSourceUnmarshaller.T">T</span>, <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.NotUsed" class="extype" target="_top">NotUsed</a>]]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FramedEntityStreamingDirectives</dd></dl></div>
@@ -1288,6 +1309,38 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>CacheConditionDirectives</dd></dl></div>
+    </li><li name="webui.ClusteringApi#contentTypeHtml" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="contentTypeHtml:akka.http.scaladsl.model.ContentType.WithCharset"></a><a id="contentTypeHtml:WithCharset"></a>
+      <span class="permalink">
+      <a href="../webui/ClusteringApi.html#contentTypeHtml:akka.http.scaladsl.model.ContentType.WithCharset" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">contentTypeHtml</span><span class="result">: <span class="extype" name="akka.http.scaladsl.model.ContentType.WithCharset">WithCharset</span></span>
+      </span>
+      
+      
+    </li><li name="webui.ClusteringApi#contentTypeText" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="contentTypeText:akka.http.scaladsl.model.ContentType.WithCharset"></a><a id="contentTypeText:WithCharset"></a>
+      <span class="permalink">
+      <a href="../webui/ClusteringApi.html#contentTypeText:akka.http.scaladsl.model.ContentType.WithCharset" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">contentTypeText</span><span class="result">: <span class="extype" name="akka.http.scaladsl.model.ContentType.WithCharset">WithCharset</span></span>
+      </span>
+      
+      
     </li><li name="akka.actor.Actor#context" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="context:akka.actor.ActorContext"></a><a id="context:ActorContext"></a>
       <span class="permalink">
@@ -1684,7 +1737,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">extractDataBytes</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Directive1">Directive1</span>[<span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<span class="extype" name="akka.util.ByteString">ByteString</span>, <span class="extype" name="scala.Any">Any</span>]]</span>
+        <span class="name">extractDataBytes</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Directive1">Directive1</span>[<a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.stream.scaladsl.Source" class="extype" target="_top">Source</a>[<a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.util.ByteString" class="extype" target="_top">ByteString</a>, <span class="extype" name="scala.Any">Any</span>]]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>BasicDirectives</dd></dl></div>
@@ -1988,7 +2041,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">fileUpload</span><span class="params">(<span name="fieldName">fieldName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Directive1">Directive1</span>[(<span class="extype" name="akka.http.scaladsl.server.directives.FileInfo">FileInfo</span>, <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<span class="extype" name="akka.util.ByteString">ByteString</span>, <span class="extype" name="scala.Any">Any</span>])]</span>
+        <span class="name">fileUpload</span><span class="params">(<span name="fieldName">fieldName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Directive1">Directive1</span>[(<span class="extype" name="akka.http.scaladsl.server.directives.FileInfo">FileInfo</span>, <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.stream.scaladsl.Source" class="extype" target="_top">Source</a>[<a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.util.ByteString" class="extype" target="_top">ByteString</a>, <span class="extype" name="scala.Any">Any</span>])]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>FileUploadDirectives</dd></dl></div>
@@ -2133,6 +2186,54 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>MethodDirectives</dd></dl></div>
+    </li><li name="webui.ClusteringApi#getApiContent" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getApiContent:String"></a>
+      <span class="permalink">
+      <a href="../webui/ClusteringApi.html#getApiContent:String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getApiContent</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      
+      
+    </li><li name="webui.ClusteringApi#getApiReportingContent" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getApiReportingContent:String"></a>
+      <span class="permalink">
+      <a href="../webui/ClusteringApi.html#getApiReportingContent:String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getApiReportingContent</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      
+      
+    </li><li name="webui.ClusteringApi#getApiSingleReportContent" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getApiSingleReportContent(name:String):String"></a><a id="getApiSingleReportContent(String):String"></a>
+      <span class="permalink">
+      <a href="../webui/ClusteringApi.html#getApiSingleReportContent(name:String):String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getApiSingleReportContent</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      
+      
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
@@ -2337,7 +2438,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">handleUpload</span><span class="params">(<span name="bytes">bytes: <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<span class="extype" name="akka.util.ByteString">ByteString</span>, <span class="extype" name="scala.Any">Any</span>]</span>)</span><span class="result">: (<span class="extype" name="akka.http.scaladsl.server.RequestContext">RequestContext</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="akka.http.scaladsl.server.RouteResult">RouteResult</span>]</span>
+        <span class="name">handleUpload</span><span class="params">(<span name="bytes">bytes: <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.stream.scaladsl.Source" class="extype" target="_top">Source</a>[<a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.util.ByteString" class="extype" target="_top">ByteString</a>, <span class="extype" name="scala.Any">Any</span>]</span>)</span><span class="result">: (<span class="extype" name="akka.http.scaladsl.server.RequestContext">RequestContext</span>) ⇒ <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.concurrent.Future" class="extype" target="_top">Future</a>[<span class="extype" name="akka.http.scaladsl.server.RouteResult">RouteResult</span>]</span>
       </span>
       
       
@@ -3429,6 +3530,22 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PathDirectives</dd></dl></div>
+    </li><li name="webui.ClusteringApi#port" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="port:Int"></a>
+      <span class="permalink">
+      <a href="../webui/ClusteringApi.html#port:Int" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">port</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Int" class="extype" target="_top">Int</a></span>
+      </span>
+      
+      
     </li><li name="akka.http.scaladsl.server.directives.MethodDirectives#post" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="post:akka.http.scaladsl.server.Directive0"></a><a id="post:Directive0"></a>
       <span class="permalink">
@@ -3533,6 +3650,22 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="webui.ClusteringApi#printTree" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="printTree:String"></a>
+      <span class="permalink">
+      <a href="../webui/ClusteringApi.html#printTree:String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">printTree</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      
+      
     </li><li name="akka.http.scaladsl.server.directives.BasicDirectives#provide" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="provide[T](value:T):akka.http.scaladsl.server.Directive1[T]"></a><a id="provide[T](T):Directive1[T]"></a>
       <span class="permalink">
@@ -3741,6 +3874,38 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>MiscDirectives</dd></dl></div>
+    </li><li name="webui.ClusteringApi#report" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="report(tableName:String):Unit"></a><a id="report(String):Unit"></a>
+      <span class="permalink">
+      <a href="../webui/ClusteringApi.html#report(tableName:String):Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">report</span><span class="params">(<span name="tableName">tableName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
+      </span>
+      
+      
+    </li><li name="webui.ClusteringApi#report" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="report:String"></a>
+      <span class="permalink">
+      <a href="../webui/ClusteringApi.html#report:String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">report</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      
+      
     </li><li name="akka.http.scaladsl.server.directives.CodingDirectives#requestEncodedWith" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="requestEncodedWith(encoding:akka.http.scaladsl.model.headers.HttpEncoding):akka.http.scaladsl.server.Directive0"></a><a id="requestEncodedWith(HttpEncoding):Directive0"></a>
       <span class="permalink">
@@ -4121,7 +4286,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sprayJsonSourceReader</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="reader">reader: <span class="extype" name="spray.json.RootJsonReader">RootJsonReader</span>[<span class="extype" name="akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.sprayJsonSourceReader.T">T</span>]</span>, <span name="support">support: <span class="extype" name="akka.http.scaladsl.common.EntityStreamingSupport">EntityStreamingSupport</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.unmarshalling.FromEntityUnmarshaller">FromEntityUnmarshaller</span>[<span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<span class="extype" name="akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.sprayJsonSourceReader.T">T</span>, <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.NotUsed" class="extype" target="_top">NotUsed</a>]]</span>
+        <span class="name">sprayJsonSourceReader</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="reader">reader: <span class="extype" name="spray.json.RootJsonReader">RootJsonReader</span>[<span class="extype" name="akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.sprayJsonSourceReader.T">T</span>]</span>, <span name="support">support: <span class="extype" name="akka.http.scaladsl.common.EntityStreamingSupport">EntityStreamingSupport</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.unmarshalling.FromEntityUnmarshaller">FromEntityUnmarshaller</span>[<a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.stream.scaladsl.Source" class="extype" target="_top">Source</a>[<span class="extype" name="akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport.sprayJsonSourceReader.T">T</span>, <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.NotUsed" class="extype" target="_top">NotUsed</a>]]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SprayJsonSupport</dd></dl></div>
@@ -4643,6 +4808,22 @@
             <span class="extype" name="scala.Predef.ArrowAssoc">ArrowAssoc</span>[<a href="" class="extype" name="webui.ClusteringApi">ClusteringApi</a>] performed by method ArrowAssoc in scala.Predef.
             
           </dd><dt>Definition Classes</dt><dd>ArrowAssoc</dd></dl></div>
+    </li><li name="akka.http.scaladsl.server.PathMatchers.Segment" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Segment"></a><a id="Segment:Segment"></a>
+      <span class="permalink">
+      <a href="../webui/ClusteringApi.html#Segment" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Segment</span><span class="result"> extends <span class="extype" name="akka.http.scaladsl.server.PathMatcher1">PathMatcher1</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PathMatchers</dd></dl></div>
     </li>
               </ol>
             </div>

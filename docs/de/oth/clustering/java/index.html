@@ -143,6 +143,24 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="de.oth.clustering">clustering</a></dd></dl></div>
     </li><li class="current-entities indented4">
                         <span class="separator"></span>
+                        <a class="class" href="BaseCodebaseLoader.html" title="Baseclass for loading jar files that contain tasks and configs"></a>
+                        <a href="BaseCodebaseLoader.html" title="Baseclass for loading jar files that contain tasks and configs">
+                          BaseCodebaseLoader
+                        </a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
+                        <a class="trait" href="CodebaseLoaderIF.html" title=""></a>
+                        <a href="CodebaseLoaderIF.html" title="">
+                          CodebaseLoaderIF
+                        </a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
+                        <a class="class" href="Entry.html" title=""></a>
+                        <a href="Entry.html" title="">
+                          Entry
+                        </a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
                         <a class="class" href="TestEntry.html" title=""></a>
                         <a href="TestEntry.html" title="">
                           TestEntry
@@ -192,10 +210,64 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="de.oth.clustering.java.TestEntry" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="TestEntryextendsObject"></a><a id="TestEntry:TestEntry"></a>
+              <ol><li name="de.oth.clustering.java.BaseCodebaseLoader" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="BaseCodebaseLoader[T&lt;:de.oth.clustering.java.Entry]extendsClassLoaderwithCodebaseLoaderIF"></a><a id="BaseCodebaseLoader[T&lt;:Entry]:BaseCodebaseLoader[T]"></a>
       <span class="permalink">
-      <a href="../../../../de/oth/clustering/java/index.html#TestEntryextendsObject" title="Permalink">
+      <a href="../../../../de/oth/clustering/java/index.html#BaseCodebaseLoader[T&lt;:de.oth.clustering.java.Entry]extendsClassLoaderwithCodebaseLoaderIF" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="Baseclass for loading jar files that contain tasks and configs" href="BaseCodebaseLoader.html">
+              <span class="name">BaseCodebaseLoader</span>
+            </a><span class="tparams">[<span name="T">T &lt;: <a href="Entry.html" class="extype" name="de.oth.clustering.java.Entry">Entry</a></span>]</span><span class="result"> extends <span class="extype" name="java.lang.ClassLoader">ClassLoader</span> with <a href="CodebaseLoaderIF.html" class="extype" name="de.oth.clustering.java.CodebaseLoaderIF">CodebaseLoaderIF</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">Baseclass for loading jar files that contain tasks and configs</p>
+    </li><li name="de.oth.clustering.java.CodebaseLoaderIF" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="CodebaseLoaderIFextendsObject"></a><a id="CodebaseLoaderIF:CodebaseLoaderIF"></a>
+      <span class="permalink">
+      <a href="../../../../de/oth/clustering/java/index.html#CodebaseLoaderIFextendsObject" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="CodebaseLoaderIF.html">
+              <span class="name">CodebaseLoaderIF</span>
+            </a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      
+      
+    </li><li name="de.oth.clustering.java.Entry" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="EntryextendsObject"></a><a id="Entry:Entry"></a>
+      <span class="permalink">
+      <a href="../../../../de/oth/clustering/java/index.html#EntryextendsObject" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="Entry.html">
+              <span class="name">Entry</span>
+            </a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      
+      
+    </li><li name="de.oth.clustering.java.TestEntry" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TestEntryextendsEntry"></a><a id="TestEntry:TestEntry"></a>
+      <span class="permalink">
+      <a href="../../../../de/oth/clustering/java/index.html#TestEntryextendsEntry" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -206,14 +278,14 @@
       <span class="symbol">
         <a title="" href="TestEntry.html">
               <span class="name">TestEntry</span>
-            </a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+            </a><span class="result"> extends <a href="Entry.html" class="extype" name="de.oth.clustering.java.Entry">Entry</a></span>
       </span>
       
       
     </li><li name="de.oth.clustering.java.TestingCodebaseLoader" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="TestingCodebaseLoaderextendsClassLoader"></a><a id="TestingCodebaseLoader:TestingCodebaseLoader"></a>
+      <a id="TestingCodebaseLoaderextendsBaseCodebaseLoader[de.oth.clustering.java.TestEntry]"></a><a id="TestingCodebaseLoader:TestingCodebaseLoader"></a>
       <span class="permalink">
-      <a href="../../../../de/oth/clustering/java/index.html#TestingCodebaseLoaderextendsClassLoader" title="Permalink">
+      <a href="../../../../de/oth/clustering/java/index.html#TestingCodebaseLoaderextendsBaseCodebaseLoader[de.oth.clustering.java.TestEntry]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -224,7 +296,7 @@
       <span class="symbol">
         <a title="" href="TestingCodebaseLoader.html">
               <span class="name">TestingCodebaseLoader</span>
-            </a><span class="result"> extends <span class="extype" name="java.lang.ClassLoader">ClassLoader</span></span>
+            </a><span class="result"> extends <a href="BaseCodebaseLoader.html" class="extype" name="de.oth.clustering.java.BaseCodebaseLoader">BaseCodebaseLoader</a>[<a href="TestEntry.html" class="extype" name="de.oth.clustering.java.TestEntry">TestEntry</a>]</span>
       </span>
       
       

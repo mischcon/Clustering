@@ -109,8 +109,8 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="worker">worker</a></dd></dl></div>
     </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="DistributorActor.html" title=""></a>
-                        <a href="DistributorActor.html" title="">
+                        <a class="class" href="DistributorActor.html" title="Sometimes tasks might affect other tasks (e.g."></a>
+                        <a href="DistributorActor.html" title="Sometimes tasks might affect other tasks (e.g.">
                           DistributorActor
                         </a>
                       </li><li class="current-entities indented1">
@@ -121,8 +121,8 @@
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="InstanceActor.html" title=""></a>
-                        <a href="InstanceActor.html" title="">
+                        <a class="class" href="InstanceActor.html" title="This Actor keeps track of all uploaded task runs / .jar files."></a>
+                        <a href="InstanceActor.html" title="This Actor keeps track of all uploaded task runs / .jar files.">
                           InstanceActor
                         </a>
                       </li><li class="current-entities indented1">
@@ -133,27 +133,27 @@
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="SubWorkerActor.html" title=""></a>
-                        <a href="SubWorkerActor.html" title="">
+                        <a class="class" href="SubWorkerActor.html" title="Those actors have two different purposes:
+  1) They act as an identifier - a SingleInstanceActor will always only be responsible for tasks that
+     should be run on a single instance, while a GroupActor will always only be responsible for tasks
+     that can be safely executed in parallel."></a>
+                        <a href="SubWorkerActor.html" title="Those actors have two different purposes:
+  1) They act as an identifier - a SingleInstanceActor will always only be responsible for tasks that
+     should be run on a single instance, while a GroupActor will always only be responsible for tasks
+     that can be safely executed in parallel.">
                           SubWorkerActor
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="TaskActor.html" title=""></a>
-                        <a href="TaskActor.html" title="">
+                        <a class="class" href="TaskActor.html" title="There is one actor of this kind for every task."></a>
+                        <a href="TaskActor.html" title="There is one actor of this kind for every task.">
                           TaskActor
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="class" href="TaskExecutorActor.html" title=""></a>
-                        <a href="TaskExecutorActor.html" title="">
+                        <a class="class" href="TaskExecutorActor.html" title="Actor responsible for executing tasks."></a>
+                        <a href="TaskExecutorActor.html" title="Actor responsible for executing tasks.">
                           TaskExecutorActor
-                        </a>
-                      </li><li class="current-entities indented1">
-                        <span class="separator"></span>
-                        <a class="class" href="TestVMNodesActor.html" title="Created by mischcon on 26.03.2017."></a>
-                        <a href="TestVMNodesActor.html" title="Created by mischcon on 26.03.2017.">
-                          TestVMNodesActor
                         </a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
@@ -395,7 +395,10 @@
         <span class="name">addTask</span><span class="params">(<span name="msg">msg: <a href="messages/AddTask.html" class="extype" name="worker.messages.AddTask">AddTask</a></span>)</span><span class="result">: <span class="extype" name="scala.Any">Any</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a></dd></dl></div>
+      <p class="shortcomment cmt">Creates SingleInstanceActors / GroupActors (if there are no suitable) and forwards incoming
+<code><a href="messages/AddTask.html" class="extype" name="worker.messages.AddTask">worker.messages#AddTask</a></code> messages to them.</p><div class="fullcomment"><div class="comment cmt"><p>Creates SingleInstanceActors / GroupActors (if there are no suitable) and forwards incoming
+<code><a href="messages/AddTask.html" class="extype" name="worker.messages.AddTask">worker.messages#AddTask</a></code> messages to them.
+Adds the ActorRef of the created actor to the taskActors list.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a></dd></dl></div>
     </li><li name="akka.actor.Actor#aroundPostRestart" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="aroundPostRestart(reason:Throwable):Unit"></a><a id="aroundPostRestart(Throwable):Unit"></a>
       <span class="permalink">
@@ -507,7 +510,9 @@
         <span class="name">check_suicide</span><span class="params">()</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a></dd></dl></div>
+      <p class="shortcomment cmt">Checks if there are still children present.</p><div class="fullcomment"><div class="comment cmt"><p>Checks if there are still children present.
+If not, than the actor kills itsself.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a></dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
@@ -766,7 +771,9 @@
         <span class="name">getTask</span><span class="params">(<span name="msg">msg: <a href="messages/GetTask.html" class="extype" name="worker.messages.GetTask">GetTask</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a></dd></dl></div>
+      <p class="shortcomment cmt">Forwards <code><a href="messages/GetTask.html" class="extype" name="worker.messages.GetTask">worker.messages#GetTask</a></code> messages to all its <code><a href="TaskActor.html" class="extype" name="worker.TaskActor">TaskActor</a></code> children.</p><div class="fullcomment"><div class="comment cmt"><p>Forwards <code><a href="messages/GetTask.html" class="extype" name="worker.messages.GetTask">worker.messages#GetTask</a></code> messages to all its <code><a href="TaskActor.html" class="extype" name="worker.TaskActor">TaskActor</a></code> children.
+If there are no more <code><a href="TaskActor.html" class="extype" name="worker.TaskActor">TaskActor</a></code> children left it will forward the message to all its
+SingleInstanceActor / GroupActor children.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a></dd></dl></div>
     </li><li name="worker.SubWorkerActor#group" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="group:List[String]"></a>
       <span class="permalink">
@@ -798,7 +805,10 @@
         <span class="name">handleFailure</span><span class="params">(<span name="task">task: <a href="messages/Task.html" class="extype" name="worker.messages.Task">Task</a></span>, <span name="result">result: <span class="extype" name="scala.Throwable">Throwable</span></span>, <span name="source">source: <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.ActorRef" class="extype" target="_top">ActorRef</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a></dd></dl></div>
+      <p class="shortcomment cmt">Handles the failure of a task.</p><div class="fullcomment"><div class="comment cmt"><p>Handles the failure of a task.
+Writes the result with the updated status of the task to the database.
+Removes the ActorRef of the <code><a href="TaskActor.html" class="extype" name="worker.TaskActor">TaskActor</a></code> from the taskActors list.</p><p>Since a failed task in the dependency tree should stop the execution of any task on the
+same level / on lower levels a <code><a href="messages/PersistAndSuicide.html" class="extype" name="worker.messages.PersistAndSuicide">PersistAndSuicide</a></code> message is sent to all children.</p></div><dl class="paramcmts block"><dt class="param">task</dt><dd class="cmt"><p>Task - needed to identify classname and methodname</p></dd><dt class="param">result</dt><dd class="cmt"><p>Result of the task execution</p></dd><dt class="param">source</dt><dd class="cmt"><p>ActorRef of <code><a href="TaskActor.html" class="extype" name="worker.TaskActor">TaskActor</a></code></p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a></dd></dl></div>
     </li><li name="worker.SubWorkerActor#handleSuccess" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="handleSuccess(task:worker.messages.Task,result:Object,source:akka.actor.ActorRef):Unit"></a><a id="handleSuccess(Task,AnyRef,ActorRef):Unit"></a>
       <span class="permalink">
@@ -814,7 +824,9 @@
         <span class="name">handleSuccess</span><span class="params">(<span name="task">task: <a href="messages/Task.html" class="extype" name="worker.messages.Task">Task</a></span>, <span name="result">result: <span class="extype" name="scala.AnyRef">AnyRef</span></span>, <span name="source">source: <a href="http://doc.akka.io/api/akka/2.4.17/index.html#akka.actor.ActorRef" class="extype" target="_top">ActorRef</a></span>)</span><span class="result">: <a href="http://www.scala-lang.org/api/2.12.1/index.html#scala.Unit" class="extype" target="_top">Unit</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a></dd></dl></div>
+      <p class="shortcomment cmt">Handles the success of a task.</p><div class="fullcomment"><div class="comment cmt"><p>Handles the success of a task.
+Writes the result with the updated status of the task to the database.
+Removes the ActorRef of the <code><a href="TaskActor.html" class="extype" name="worker.TaskActor">TaskActor</a></code> from the taskActors list.</p></div><dl class="paramcmts block"><dt class="param">task</dt><dd class="cmt"><p>Task - needed to identify classname and methodname</p></dd><dt class="param">result</dt><dd class="cmt"><p>Result of the task execution</p></dd><dt class="param">source</dt><dd class="cmt"><p>ActorRef of TaskActor</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a></dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
@@ -1050,7 +1062,12 @@
         <span class="name">supervisorStrategy</span><span class="result">: <span class="extype" name="akka.actor.SupervisorStrategy">SupervisorStrategy</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a> → Actor</dd></dl></div>
+      <p class="shortcomment cmt">Whether or not a task was successful an exception (<code><a href="../Exceptions/TestSuccessException.html" class="extype" name="Exceptions.TestSuccessException">TestSuccessException</a></code> or
+<code><a href="../Exceptions/TestFailException.html" class="extype" name="Exceptions.TestFailException">TestFailException</a></code>)
+will be thrown by the <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code> and escalated to its parent GroupActor or SingleInstanceActor.</p><div class="fullcomment"><div class="comment cmt"><p>Whether or not a task was successful an exception (<code><a href="../Exceptions/TestSuccessException.html" class="extype" name="Exceptions.TestSuccessException">TestSuccessException</a></code> or
+<code><a href="../Exceptions/TestFailException.html" class="extype" name="Exceptions.TestFailException">TestFailException</a></code>)
+will be thrown by the <code><a href="TaskExecutorActor.html" class="extype" name="worker.TaskExecutorActor">TaskExecutorActor</a></code> and escalated to its parent GroupActor or SingleInstanceActor.</p><p>In case of a success, see <code><a href="SubWorkerActor.html#handleSuccess(task:worker.messages.Task,result:Object,source:akka.actor.ActorRef):Unit" class="extmbr" name="worker.SubWorkerActor#handleSuccess">handleSuccess()</a></code>.
+In case of a failure, see <code><a href="SubWorkerActor.html#handleFailure(task:worker.messages.Task,result:Throwable,source:akka.actor.ActorRef):Unit" class="extmbr" name="worker.SubWorkerActor#handleFailure">handleFailure()</a></code>.</p><p>In both cases the TaskActor should be stopped.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SubWorkerActor.html" class="extype" name="worker.SubWorkerActor">SubWorkerActor</a> → Actor</dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
