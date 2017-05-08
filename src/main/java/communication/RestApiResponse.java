@@ -14,7 +14,9 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * <strong>Serializable container class for {@link org.apache.http.HttpResponse}</strong>
+ * <strong>Serializable container class for {@link org.apache.http.HttpResponse}</strong><br><br>
+ *
+ * Implementation of REST API responses in relation to {@link ProxyRequest}.
  */
 @SuppressWarnings("WeakerAccess")
 public class RestApiResponse implements Serializable {

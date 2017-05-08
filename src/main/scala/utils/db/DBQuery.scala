@@ -12,7 +12,7 @@ trait DBQuery {
 class DBGetTables extends DBQuery {
   override val table: String = ""
   override def perform(connection: Connection): Tables = {
-    val sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='clustering' ORDER BY table_name ASC;"
+    val sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='clustering' ORDER BY table_name DESC;"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     val resultSet = statement.executeQuery()
     var tables = List[String]()
@@ -72,8 +72,7 @@ class DBGenerateTextReport(tableName : String) extends DBQuery {
     val endStateOfTasks = query2.perform(connection)
     doneTasks match {
       case Some(tasks) =>
-        val file = new File(s"$tableName.txt")
-        val bw = new BufferedWriter(new FileWriter(file))
+        val w = new PrintWriter(new File(s"src/main/resources/reports/$tableName.txt"))
         val sb = new StringBuilder
         sb.append(s"TASK SET : $tableName\n\n")
         for ((k, v) <- endStateOfTasks.result) {
@@ -97,9 +96,9 @@ class DBGenerateTextReport(tableName : String) extends DBQuery {
           sb.append(s"RESULT :\n${task.task_result}\n")
         }
         sb.append("===================================================================================================")
-        bw.write(sb.toString)
-        bw.close()
-        println(s"[DB]: $tableName.txt generated")
+        w.write(sb.toString)
+        w.close()
+        println(s"[DB]: '$tableName.txt' generated; you will find it in src/main/resources/reports/")
       case None =>
         println("[DB]: nothing to generate")
     }
@@ -116,7 +115,7 @@ class DBGenerateJsonReport(tableName : String) extends DBQuery {
     val endStateOfTasks = query2.perform(connection)
     doneTasks match {
       case Some(tasks) =>
-        val w = new PrintWriter(new File("src/main/resources/webui/data.json"))
+        val w = new PrintWriter(new File("src/main/resources/reports/data.json"))
         var jsonString = """{
   "data": ["""
         for (task <- tasks) {
@@ -144,7 +143,7 @@ class DBGenerateJsonReport(tableName : String) extends DBQuery {
 }"""
         w.write(jsonString)
         w.close()
-        println("[DB]: 'data.json' generated")
+        println("[DB]: 'data.json' generated; you will find it in src/main/resources/reports/")
       case None =>
         println("[DB]: nothing to generate")
     }

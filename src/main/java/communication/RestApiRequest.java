@@ -8,7 +8,9 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 
 /**
- * <strong>Serializable container class for {@link org.apache.http.HttpRequest}</strong>
+ * <strong>Serializable container class for {@link org.apache.http.HttpRequest}</strong><br><br>
+ *
+ * Implementation of REST API requests in relation to {@link ProxyRequest}.
  */
 @SuppressWarnings({"WeakerAccess", "SameParameterValue"})
 public class RestApiRequest implements Serializable {

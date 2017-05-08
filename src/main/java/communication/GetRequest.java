@@ -21,7 +21,15 @@ public class GetRequest extends HttpRequest {
         this.request = new HttpGetWithBody(url);
     }
 
+    /**
+     * Constructor for the conversion between {@link RestApiRequest} and HTTP GET request.
+     * @param req {@link RestApiRequest}
+     */
     public GetRequest(RestApiRequest req) {
+        /*
+            if req.getMethod() is not GET, it does not matter
+            GET request will be created anyway
+         */
         super(RequestMethod.valueOf(req.getMethod()), req.getUrl());
         this.request = new HttpGetWithBody(req.getUrl());
         for (Map.Entry<String, String> header : req.getHeaders().entrySet())

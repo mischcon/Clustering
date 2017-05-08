@@ -21,7 +21,15 @@ public class DeleteRequest extends HttpRequest {
         this.request = new HttpDeleteWithBody(url);
     }
 
+    /**
+     * Constructor for the conversion between {@link RestApiRequest} and HTTP DELETE request.
+     * @param req {@link RestApiRequest}
+     */
     public DeleteRequest(RestApiRequest req) {
+        /*
+            if req.getMethod() is not DELETE, it does not matter
+            DELETE request will be created anyway
+         */
         super(RequestMethod.valueOf(req.getMethod()), req.getUrl());
         this.request = new HttpDeleteWithBody(req.getUrl());
         for (Map.Entry<String, String> header : req.getHeaders().entrySet())

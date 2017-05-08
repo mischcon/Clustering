@@ -21,7 +21,15 @@ public class PostRequest extends HttpRequest {
         this.request = new HttpPostWithBody(url);
     }
 
+    /**
+     * Constructor for the conversion between {@link RestApiRequest} and HTTP POST request.
+     * @param req {@link RestApiRequest}
+     */
     public PostRequest(RestApiRequest req) {
+        /*
+            if req.getMethod() is not POST, it does not matter
+            POST request will be created anyway
+         */
         super(RequestMethod.valueOf(req.getMethod()), req.getUrl());
         this.request = new HttpPostWithBody(req.getUrl());
         for (Map.Entry<String, String> header : req.getHeaders().entrySet())

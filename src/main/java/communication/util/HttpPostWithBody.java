@@ -7,7 +7,7 @@ import java.net.URI;
 
 /**
  * <strong>HTTP POST request w/ body</strong><br><br>
- * This class is redundant. Made only for aesthetics.
+ * This class is made only for aesthetics.
  */
 public class HttpPostWithBody extends HttpEntityEnclosingRequestBase {
     private static final RequestMethod METHOD_NAME = RequestMethod.POST;

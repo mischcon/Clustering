@@ -3,4 +3,4 @@ log/
 target/
 src/main/resources/db.conf
 project/project/
-src/main/resources/webui/data.json
+src/main/resources/reports/

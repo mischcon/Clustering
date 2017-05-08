@@ -29,6 +29,7 @@ class DBActor extends Actor with ActorLogging {
     * = Connects to the configured database =
     * Configuration is found @ ''application.conf'' @ section ''db''
     * @return [[java.sql.Connection]] Object or [[scala.None]]
+    * @todo adjust after outsourcing the db.conf
     */
   def connect: Option[Connection] = {
     try {
@@ -71,6 +72,9 @@ class DBActor extends Actor with ActorLogging {
     connect match {
       case Some(connection) =>
         if (!checkTableExistence(connection, query.table)) {
+          /*
+              the only query w/o tableName parameter
+           */
           if (query.getClass != classOf[DBGetTables]) {
             new DBCreateTasksTable(query.table).perform(connection)
           }
@@ -86,7 +90,7 @@ class DBActor extends Actor with ActorLogging {
   }
 
   /**
-    *
+    * = Answers w/ [[utils.db.Tables]] =
     */
   def getTables(): Unit = {
     performQuery(new DBGetTables)

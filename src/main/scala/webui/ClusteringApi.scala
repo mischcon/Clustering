@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import akka.pattern.ask
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{Actor, ActorLogging, ActorSystem}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
@@ -21,18 +21,19 @@ import utils.db._
 import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Await
+import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success}
 
-/**
-  * Created by mischcon on 10.04.17.
-  */
 
 case class UploadJar(content : Array[Byte])
 case object GetTaskSets
 case class GetTaskSet(name : String)
 
+/**
+  * @todo documentation
+  * @param ip ip to bind API on
+  */
 class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives with SprayJsonSupport{
 
   implicit val materializer = ActorMaterializer()
@@ -47,10 +48,11 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
 
   val port = 8080
 
+  // TODO: outsource this shit, it's ugly af
   val routes : Route =
     path("files" / "data.json") {
       get {
-        getFromFile("src/main/resources/webui/data.json")
+        getFromFile("src/main/resources/reports/data.json")
       }
     } ~
     path("images" / "details_open.png") {
@@ -235,7 +237,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   def report(tableName : String): Unit = {
     val future = dBActor ? GenerateJsonReport(tableName)
     val result = Await.result(future, timeout.duration).asInstanceOf[OK]
-    dBActor ! GenerateJsonReport
+    // TODO: error handling, what happends if not OK
   }
 
   def handleUpload(bytes : Source[ByteString, Any]) ={

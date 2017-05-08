@@ -21,7 +21,15 @@ public class PutRequest extends HttpRequest {
         this.request = new HttpPutWithBody(url);
     }
 
+    /**
+     * Constructor for the conversion between {@link RestApiRequest} and HTTP PUT request.
+     * @param req {@link RestApiRequest}
+     */
     public PutRequest(RestApiRequest req) {
+        /*
+            if req.getMethod() is not PUT, it does not matter
+            PUT request will be created anyway
+         */
         super(RequestMethod.valueOf(req.getMethod()), req.getUrl());
         this.request = new HttpPutWithBody(req.getUrl());
         for (Map.Entry<String, String> header : req.getHeaders().entrySet())

@@ -9,7 +9,7 @@ import scala.concurrent.duration._
 
 /**
   * = Test application for [[utils.db.DBActor]] =
-  * will be removed later
+  * @todo remove
   */
 object DBConnectionTest extends App {
   def uuid: String = java.util.UUID.randomUUID.toString
@@ -90,8 +90,11 @@ object DBConnectionTest extends App {
 //  db ! DeleteTask(method, tableName)
 //  db ! DeleteTasks(methods, tableName)
 
-//  db ! GenerateTextReport(tableName)
-  db ! GenerateJsonReport(tableName)
+  val future7 = db ? GenerateTextReport(tableName)
+  val result7 = Await.result(future7, timeout.duration).asInstanceOf[OK]
+
+  val future8 = db ? GenerateJsonReport(tableName)
+  val result8 = Await.result(future8, timeout.duration).asInstanceOf[OK]
 
   sys.terminate
 }

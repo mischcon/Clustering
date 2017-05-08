@@ -19,7 +19,7 @@ import java.io.IOException;
 public class ProxyRequest<T> {
     /**
      * If executed in cluster, this field will be <i>post-injected</i> w/ instance of
-     * <code>vmProxyActor</code> by executing actor
+     * {@link vm.VMProxyActor} by executing actor
      */
     private ActorRef vmProxy;
     private Future<Object> future;
@@ -28,6 +28,10 @@ public class ProxyRequest<T> {
 
     public ProxyRequest() {}
 
+    /**
+     * Local execution (on VM) of the incoming requests.
+     * @param http request (in this case {@link communication.HttpRequest})
+     */
     private void execute(HttpRequest http) {
         CloseableHttpClient client = HttpClientBuilder.create().build();
         CloseableHttpResponse response = null;
@@ -69,7 +73,7 @@ public class ProxyRequest<T> {
                     default: break;
                 }
             }
-            /* expand if needed
+            /* further implementations
             else if (request instanceof ...) {
                 ...
             }
@@ -81,6 +85,10 @@ public class ProxyRequest<T> {
     }
 
     private Object receive() {
+        /*
+            vmProxy == null : task is executed locally
+            vmProxy != null : task is executed in cluster
+        */
         if (vmProxy != null) {
             try {
                 this.response = Await.result(future, TIMEOUT.duration());
@@ -96,6 +104,16 @@ public class ProxyRequest<T> {
         }
     }
 
+    /**
+     * Sends request object to:
+     * <ul>
+     *     <li>local VM or</li>
+     *     <li>cluster</li>
+     * </ul>
+     * and returns the response object.
+     * @param request request object
+     * @return response object
+     */
     public Object getResponse(T request) {
         send(request);
         return receive();

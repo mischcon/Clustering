@@ -1,7 +1,7 @@
 package communication;
 
 /**
- * <strong>HTTP request methods</strong>
+ * <strong>HTTP request methods (CRUD)</strong>
  * <ul>
  *     <li>
  *         GET

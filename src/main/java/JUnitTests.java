@@ -6,7 +6,11 @@ import communication.RestApiRequest;
 import communication.RestApiResponse;
 import org.junit.*;
 
-
+/**
+ * <strong>Contains JUnit tests for the cluster</strong><br><br>
+ *
+ * TODO: remove or outsource to Documentation / Wiki
+ */
 public class JUnitTests implements ClusteringTask {
 
     private static RestApiRequest req;

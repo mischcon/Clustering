@@ -19,12 +19,16 @@ case object GetTables extends DBMessage
 
 /**
   * = Request text report from database for ''DONE'' tasks =
+  * <br>
+  * Check ''src/main/resources/reports/'tableName'.txt'' for report.
   * @param tableName table name
   */
 case class GenerateTextReport(tableName : String) extends DBMessage
 
 /**
   * = Request json report from database for ''DONE'' tasks =
+  * <br>
+  * Check ''src/main/resources/reports/data.json'' for report.
   * @param tableName table name
   */
 case class GenerateJsonReport(tableName : String) extends DBMessage
@@ -193,8 +197,11 @@ case class RequestedTask(method : String, params : Map[String, String], task_sta
 
 /**
   * = Response message for [[utils.db.GetTables]] =
-  * @param names contains all table names in the clustering database
+  * @param names contains all table names in the cluster database
   */
 case class Tables(names : List[String]) extends DBMessage
 
+/**
+  * = Response message for [[utils.db.GenerateTextReport]] or [[utils.db.GenerateJsonReport]] =
+  */
 case class OK() extends DBMessage

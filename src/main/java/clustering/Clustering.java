@@ -35,12 +35,6 @@ import java.lang.annotation.Target;
  *         </pre>
  *     </li>
  *     <li>
- *         expectedDuration - approx. expected task duration
- *     </li>
- *     <li>
- *         durationUnit - unit for <i>expectedDuration</i> (seconds, minutes or hours)
- *     </li>
- *     <li>
  *         expectedTraffic - expected traffic load<br>
  *         e.g. task contains a file upload of several MBs ---> traffic load = <b>MAJOR</b>
  *     </li>

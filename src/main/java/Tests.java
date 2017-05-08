@@ -6,7 +6,9 @@ import communication.RestApiRequest;
 import communication.RestApiResponse;
 
 /**
- * <strong>Contains test tasks for the cluster</strong>
+ * <strong>Contains test tasks for the cluster</strong><br><br>
+ *
+ * TODO: remove or outsource to Documentation / Wiki
  */
 public class Tests implements ClusteringTask {
 
