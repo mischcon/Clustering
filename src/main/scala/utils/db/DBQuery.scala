@@ -65,14 +65,18 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
 
 class DBGenerateTextReport(tableName : String) extends DBQuery {
   override val table: String = tableName
-  override def perform(connection: Connection): OK = {
+  override def perform(connection: Connection): Report = {
     val query1 = new DBGetTasksWithStatus(TaskStatus.DONE, tableName)
     val doneTasks = query1.perform(connection)
     val query2 = new DBCountEndState(tableName)
     val endStateOfTasks = query2.perform(connection)
+    var path = ""
     doneTasks match {
       case Some(tasks) =>
-        val w = new PrintWriter(new File(s"src/main/resources/reports/$tableName.txt"))
+        val tmp = File.createTempFile(s"$tableName", ".txt")
+        tmp.deleteOnExit()
+        path = tmp.getAbsolutePath
+        val w = new PrintWriter(tmp)
         val sb = new StringBuilder
         sb.append(s"TASK SET : $tableName\n\n")
         for ((k, v) <- endStateOfTasks.result) {
@@ -98,24 +102,26 @@ class DBGenerateTextReport(tableName : String) extends DBQuery {
         sb.append("===================================================================================================")
         w.write(sb.toString)
         w.close()
-        println(s"[DB]: '$tableName.txt' generated; you will find it in src/main/resources/reports/")
+        println(s"[DB]: '$tableName.txt' generated; you will find it in ${tmp.getParent}")
       case None =>
         println("[DB]: nothing to generate")
     }
-    new OK
+    Report(path)
   }
 }
 
 class DBGenerateJsonReport(tableName : String) extends DBQuery {
   override val table: String = tableName
-  override def perform(connection: Connection): OK = {
+  override def perform(connection: Connection): Report = {
     val query1 = new DBGetTasksWithStatus(TaskStatus.DONE, tableName)
     val doneTasks = query1.perform(connection)
-    val query2 = new DBCountEndState(tableName)
-    val endStateOfTasks = query2.perform(connection)
+    var path = ""
     doneTasks match {
       case Some(tasks) =>
-        val w = new PrintWriter(new File("src/main/resources/reports/data.json"))
+        val tmp = File.createTempFile("data", ".json")
+        tmp.deleteOnExit()
+        path = tmp.getAbsolutePath
+        val w = new PrintWriter(tmp)
         var jsonString = """{
   "data": ["""
         for (task <- tasks) {
@@ -143,11 +149,11 @@ class DBGenerateJsonReport(tableName : String) extends DBQuery {
 }"""
         w.write(jsonString)
         w.close()
-        println("[DB]: 'data.json' generated; you will find it in src/main/resources/reports/")
+        println(s"[DB]: 'data.json' generated; you will find it in ${tmp.getParent}")
       case None =>
         println("[DB]: nothing to generate")
     }
-    new OK
+    Report(path)
   }
 }
 

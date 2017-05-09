@@ -207,11 +207,9 @@ case class RequestedTask(method : String, params : Map[String, String], task_sta
 case class Tables(names : List[String]) extends DBMessage
 
 /**
-  * = Generic positive response message =
-  * <br>
-  * e.g. for [[utils.db.GenerateTextReport]] or [[utils.db.GenerateJsonReport]]
+  * = Response message for [[utils.db.GenerateTextReport]] or [[utils.db.GenerateJsonReport]] =
   */
-case class OK() extends DBMessage
+case class Report(path : String) extends DBMessage
 
 /**
   * = Response message for [[utils.db.ConnectionTest]] =

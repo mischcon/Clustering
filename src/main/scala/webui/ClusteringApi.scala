@@ -61,6 +61,8 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   val contentTypeHtml = ContentTypes.`text/html(UTF-8)`
   val contentTypeText = ContentTypes.`text/plain(UTF-8)`
 
+  var dataPath = new String
+
   def getApiContent: String = {
     s"""
 <!DOCTYPE html>
@@ -204,9 +206,10 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
 
   def report(tableName : String): Unit = {
     val future = dBActor ? GenerateJsonReport(tableName)
-    val result = Await.result(future, timeout.duration).asInstanceOf[OK]
+    val result = Await.result(future, timeout.duration).asInstanceOf[Report]
     result match {
-      case OK() =>
+      case Report(path) =>
+        dataPath = path
         log.debug("API is able to access report data.")
       case _ =>
         log.debug("Something went wrong. API cannot access report data.")
@@ -220,7 +223,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   val routes : Route =
     path("files" / "data.json") {
       get {
-        getFromFile("src/main/resources/reports/data.json")
+        getFromFile(dataPath)
       }
     } ~
     path("images" / "details_open.png") {
