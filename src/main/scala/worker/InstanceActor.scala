@@ -1,6 +1,8 @@
 package worker
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
+import sun.security.jca.GetInstance
+import vm.messages.{GetInstanceActor, SetInstanceActor}
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages._
 
@@ -29,6 +31,7 @@ class InstanceActor extends Actor with ActorLogging{
     case p : GetTask => handleGetTask(p)
     case GetDeployInfo => handleGetDeployInfo()
     case t : Terminated => handleRunComplete(t.actor); instances = instances.filter(a => a._2 != t.actor)
+    case GetInstanceActor => sender() ! SetInstanceActor(self)
   }
 
   /**

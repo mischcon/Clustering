@@ -2,15 +2,16 @@ package vm
 
 import java.io.File
 import java.lang.management.ManagementFactory
-import javax.management.{Attribute, ObjectName}
+import javax.management.{Attribute, MBeanServer, ObjectName}
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import org.jruby.RubyObject
 import org.jruby.embed.{LocalContextScope, ScriptingContainer}
-import utils.messages.{DeregisterNodeMonitorActor, RegisterNodeMonitorActor, SystemAttributes}
+import utils.messages.{DeregisterNodeMonitorActor, RegisterNodeMonitorActor}
 import vm.messages._
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration.FiniteDuration
 
 
 /**
@@ -21,50 +22,70 @@ class NodeMonitorActor extends Actor with ActorLogging {
   private var path: File = _
   private var vagrant: Boolean = _
   private var globalStatusActor: ActorRef = _
-  private var nodeActor: ActorRef = context.parent
-  private val mbeanServer = ManagementFactory.getPlatformMBeanServer()
-  val attributes = Map(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME -> Array("FreePhysicalMemorySize",
-                                                                               "TotalPhysicalMemorySize",
-                                                                               "Name",
-                                                                               "AvailableProcessors",
-                                                                               "SystemCpuLoad",
-                                                                               "Arch",
-                                                                               "Version"),
-                       ManagementFactory.RUNTIME_MXBEAN_NAME -> Array("VmName",
-                                                                      "SpecVersion"))
+  private var nodeActor: ActorRef = _
+  private var ready:Boolean = _
+  private var mbeanServer: MBeanServer = _
+  private val attributes = Map(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME -> Array("FreePhysicalMemorySize",
+    "TotalPhysicalMemorySize",
+    "Name",
+    "AvailableProcessors",
+    "SystemCpuLoad",
+    "Arch",
+    "Version"),
+    ManagementFactory.RUNTIME_MXBEAN_NAME -> Array("VmName",
+      "SpecVersion"))
 
   self ! Init
 
   override def receive: Receive = {
-    case Init => init
-    case GetSystemAttributes => sender() ! SystemAttributes(getSystemAttributes)
-    case SetPath(path) => this.path = path
-    case SetGlobalStatusActor(globalStatusActor) => {
-      log.debug("received GlobalStatusActor")
-      this.globalStatusActor = globalStatusActor
-      globalStatusActor ! RegisterNodeMonitorActor
-    }
+    case Init                                   => log.debug("got Init");                          handlerInit
+    case NotReadyJet(message)                   => log.debug(s"got NotReadyJet($message)");        handlerNotReadyJet(message)
+    case GetSystemAttributes          if ready  => log.debug("got GetSystemAttributes");           handlerGetSystemAttributes
+    case SetPath(path)                          => log.debug(s"got SetPath($path)");               handlerSetPath(path)
+    case SetGlobalStatusActor(actor)            => log.debug(s"got SetGlobalStatusActor($actor)"); handlerSetGlobalStatusActor(actor)
+    case x: _                         if !ready => log.debug("got Message but NotReadyJet");       handlerNotReady(x)
   }
 
-  def init = {
+  private def handlerInit = {
+    ready = false
+    nodeActor = context.parent
+    mbeanServer = ManagementFactory.getPlatformMBeanServer()
     nodeActor ! GetGlobalStatusActor
-    vagrant = checkVagrant
-    log.debug("init done")
   }
 
-  def getSystemAttributes: Map[String,String] = {
-    log.debug(s"getSystemAttributes called from ${sender()}")
-    var systemAttributes = attributes.map(attribute => mbeanServer.getAttributes(new ObjectName(attribute._1), attribute._2).asScala.map(_.asInstanceOf[Attribute])).flatten.toList
+  private def handlerGetSystemAttributes = {
+    var systemAttributes = attributes.map(
+      attribute => mbeanServer.getAttributes(
+        new ObjectName(
+          attribute._1),
+          attribute._2)
+        .asScala.map(
+          _.asInstanceOf[Attribute]))
+        .flatten.toList
     if (path != null) {
       systemAttributes :+= new Attribute("TotalSpace", path.getTotalSpace)
       systemAttributes :+= new Attribute("FreeSpace", path.getFreeSpace)
     }
     systemAttributes :+= new Attribute("Vagrant", vagrant)
-    systemAttributes.groupBy(_.getName).map{case (k, v) => k -> v.head.getValue.toString}
+    sender() ! systemAttributes.groupBy(_.getName).map{case (k, v) => k -> v.head.getValue.toString}
+  }
+
+  private def handlerSetPath(path: File) = {
+    this.path = path
+  }
+
+  private def handlerSetGlobalStatusActor(actorRef: ActorRef) = {
+    this.globalStatusActor = actorRef
+    vagrant = checkVagrant
+    globalStatusActor ! RegisterNodeMonitorActor
+    ready = true
+  }
+
+  private def handlerNotReady(any: Any) = {
+    sender() ! NotReadyJet(any)
   }
 
   def checkVagrant: Boolean = {
-    log.debug("checkVagrant called")
     val scriptingContainer: ScriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETHREAD)
     val os = if (System.getProperty("os.name").toLowerCase.contains("windows")) "windows" else "java"
     scriptingContainer.put("RUBY_PLATFORM", os)
@@ -74,10 +95,19 @@ class NodeMonitorActor extends Actor with ActorLogging {
         "return VagrantWrapper.require_or_help_install('>= 1.1')").asInstanceOf[RubyObject]
       return true
     } catch {
-      case exception: ClassCastException =>
+      case exception: ClassCastException => {
         log.debug(exception.getMessage)
         return false
+      }
     }
+  }
+
+  private def handlerNotReadyJet(any: Any) = {
+    scheduleOnceRetry(5 seconds, sender(), any)
+  }
+
+  private def scheduleOnceRetry(delay: FiniteDuration, receive: ActorRef, message: Any) = {
+    context.system.scheduler.scheduleOnce(delay, receive, message)(context.dispatcher, self)
   }
 
   override def preStart(): Unit = {
@@ -85,7 +115,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
   }
 
   override def postStop(): Unit = {
-    globalStatusActor ! DeregisterNodeMonitorActor
+    globalStatusActor ! DeregisterNodeMonitorActor(self)
     log.debug(s"goodbye from ${self.path.name}")
   }
 }
