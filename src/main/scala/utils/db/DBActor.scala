@@ -3,7 +3,7 @@ package utils.db
 import java.sql.{Connection, DatabaseMetaData, DriverManager, ResultSet}
 
 import akka.actor.{Actor, ActorLogging}
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 
 /**
   * = Actor-based interface between cluster actors & database =
@@ -22,8 +22,14 @@ import com.typesafe.config.ConfigFactory
   * +-----+--------+--------+-------------+-----------+-------------+------------+-------------+------------+
   * }}}
   * All messages that are meant to be sent to this actor are of type [[utils.db.DBMessage]].
+  *
+  * @param config config file or config from src/main/resources by default
+  * {{{
+  *
+  * }}}
   */
-class DBActor extends Actor with ActorLogging {
+class DBActor(config : Config = ConfigFactory.load("db.conf"))
+  extends Actor with ActorLogging {
 
   /**
     * = Connects to the configured database =
@@ -33,7 +39,6 @@ class DBActor extends Actor with ActorLogging {
     */
   def connect: Option[Connection] = {
     try {
-      val config = ConfigFactory.load("db.conf")
       Class.forName(config.getString("db.driver"))
       Some(DriverManager.getConnection(
         config.getString("db.url"),
@@ -266,6 +271,17 @@ class DBActor extends Actor with ActorLogging {
   }
 
   override def receive: Receive = {
+    case ConnectionTest =>
+      connect match {
+        case Some(connection) =>
+          val url = config.getString("db.url")
+          connection.close()
+          log.info(s"DB connection successful. Connected to ${url.split("\\?")(0)}")
+          sender() ! ConnectionStatus(true)
+        case None =>
+          log.info("could not connect")
+          sender() ! ConnectionStatus(false)
+      }
     case GetTables =>
       getTables()
     case GenerateTextReport(tableName) =>

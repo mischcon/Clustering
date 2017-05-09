@@ -34,15 +34,14 @@ case class UploadJar(content : Array[Byte])
   * <br>
   * <br>
   * Endpoints:
-  * <ul>
-  *   <li><b>GET /api</b> - landing page</li>
-  *   <ul>
-  *     <li><pre><b>POST /api/upload</b>                    <i>.jar</i> file upload</pre></li>
-  *     <li><pre><b>GET  /api/reporting</b>                 reporting API; check available task sets</pre></li>
-  *     <li><pre><b>GET  /api/reporting/[table name]</b>    single report for requested task set; check status of done tasks</pre></li>
-  *     <li><pre><b>GET  /api/tree</b>                      actor tree w/i the cluster</pre></li>
-  *   </ul>
-  *  </ul>
+  * {{{
+  *   GET /api - landing page
+  *
+  *       POST /api/upload                   .jar file upload
+  *       GET  /api/reporting                reporting API; check available task sets
+  *       GET  /api/reporting/[table name]   single report for requested task set; check status of done tasks
+  *       GET  /api/tree                     actor tree w/i the cluster
+  * }}}
   * @param ip ip to bind API on
   */
 class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives with SprayJsonSupport{

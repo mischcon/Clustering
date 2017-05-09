@@ -17,7 +17,7 @@ object DBConnectionTest extends App {
   implicit val timeout = Timeout(5 seconds)
 
   val sys = ActorSystem("actor-system")
-  val db = sys.actorOf(Props[DBActor], name="db-actor")
+  val db = sys.actorOf(Props(new DBActor()), name="db")
   val tableName = uuid.replace("-", "")
 
   val method = uuid

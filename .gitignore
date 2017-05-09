@@ -4,3 +4,4 @@ target/
 src/main/resources/db.conf
 project/project/
 src/main/resources/reports/
+db.conf
