@@ -58,8 +58,8 @@ class VMProxyActor extends Actor with ActorLogging {
       log.debug(s"send AcquireExecutor(${vagrantEnvironmentConfig.version()}, $self)")
       sender() ! AcquireExecutor(vagrantEnvironmentConfig.version(), self)
     }
-    case SendTask(task) if !haveSpaceForTasks => log.debug(s"got SendTask, haveSpaceForTasks = $haveSpaceForTasks"); sender() ! Failure(new Exception("no more tasks!"))
-    case NoMoreTasks => log.debug("got NoMoreTasks"); destroyVm
+    case SendTask(task) if !haveSpaceForTasks => /*log.debug(s"got SendTask, haveSpaceForTasks = $haveSpaceForTasks");*/ sender() ! Failure(new Exception("no more tasks!"))
+    case NoMoreTasks => log.debug("got NoMoreTasks"); destroyVm; deregisterGetTask
     case Executor(executor) => log.debug("got Executor"); context.watch(executor)
     case CannotGetExecutor => log.debug("got CannotGetExecutor"); handleFailure()
     case t : Terminated => {
@@ -80,21 +80,26 @@ class VMProxyActor extends Actor with ActorLogging {
         if (url.getRef != null) builder.append(s"#${url.getRef}")
         request.setUrl(builder.toString())
       }
-      request.getMethod match {
-        case "GET" =>
-          val httpGet: GetRequest = new GetRequest(request)
-          sendRequest(httpGet)
-        case "POST" =>
-          val httpPost: PostRequest = new PostRequest(request)
-          sendRequest(httpPost)
-        case "PUT" =>
-          val httpPut: PutRequest = new PutRequest(request)
-          sendRequest(httpPut)
-        case "DELETE" =>
-          val httpDelete: DeleteRequest = new DeleteRequest(request)
-          sendRequest(httpDelete)
+      try {
+        request.getMethod match {
+          case "GET" =>
+            val httpGet: GetRequest = new GetRequest(request)
+            sendRequest(httpGet)
+          case "POST" =>
+            val httpPost: PostRequest = new PostRequest(request)
+            sendRequest(httpPost)
+          case "PUT" =>
+            val httpPut: PutRequest = new PutRequest(request)
+            sendRequest(httpPut)
+          case "DELETE" =>
+            val httpDelete: DeleteRequest = new DeleteRequest(request)
+            sendRequest(httpDelete)
+        }
+      } catch {
+        case exception: Exception =>
+          sender() ! exception
       }
-    case StillAlive => sender() ! checkVMStillAlive
+    case StillAlive => log.debug("received StillAlive"); sender() ! checkVMStillAlive
 
   }
 
@@ -145,9 +150,10 @@ class VMProxyActor extends Actor with ActorLogging {
 
 
   private def registerGetVagrantEnvironmentConfig = {
-    if (cancellableGetVagrantEnvironmentConfig == null)
+    if (cancellableGetVagrantEnvironmentConfig == null) {
       log.debug(s"register GetVagrantEnvironmentConfig scheduler")
       cancellableGetVagrantEnvironmentConfig = context.system.scheduler.schedule(10 seconds, 60 seconds, vmActor, GetVagrantEnvironmentConfig)(context.dispatcher, self)
+    }
   }
 
   private def deregisterGetVagrantEnvironmentConfig = {
@@ -159,9 +165,10 @@ class VMProxyActor extends Actor with ActorLogging {
   }
 
   private def registerGetTask = {
-    if (cancellableGetTask == null)
-      log.debug(s"register GetTask scheduler with verion: ${vagrantEnvironmentConfig.version()}")
+    if (cancellableGetTask == null) {
+      log.debug(s"register GetTask scheduler with version: ${vagrantEnvironmentConfig.version()}")
       cancellableGetTask = context.system.scheduler.schedule(10 seconds, 10 seconds, instanceActor, GetTask(vagrantEnvironmentConfig.version()))(context.dispatcher, self)
+    }
   }
 
   private def deregisterGetTask = {

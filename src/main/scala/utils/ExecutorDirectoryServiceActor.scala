@@ -33,11 +33,15 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
       }
 
     }
-    case UnreachableMember(member) => {
-      log.info(s"MEMBER UNREACHABLE! Goodbye my friend at ${member.address.toString}")
+//    case UnreachableMember(member) => {
+//      log.info(s"MEMBER UNREACHABLE! Goodbye my friend at ${member.address.toString}")
+//      directory -= member.address
+//      log.info(s"DOWNING my fellow friend at ${member.address.toString}")
+//      cluster.down(member.address)
+//    }
+    case MemberExited(member) => {
+      log.info(s"MEMBER EXITED! Goodbye my friend at ${member.address.toString}")
       directory -= member.address
-      log.info(s"DOWNING my fellow friend at ${member.address.toString}")
-      cluster.down(member.address)
     }
     case GetExecutorAddress => getMember()
     case a => log.warning(s"received unexpected message: $a")
@@ -52,13 +56,6 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
     /* until a health status is available we simply use a random approach */
     log.debug("received GetExecutorAddress - returning ExecutorAddress")
     var addr : Address = new Random().shuffle(directory).head._1
-
-    // TODO: REMOVE only present for testing purpose
-    if(directory.exists(x => x._1 != self.path.address))
-      addr = new Random().shuffle(directory).filter(x => x._1 != self.path.address).head._1
-    else
-      addr = self.path.address
-
     sender() ! ExecutorAddress(addr)
   }
 
@@ -66,7 +63,7 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
     super.preStart()
     log.debug("Hello from ExecutorDirectoryService")
     log.debug("Now reacting on MemberJoined and UnreachableMember Cluster Events")
-    cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberJoined], classOf[UnreachableMember])
+    cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberJoined], classOf[MemberExited])// classOf[UnreachableMember])
   }
 
   override def postStop(): Unit = {

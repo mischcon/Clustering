@@ -85,6 +85,7 @@ class NodeActor extends Actor with ActorLogging {
         vmActors += uuid -> (vmActor, vmProxyActor)
       } else {
         log.debug(s"can not create new vmActor + vmProxyActor, needed Memory: $memory, freeMemory: ${systemAttributes{"FreePhysicalMemorySize"}}")
+        registerAddVmActor
       }
     }
   }
