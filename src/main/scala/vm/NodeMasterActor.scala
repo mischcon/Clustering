@@ -2,14 +2,13 @@ package vm
 
 import java.util.UUID
 
-import akka.actor.{Actor, ActorLogging, ActorPath, ActorRef, Address, Deploy, Props, Terminated}
-import akka.cluster.{Cluster, Member}
-import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberJoined, UnreachableMember}
+import akka.actor.{Actor, ActorLogging, ActorRef, Address, Deploy, Props, Terminated}
+import akka.cluster.Cluster
+import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberJoined}
 import akka.remote.RemoteScope
-import akka.util.Timeout
 import vm.messages._
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 /**
   * Created by oliver.ziegert on 22.04.17.
@@ -38,13 +37,14 @@ class NodeMasterActor extends Actor with ActorLogging {
     case IncludeNode(address)        if ready  => log.debug(s"got IncludeNode($address)");        handlerIncludeNode(address)
     case MemberJoined(member)        if ready  => log.debug(s"got MemberJoined($member)");        handlerIncludeNode(member.address)
     case Terminated(actor)                     => log.debug(s"got Terminated($actor)");           handlerDeregisterNodeActor(actor)
-    case x: _                        if !ready => log.debug("got Message but NotReadyJet");       handlerNotReady(x)
+    case x: Any                      if !ready => log.debug("got Message but NotReadyJet");       handlerNotReady(x)
   }
 
   private def handlerInit = {
     ready = false
     nodeActors = List()
     cluster = Cluster(context.system)
+    cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberJoined])
     context.actorSelection(globalStatusActorPath) ! GetGlobalStatusActor
     context.actorSelection(instanceActorPath) ! GetInstanceActor
   }
@@ -91,11 +91,11 @@ class NodeMasterActor extends Actor with ActorLogging {
 
   override def preStart(): Unit = {
     log.debug(s"hello from ${self.path.name}")
-    cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberJoined])
   }
 
   override def postStop(): Unit = {
     log.debug(s"goodbye from ${self.path.name}")
-    cluster.unsubscribe(self)
+    if (cluster != null)
+      cluster.unsubscribe(self)
   }
 }

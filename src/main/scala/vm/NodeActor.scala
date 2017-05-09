@@ -43,7 +43,7 @@ class NodeActor extends Actor with ActorLogging {
     case NoDeployInfo                 if ready  => log.debug("got NoDeployInfo");                   handlerNoDeployInfo
     case SystemAttributes(attributes) if ready  => log.debug(s"got SystemAttributes($attributes)"); handlerSystemAttributes(attributes)
     case VmProvisioned                if ready  => log.debug("got VmProvisioned");                  handlerVmProvisioned
-    case x: _                         if !ready => log.debug(s"got Message but NotReadyJet");       handlerNotReady(x)
+    case x: Any                       if !ready => log.debug(s"got Message but NotReadyJet");       handlerNotReady(x)
   }
 
   private def handlerInit = {
@@ -171,7 +171,7 @@ class NodeActor extends Actor with ActorLogging {
     }
   }
 
-  private def scheduleOnceAddVmActor(delay: FiniteDuration) = {
+  private def scheduleOnceAddVmActor(delay: FiniteDuration): Unit = {
     scheduleOnceAddVmActor = context.system.scheduler.scheduleOnce(delay, self, AddVmActor)(context.dispatcher, self)
   }
 

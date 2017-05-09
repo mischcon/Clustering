@@ -11,7 +11,7 @@ import utils.messages.{DeregisterNodeMonitorActor, RegisterNodeMonitorActor}
 import vm.messages._
 
 import scala.collection.JavaConverters._
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 
 /**
@@ -43,7 +43,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
     case GetSystemAttributes          if ready  => log.debug("got GetSystemAttributes");           handlerGetSystemAttributes
     case SetPath(path)                          => log.debug(s"got SetPath($path)");               handlerSetPath(path)
     case SetGlobalStatusActor(actor)            => log.debug(s"got SetGlobalStatusActor($actor)"); handlerSetGlobalStatusActor(actor)
-    case x: _                         if !ready => log.debug("got Message but NotReadyJet");       handlerNotReady(x)
+    case x: Any                       if !ready => log.debug("got Message but NotReadyJet");       handlerNotReady(x)
   }
 
   private def handlerInit = {
