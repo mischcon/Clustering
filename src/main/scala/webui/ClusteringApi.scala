@@ -34,15 +34,14 @@ case class UploadJar(content : Array[Byte])
   * <br>
   * <br>
   * Endpoints:
-  * <ul>
-  *   <li><b>GET /api</b> - landing page</li>
-  *   <ul>
-  *     <li><pre><b>POST /api/upload</b>                    <i>.jar</i> file upload</pre></li>
-  *     <li><pre><b>GET  /api/reporting</b>                 reporting API; check available task sets</pre></li>
-  *     <li><pre><b>GET  /api/reporting/[table name]</b>    single report for requested task set; check status of done tasks</pre></li>
-  *     <li><pre><b>GET  /api/tree</b>                      actor tree w/i the cluster</pre></li>
-  *   </ul>
-  *  </ul>
+  * {{{
+  *   GET /api - landing page
+  *
+  *       POST /api/upload                   .jar file upload
+  *       GET  /api/reporting                reporting API; check available task sets
+  *       GET  /api/reporting/[table name]   single report for requested task set; check status of done tasks
+  *       GET  /api/tree                     actor tree w/i the cluster
+  * }}}
   * @param ip ip to bind API on
   */
 class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives with SprayJsonSupport{
@@ -61,6 +60,8 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
 
   val contentTypeHtml = ContentTypes.`text/html(UTF-8)`
   val contentTypeText = ContentTypes.`text/plain(UTF-8)`
+
+  var dataPath = new String
 
   def getApiContent: String = {
     s"""
@@ -205,9 +206,10 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
 
   def report(tableName : String): Unit = {
     val future = dBActor ? GenerateJsonReport(tableName)
-    val result = Await.result(future, timeout.duration).asInstanceOf[OK]
+    val result = Await.result(future, timeout.duration).asInstanceOf[Report]
     result match {
-      case OK() =>
+      case Report(path) =>
+        dataPath = path
         log.debug("API is able to access report data.")
       case _ =>
         log.debug("Something went wrong. API cannot access report data.")
@@ -221,7 +223,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   val routes : Route =
     path("files" / "data.json") {
       get {
-        getFromFile("src/main/resources/reports/data.json")
+        getFromFile(dataPath)
       }
     } ~
     path("images" / "details_open.png") {

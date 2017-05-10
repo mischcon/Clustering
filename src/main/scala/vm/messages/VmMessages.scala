@@ -21,7 +21,7 @@ case class SetInstanceActor(instanceActor: ActorRef) extends VmMessages
 
 case object GetInstanceActor extends VmMessages
 
-case object DeregisterNodeActor extends VmMessages
+case class DeregisterNodeActor(actorRef: ActorRef) extends VmMessages
 
 case class SetNodeMasterActorPath(path: String) extends VmMessages
 
@@ -43,7 +43,7 @@ case class SetVagrantEnvironmentConfig(vagrantEnvironmentConfig: VagrantEnvironm
 
 case object GetVagrantEnvironmentConfig extends VmMessages
 
-case object NotReadyJet extends VmMessages
+case class NotReadyJet(any: Any) extends VmMessages
 
 case class SetDistributorActor(distributor: ActorRef) extends VmMessages
 

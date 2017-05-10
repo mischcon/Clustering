@@ -2,16 +2,13 @@ package vm
 
 import java.util.UUID
 
-import akka.actor.{Actor, ActorLogging, ActorPath, ActorRef, Address, Deploy, Props}
-import akka.cluster.{Cluster, Member}
-import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberJoined, UnreachableMember}
+import akka.actor.{Actor, ActorLogging, ActorRef, Address, Deploy, Props, Terminated}
+import akka.cluster.Cluster
+import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberJoined}
 import akka.remote.RemoteScope
-import akka.util.Timeout
 import vm.messages._
 
-import scala.concurrent.Await
-import scala.concurrent.duration.DurationInt
-import scala.util.{Failure, Success}
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 /**
   * Created by oliver.ziegert on 22.04.17.
@@ -21,51 +18,84 @@ class NodeMasterActor extends Actor with ActorLogging {
 
   private var globalStatusActor: ActorRef = _
   private var instanceActor: ActorRef = _
-  private var nodeActors: List[ActorRef] = List()
-  private val cluster = Cluster(context.system)
+  private var nodeActors: List[ActorRef] = _
+  private var cluster: Cluster = _
+  private var ready : Boolean = _
+  private val globalStatusActorPath = "/user/globalStatus"
+  private val instanceActorPath = "/user/instances"
 
   self ! Init
 
   override def receive: Receive = {
-    case Init => init
-    case GetGlobalStatusActor => sender() ! SetGlobalStatusActor(globalStatusActor)
-    case GetInstanceActor => sender() ! SetInstanceActor(instanceActor)
-    case DeregisterNodeActor => excludeNode
-    case IncludeNode(address) => log.debug(s"got IncludeNode($address)"); includeNode(address)
-    case MemberJoined(member) => log.debug(s"got MemberJoined($member)"); includeNode(member.address)
+    case Init                                  => log.debug("got Init");                          handlerInit
+    case SetInstanceActor(actor)               => log.debug(s"got SetInstanceActor($actor)");     handlerSetInstanceActor(actor)
+    case SetGlobalStatusActor(actor)           => log.debug(s"got SetGlobalStatusActor($actor)"); handlerSetGlobalStatusActor(actor)
+    case NotReadyJet(message)                  => log.debug(s"got NotReadyJet($message)");        handlerNotReadyJet(message)
+    case GetGlobalStatusActor        if ready  => log.debug("got GetGlobalStatusActor");          handlerGetGlobalStatusActor
+    case GetInstanceActor            if ready  => log.debug("got GetInstanceActor");              handlerGetInstanceActor
+    case DeregisterNodeActor(actor)  if ready  => log.debug("got DeregisterNodeActor");           handlerDeregisterNodeActor(actor)
+    case IncludeNode(address)        if ready  => log.debug(s"got IncludeNode($address)");        handlerIncludeNode(address)
+    case MemberJoined(member)        if ready  => log.debug(s"got MemberJoined($member)");        handlerIncludeNode(member.address)
+    case Terminated(actor)                     => log.debug(s"got Terminated($actor)");           handlerDeregisterNodeActor(actor)
+    case x: Any                      if !ready => log.debug("got Message but NotReadyJet");       handlerNotReady(x)
   }
 
-  private def init = {
-    globalStatusActor = getActor("/user/globalStatus").orNull
-    instanceActor = getActor("/user/instances").orNull
+  private def handlerInit = {
+    ready = false
+    nodeActors = List()
+    cluster = Cluster(context.system)
+    cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberJoined])
+    context.actorSelection(globalStatusActorPath) ! GetGlobalStatusActor
+    context.actorSelection(instanceActorPath) ! GetInstanceActor
   }
 
-  def includeNode(address: Address) = {
-    nodeActors +:= context.actorOf(Props[NodeActor].withDeploy(Deploy(scope = RemoteScope(address))), s"nodeActor_${address.host.getOrElse(UUID.randomUUID().toString)}:${address.port.getOrElse("")}")
+  private def handlerSetInstanceActor(instanceActor: ActorRef) = {
+    this.instanceActor = instanceActor
+    if (globalStatusActor != null && instanceActor != null) ready = true
   }
 
-  def excludeNode = {
-    nodeActors = nodeActors.diff(sender() :: Nil)
+  private def handlerSetGlobalStatusActor(globalStatusActor: ActorRef) = {
+    this.globalStatusActor = globalStatusActor
+    if (globalStatusActor != null && instanceActor != null) ready = true
   }
 
-  private def getActor(path: String): Option[ActorRef] = {
-    implicit val timeout = Timeout(5 seconds)
-    val actorFuture = context.actorSelection(path).resolveOne
-    Await.result(actorFuture, timeout.duration) match {
-      case x: ActorRef => return Some(x)
-      case _ => log.warning(s"$path does not exist"); return None
-    }
-    log.debug(s"could not find $path")
-    return None
+  private def handlerDeregisterNodeActor(actorRef: ActorRef) = {
+    if (nodeActors.contains(actorRef))
+      nodeActors = nodeActors.diff(actorRef :: Nil)
+  }
+
+  private def handlerIncludeNode(address: Address) = {
+    val actorName = s"nodeActor_${address.host.getOrElse(UUID.randomUUID().toString)}:${address.port.getOrElse("")}"
+    nodeActors +:= context.actorOf(Props[NodeActor].withDeploy(Deploy(scope = RemoteScope(address))), actorName)
+  }
+
+  private def handlerGetGlobalStatusActor = {
+    sender() ! SetGlobalStatusActor(globalStatusActor)
+  }
+
+  private def handlerGetInstanceActor = {
+    sender() ! SetInstanceActor(instanceActor)
+  }
+
+  private def handlerNotReady(any: Any) = {
+    sender() ! NotReadyJet(any)
+  }
+
+  private def handlerNotReadyJet(any: Any) = {
+    scheduleOnceRetry(5 seconds, sender(), any)
+  }
+
+  private def scheduleOnceRetry(delay: FiniteDuration, receive: ActorRef, message: Any) = {
+    context.system.scheduler.scheduleOnce(delay, receive, message)(context.dispatcher, self)
   }
 
   override def preStart(): Unit = {
     log.debug(s"hello from ${self.path.name}")
-    cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberJoined])
   }
 
   override def postStop(): Unit = {
     log.debug(s"goodbye from ${self.path.name}")
-    cluster.unsubscribe(self)
+    if (cluster != null)
+      cluster.unsubscribe(self)
   }
 }

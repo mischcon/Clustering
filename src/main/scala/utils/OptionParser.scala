@@ -1,5 +1,8 @@
 package utils
 
+import java.io.File
+
+
 class ClusterOptionParser() {
 
   private val VERSION : String = "0.1 alpha"
@@ -14,6 +17,7 @@ class ClusterOptionParser() {
     cmd("master").action( (_, c) => c.copy(mode = "master") ).
       text("run as master").
       children(
+        opt[File]("db").optional().action((s, c) => c.copy(db = s)).valueName("<db.conf>").text("db config file"),
         opt[String]('i', "input").action((s, c) => c.copy(input = s)).valueName("<task jar>").text("jar file that contains the tasks")
       )
 
@@ -31,7 +35,7 @@ class ClusterOptionParser() {
 }
 
 
-case class Config(mode: String = "", debug : Boolean = false, input : String = null,
+case class Config(mode: String = "", debug : Boolean = false, db : File = null, input : String = null,
                   verbose : Boolean = false, seednode : String = "localhost", withVm : Boolean = true,
                   withExecutor : Boolean = true)
 

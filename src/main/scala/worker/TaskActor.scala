@@ -91,8 +91,8 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
       val stillAliveFuture = targetVm ? StillAlive
       val alive = Await.result(stillAliveFuture, 3 seconds)
       alive match {
-        case Success(true) => log.debug("vm is still alive - escalating..."); taskDone = true; Escalate
-        case _ => log.debug("vm is NOT alive anymore - the TestFailException seems to be caused by this - resetting the task..."); taskDone = false; Stop
+        case true => log.debug("vm is still alive - escalating..."); taskDone = true; Escalate
+        case a => log.debug(s"vm is NOT alive anymore (received: ${a}) - the TestFailException seems to be caused by this - resetting the task..."); taskDone = false; Stop
       }
     }
     case a => {
@@ -164,7 +164,7 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
     * to the executor for its execution.
     */
   def handleGetTask() = {
-    log.debug(s"received GetTask and I am not taken! - sending SendTask to ${sender().path.toString}")
+    //log.debug(s"received GetTask and I am not taken! - sending SendTask to ${sender().path.toString}")
     isTaken = true
     val executor = sender() ? SendTask(task)
     executor.onComplete{
@@ -196,14 +196,14 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
             context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING, tablename)
           }
           case Failure(_) => {
-            log.error("could not get an executor - sending CannotGetExecutor to targetVm and goind back to isTaken = false")
+            //log.error("could not get an executor - sending CannotGetExecutor to targetVm and goind back to isTaken = false")
             targetVm ! CannotGetExecutor
             isTaken = false
           }
         }
       }
       case Failure(exception) => {
-        log.error("did not receive vmInfos - going back to isTaken = false")
+        //log.error("did not receive vmInfos - going back to isTaken = false")
         isTaken = false
       }
     }

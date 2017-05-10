@@ -2,13 +2,15 @@ import java.net.NetworkInterface
 import java.text.SimpleDateFormat
 import java.util.Date
 
+import akka.pattern.ask
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster
+import akka.util.Timeout
 import clustering.ClusterType
 import com.typesafe.config.ConfigFactory
 import de.oth.clustering.java._
 import utils._
-import utils.db.{CreateTask, DBActor}
+import utils.db._
 import vm.NodeMasterActor
 import vm.messages._
 import webui.ClusteringApi
@@ -17,10 +19,12 @@ import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.io.StdIn
 
-object ClusterMain extends App{
+object ClusterMain extends App {
+
+  implicit val timeout = Timeout(3 seconds)
 
   val parser : ClusterOptionParser = new ClusterOptionParser()
   parser.parser.parse(args, Config()) match {
@@ -63,14 +67,34 @@ object ClusterMain extends App{
         Cluster(system).join(Address("akka.tcp", "the-cluster", localIp, 2550))
         println(s"Cluster created! Seed node IP is $localIp")
 
+        var dbConf : com.typesafe.config.Config = null
+
+        // Load db.conf
+        if(cli_config.db != null) {
+          dbConf = ConfigFactory.parseFile(cli_config.db)
+        }
+
         val instanceActor : ActorRef = system.actorOf(Props[InstanceActor], "instances")
         val directory : ActorRef = system.actorOf(Props[ExecutorDirectoryServiceActor], "ExecutorDirectory")
-        val dBActor : ActorRef = system.actorOf(Props[DBActor], "db")
+        var dBActor : ActorRef = null
+        if (dbConf != null)
+          dBActor = system.actorOf(Props(new DBActor(dbConf)), name = "db")
+        else
+          dBActor = system.actorOf(Props(new DBActor()), name = "db")
         val apiActor : ActorRef = system.actorOf(Props(classOf[ClusteringApi], localIp), "api")
         val globalStatus : ActorRef = system.actorOf(Props[GlobalStatusActor], "globalStatus")
         val nodeMasterActor : ActorRef = system.actorOf(Props[NodeMasterActor], "nodeMasterActor")
         nodeMasterActor ! IncludeNode(Cluster(system).selfAddress)
 
+        val future = dBActor ? ConnectionTest
+        val result = Await.result(future, 3 seconds).asInstanceOf[ConnectionStatus]
+        result match {
+          case ConnectionStatus(true) =>
+            println("DB connection succeed.")
+          case ConnectionStatus(false) =>
+            println("DB connection failed.")
+            System.exit(1)
+        }
 
         // Load codebase
         if(cli_config.input != null) {

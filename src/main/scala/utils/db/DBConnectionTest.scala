@@ -17,7 +17,7 @@ object DBConnectionTest extends App {
   implicit val timeout = Timeout(5 seconds)
 
   val sys = ActorSystem("actor-system")
-  val db = sys.actorOf(Props[DBActor], name="db-actor")
+  val db = sys.actorOf(Props(new DBActor()), name="db")
   val tableName = uuid.replace("-", "")
 
   val method = uuid
@@ -91,10 +91,10 @@ object DBConnectionTest extends App {
 //  db ! DeleteTasks(methods, tableName)
 
   val future7 = db ? GenerateTextReport(tableName)
-  val result7 = Await.result(future7, timeout.duration).asInstanceOf[OK]
+  val result7 = Await.result(future7, timeout.duration).asInstanceOf[Report]
 
   val future8 = db ? GenerateJsonReport(tableName)
-  val result8 = Await.result(future8, timeout.duration).asInstanceOf[OK]
+  val result8 = Await.result(future8, timeout.duration).asInstanceOf[Report]
 
   sys.terminate
 }

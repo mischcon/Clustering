@@ -13,6 +13,11 @@ trait DBMessage
  */
 
 /**
+  * = Test connection to the database according to db.conf =
+  */
+case object ConnectionTest extends DBMessage
+
+/**
   * = Request all table names from database =
   */
 case object GetTables extends DBMessage
@@ -204,4 +209,10 @@ case class Tables(names : List[String]) extends DBMessage
 /**
   * = Response message for [[utils.db.GenerateTextReport]] or [[utils.db.GenerateJsonReport]] =
   */
-case class OK() extends DBMessage
+case class Report(path : String) extends DBMessage
+
+/**
+  * = Response message for [[utils.db.ConnectionTest]] =
+  * @param message true = OK; false = NOT OK
+  */
+case class ConnectionStatus(message : Boolean) extends DBMessage

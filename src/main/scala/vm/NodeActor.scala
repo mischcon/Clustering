@@ -3,19 +3,16 @@ package vm
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
-import akka.pattern._
-import akka.util.Timeout
 import utils.messages.SystemAttributes
 import vm.messages._
-import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantPortForwardingConfig, VagrantProviderConfig}
+import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages.{DeployInfo, GetDeployInfo, NoDeployInfo}
 
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
-import scala.concurrent.{Await, JavaConversions}
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 /**
-  * Created by mischcon on 3/20/17.
+  * Created by oliver.ziegert on 3/20/17.
   */
 class NodeActor extends Actor with ActorLogging {
 
@@ -25,116 +22,95 @@ class NodeActor extends Actor with ActorLogging {
   private var instanceActor: ActorRef = _
   private var systemAttributes: Map[String,String] = _
   private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
-  private var cancellableGetDeployInfo: Cancellable = _
-  private var cancellableAddVmActor: Cancellable = _
+  private var scheduleOnceAddVmActor: Cancellable = _
+  private var ready: Boolean = _
   private var vmActors: Map[String, (ActorRef, ActorRef)] = Map()
 
   self ! Init
 
   override def receive: Receive = {
-    case Init => init
-    case SetGlobalStatusActor(globalStatusActor) => log.debug("got SetGlobalStatusActor"); this.globalStatusActor = globalStatusActor; initNodeMonitorActor
-    case SetInstanceActor(instanceActor) => log.debug("got SetInstanceActor"); this.instanceActor = instanceActor; initNodeMonitorActor
-    case GetInstanceActor => log.debug("got GetInstanceActor"); sender ! SetInstanceActor(instanceActor)
-    case GetVmProxyActor(caller) => log.debug("got GetVmProxyActor"); sender() ! getVmProxyActor(caller.path.name.split("_"){1})
-    case GetVmActor(caller) => log.debug("got GetVmActor"); sender() ! getVmActor(caller.path.name.split("_"){1})
-    case GetGlobalStatusActor => log.debug("got GetGlobalStatusActor"); sender() ! SetGlobalStatusActor(globalStatusActor)
-    case AddVmActor => log.debug("got AddVmActor"); deregisterAddVmActor; addVmActorInit
-    case RemoveVmActor(actor) => log.debug(s"got RemoveVmActor from ${actor.path.name}"); removeVm(actor)
-    case DeployInfo(vagrantEnvironmentConfig) => log.debug("got DeployInfo"); this.vagrantEnvironmentConfig = vagrantEnvironmentConfig; deregisterGetDeployInfo; addVmActor
-    case NoDeployInfo => log.debug("got NoDeployInfo"); this.vagrantEnvironmentConfig == null; registerGetDeployInfo
-    case SystemAttributes(attributes) => log.debug("got SystemAttributes"); this.systemAttributes = attributes; addVmActor
-    case VmProvisioned => log.debug("got VmProvisioned"); registerAddVmActor
+    case Init                                   => log.debug("got Init"); handlerInit
+    case SetGlobalStatusActor(actor)            => log.debug(s"got SetGlobalStatusActor($actor)");  handlerSetGlobalStatusActor(actor)
+    case SetInstanceActor(actor)                => log.debug(s"got SetInstanceActor($actor)");      handlerSetInstanceActor(actor)
+    case NotReadyJet(message)                   => log.debug(s"got NotReadyJet($message)");         handlerNotReadyJet(message)
+    case GetInstanceActor             if ready  => log.debug("got GetInstanceActor");               handlerGetInstanceActor
+    case GetVmProxyActor(actor)       if ready  => log.debug(s"got GetVmProxyActor($actor)");       handlerGetVmProxyActor(actor)
+    case GetVmActor(actor)            if ready  => log.debug(s"got GetVmActor($actor)");            handlerGetVmActor(actor)
+    case GetGlobalStatusActor         if ready  => log.debug("got GetGlobalStatusActor");           handlerGetGlobalStatusActor
+    case AddVmActor                   if ready  => log.debug("got AddVmActor");                     handlerAddVmActor
+    case RemoveVmActor(actor)         if ready  => log.debug(s"got RemoveVmActor($actor)");         handlerRemoveVmActor(actor)
+    case DeployInfo(deployInfo)       if ready  => log.debug(s"got DeployInfo($deployInfo)");       handlerDeployInfo(deployInfo)
+    case NoDeployInfo                 if ready  => log.debug("got NoDeployInfo");                   handlerNoDeployInfo
+    case SystemAttributes(attributes) if ready  => log.debug(s"got SystemAttributes($attributes)"); handlerSystemAttributes(attributes)
+    case VmProvisioned                if ready  => log.debug("got VmProvisioned");                  handlerVmProvisioned
+    case x: Any                       if !ready => log.debug(s"got Message but NotReadyJet");       handlerNotReady(x)
   }
 
-  private def init = {
+  private def handlerInit = {
     nodeMasterActor = context.parent
+    ready = false
     nodeMasterActor ! GetInstanceActor
     nodeMasterActor ! GetGlobalStatusActor
   }
 
-  private def initNodeMonitorActor = {
-    if (instanceActor != null && globalStatusActor != null && nodeMonitorActor == null) {
-      nodeMonitorActor = context.actorOf(Props[NodeMonitorActor], "nodeMonitorActor")
-      self ! AddVmActor
-    }
+  private def handlerSetGlobalStatusActor(actorRef: ActorRef) = {
+    this.globalStatusActor = actorRef
+    initNodeMonitorActor
   }
 
-  private def addVmActorInit = {
-    vagrantEnvironmentConfig = null
-    systemAttributes = null
-    nodeMonitorActor ! GetSystemAttributes
+  private def handlerSetInstanceActor(actorRef: ActorRef) = {
+    this.instanceActor = actorRef
+    initNodeMonitorActor
+  }
+
+  private def handlerGetInstanceActor = {
+    sender() ! SetInstanceActor(instanceActor)
+  }
+
+  private def handlerGetVmProxyActor(actorRef: ActorRef) = {
+    val uuid = actorRef.path.name.split("_"){1}
+    if (vmActors.contains(uuid)) {
+      sender() ! SetVmProxyActor(vmActors{uuid}._2)
+    }
+    sender() ! SetVmProxyActor(null)
+  }
+
+  private def handlerGetVmActor(actorRef: ActorRef) = {
+    val uuid = actorRef.path.name.split("_"){1}
+    if (vmActors.contains(uuid)) {
+      sender() ! SetVmProxyActor(vmActors{uuid}._1)
+    }
+    sender() ! SetVmProxyActor(null)
+  }
+
+  private def handlerGetGlobalStatusActor = {
+    sender() ! SetGlobalStatusActor(globalStatusActor)
+  }
+
+  private def handlerAddVmActor = {
+    scheduleOnceAddVmActor = null
     instanceActor ! GetDeployInfo
   }
 
-  private def addVmActor = {
-    log.debug("addVm called")
-    if (vagrantEnvironmentConfig != null && systemAttributes != null){
-      nodeMonitorActor ! SetPath(vagrantEnvironmentConfig.path())
-      val memory = vagrantEnvironmentConfig.vmConfigs().asScala.map(_.provider().memory().toLong).sum * 1024 * 1024
-      log.debug(s"FreePhysicalMemorySize: ${systemAttributes {"FreePhysicalMemorySize"}}, memory: $memory")
-      if (memory > 0 && systemAttributes {"FreePhysicalMemorySize"}.toLong >= memory) {
-        log.debug("create new vmProxyActor")
-        val uuid = UUID.randomUUID().toString
-        val vmProxyActor = context.actorOf(Props[VMProxyActor], s"vmProxyActor_$uuid")
-        var vmActor: ActorRef = null
-        if (systemAttributes{"Vagrant"}.toBoolean) {
-          log.debug("create new vmActor")
-          vmActor = context.actorOf(Props[VMActor], s"vmActor_$uuid")
-        }
-        vmActors += uuid -> (vmActor, vmProxyActor)
-      } else {
-        log.debug(s"can not create new vmActor + vmProxyActor, needed Memory: $memory, freeMemory: ${systemAttributes{"FreePhysicalMemorySize"}}")
-      }
-    }
+  private def handlerNoDeployInfo = {
+    this.vagrantEnvironmentConfig = null
+    if (scheduleOnceAddVmActor == null)
+      scheduleOnceAddVmActor(30 seconds)
   }
 
-  private def getVmActor(uuid: String): SetVmActor = {
-    log.debug(s"searching for uuid: $uuid in:\n${this.vmActors}")
-    if (vmActors.contains(uuid)) {
-      log.debug("found uuid!")
-      return SetVmActor(vmActors{uuid}._1)
-    }
-    log.debug("did not find uuid :(")
-    SetVmActor(null)
+  private def handlerDeployInfo(vagrantEnvironmentConfig: VagrantEnvironmentConfig) = {
+    this.vagrantEnvironmentConfig = vagrantEnvironmentConfig
+    nodeMonitorActor ! GetSystemAttributes
   }
 
-  private def getVmProxyActor(uuid: String): SetVmProxyActor = {
-    if (vmActors.contains(uuid)) {
-      return SetVmProxyActor(vmActors{uuid}._2)
-    }
-    SetVmProxyActor(null)
+  private def handlerSystemAttributes(attributes: Map[String,String]) = {
+    this.systemAttributes = attributes
+    addVm
   }
 
-  private def registerGetDeployInfo = {
-    if (cancellableGetDeployInfo == null) {
-      cancellableGetDeployInfo = context.system.scheduler.schedule(15 seconds, 60 seconds, instanceActor, GetDeployInfo)(context.dispatcher, self)
-    }
-  }
-
-  private def deregisterGetDeployInfo = {
-    if (cancellableGetDeployInfo != null) {
-      cancellableGetDeployInfo.cancel()
-      cancellableGetDeployInfo = null
-    }
-  }
-
-  private def registerAddVmActor = {
-    if (cancellableAddVmActor == null) {
-      cancellableAddVmActor = context.system.scheduler.schedule(30 seconds, 30 seconds, self, AddVmActor)(context.dispatcher, self)
-    }
-  }
-
-  private def deregisterAddVmActor = {
-    if (cancellableAddVmActor != null) {
-      cancellableAddVmActor.cancel()
-      cancellableAddVmActor = null
-    }
-  }
-
-  private def removeVm(actor: ActorRef) = {
-    val uuid = actor.path.name.split("_"){1}
-    val actorType = actor.path.name.split("_"){0}
+  private def handlerRemoveVmActor(actorRef: ActorRef) = {
+    val uuid = actorRef.path.name.split("_"){1}
+    val actorType = actorRef.path.name.split("_"){0}
     if (vmActors.contains(uuid)) {
       val entry = vmActors{uuid}
       if (actorType.equals("vmProxyActor")) {
@@ -154,6 +130,55 @@ class NodeActor extends Actor with ActorLogging {
       }
     }
   }
+
+  private def handlerVmProvisioned = {
+    if (scheduleOnceAddVmActor == null)
+      scheduleOnceAddVmActor(30 seconds)
+  }
+
+  private def handlerNotReady(any: Any) = {
+    sender() ! NotReadyJet(any)
+  }
+
+  private def handlerNotReadyJet(any: Any) = {
+    scheduleOnceRetry(5 seconds, sender(), any)
+  }
+
+  private def initNodeMonitorActor = {
+    if (instanceActor != null && globalStatusActor != null && nodeMonitorActor == null) {
+      ready = true
+      nodeMonitorActor = context.actorOf(Props[NodeMonitorActor], "nodeMonitorActor")
+      if (scheduleOnceAddVmActor == null)
+        scheduleOnceAddVmActor(5 seconds)
+    }
+  }
+
+  private def addVm = {
+    nodeMonitorActor ! SetPath(vagrantEnvironmentConfig.path())
+    val memoryNeeded = vagrantEnvironmentConfig.vmConfigs().asScala.map(_.provider().memory().toLong).sum * 1024 * 1024
+    val freeMemory = systemAttributes{"FreePhysicalMemorySize"}.toLong
+    val vagrant: Boolean = systemAttributes{"Vagrant"}.toBoolean
+    if (memoryNeeded > 0 && freeMemory > memoryNeeded && vagrant) {
+      val uuid = UUID.randomUUID().toString
+      val vmProxyActor = context.actorOf(Props[VMProxyActor], s"vmProxyActor_$uuid")
+      val vmActor: ActorRef = context.actorOf(Props[VMActor], s"vmActor_$uuid")
+      vmActors += uuid -> (vmActor, vmProxyActor)
+    } else {
+      log.debug(s"can not create new vmActor & vmProxyActor, needed Memory: $memoryNeeded, freeMemory: ${freeMemory}")
+      log.debug(s"vagrant is intalled: $vagrant")
+      if (scheduleOnceAddVmActor == null)
+        scheduleOnceAddVmActor(30 seconds)
+    }
+  }
+
+  private def scheduleOnceAddVmActor(delay: FiniteDuration): Unit = {
+    scheduleOnceAddVmActor = context.system.scheduler.scheduleOnce(delay, self, AddVmActor)(context.dispatcher, self)
+  }
+
+  private def scheduleOnceRetry(delay: FiniteDuration, receive: ActorRef, message: Any) = {
+    context.system.scheduler.scheduleOnce(delay, receive, message)(context.dispatcher, self)
+  }
+
 
   override def preStart(): Unit = {
     log.debug(s"hello from ${self.path.name}")
