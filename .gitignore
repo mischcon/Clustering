@@ -4,4 +4,7 @@ target/
 src/main/resources/db.conf
 project/project/
 src/main/resources/reports/
+.scannerwork/
+.sonar/
+sonar-project.properties
 db.conf

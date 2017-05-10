@@ -60,17 +60,20 @@ public class GetRequest extends HttpRequest {
     }
 
     @Override public GetRequest addBody(byte[] body) {
-        this.request.setEntity(new ByteArrayEntity(body));
+        if (body != null)
+            this.request.setEntity(new ByteArrayEntity(body));
         return this;
     }
 
     @Override public GetRequest addBody(String body) {
-        this.request.setEntity(new ByteArrayEntity(body.getBytes(getCHARSET())));
+        if (body != null)
+            this.request.setEntity(new ByteArrayEntity(body.getBytes(getCHARSET())));
         return this;
     }
 
     @Override public GetRequest addBody(JsonObject body) {
-        this.request.setEntity(new StringEntity(body.toString(), getCHARSET()));
+        if (body != null)
+            this.request.setEntity(new StringEntity(body.toString(), getCHARSET()));
         return this;
     }
 }
