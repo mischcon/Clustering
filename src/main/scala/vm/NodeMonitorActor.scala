@@ -7,7 +7,7 @@ import javax.management.{Attribute, MBeanServer, ObjectName}
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import org.jruby.RubyObject
 import org.jruby.embed.{LocalContextScope, ScriptingContainer}
-import utils.messages.{DeregisterNodeMonitorActor, RegisterNodeMonitorActor}
+import utils.messages.{DeregisterNodeMonitorActor, RegisterNodeMonitorActor, SystemAttributes}
 import vm.messages._
 
 import scala.collection.JavaConverters._
@@ -67,7 +67,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
       systemAttributes :+= new Attribute("FreeSpace", path.getFreeSpace)
     }
     systemAttributes :+= new Attribute("Vagrant", vagrant)
-    sender() ! systemAttributes.groupBy(_.getName).map{case (k, v) => k -> v.head.getValue.toString}
+    sender() ! SystemAttributes(systemAttributes.groupBy(_.getName).map{case (k, v) => k -> v.head.getValue.toString})
   }
 
   private def handlerSetPath(path: File) = {

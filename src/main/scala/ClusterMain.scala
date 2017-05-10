@@ -84,7 +84,6 @@ object ClusterMain extends App {
         val apiActor : ActorRef = system.actorOf(Props(classOf[ClusteringApi], localIp), "api")
         val globalStatus : ActorRef = system.actorOf(Props[GlobalStatusActor], "globalStatus")
         val nodeMasterActor : ActorRef = system.actorOf(Props[NodeMasterActor], "nodeMasterActor")
-        nodeMasterActor ! IncludeNode(Cluster(system).selfAddress)
 
         val future = dBActor ? ConnectionTest
         val result = Await.result(future, 3 seconds).asInstanceOf[ConnectionStatus]
@@ -117,10 +116,11 @@ object ClusterMain extends App {
             }
         }
 
-        Thread.sleep(500)
+        //Thread.sleep(500)
         if(cli_config.debug)
           println(new PrivateMethodExposer(system)('printTree)())
 
+        nodeMasterActor ! IncludeNode(Cluster(system).selfAddress)
 
         println("Press any key to stop...")
         StdIn.readLine()
