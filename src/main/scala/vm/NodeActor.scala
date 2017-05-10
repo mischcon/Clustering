@@ -81,9 +81,12 @@ class NodeActor extends Actor with ActorLogging {
   private def handlerGetVmActor(actorRef: ActorRef) = {
     val uuid = actorRef.path.name.split("_"){1}
     if (vmActors.contains(uuid)) {
-      sender() ! SetVmProxyActor(vmActors{uuid}._1)
+      log.debug("sending VMActor...")
+      sender() ! SetVmActor(vmActors{uuid}._1)
+    } else {
+      log.debug("NO VMActor was found :(")
+      sender() ! SetVmActor(null)
     }
-    sender() ! SetVmProxyActor(null)
   }
 
   private def handlerGetGlobalStatusActor = {
