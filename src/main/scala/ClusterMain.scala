@@ -4,6 +4,7 @@ import java.util.Date
 
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster
+import akka.event.Logging
 import akka.pattern.ask
 import akka.util.Timeout
 import clustering.ClusterType
@@ -38,7 +39,6 @@ object ClusterMain extends App {
       if(cli_config.debug)
         config = ConfigFactory.parseString("akka.loglevel = DEBUG").withFallback(config)
 
-
       // network interface for listening
       val interfaces = NetworkInterface.getNetworkInterfaces
       println("Choose ip for listening:")
@@ -64,6 +64,7 @@ object ClusterMain extends App {
             .withFallback(ConfigFactory.parseString("akka.cluster.roles = [master, vm, executor]"))
             .withFallback(config)))
 
+        val log = Logging.getLogger(system, this);
         Cluster(system).join(Address("akka.tcp", "the-cluster", localIp, 2550))
         println(s"Cluster created! Seed node IP is $localIp")
 
@@ -89,9 +90,9 @@ object ClusterMain extends App {
         val result = Await.result(future, 3 seconds).asInstanceOf[ConnectionStatus]
         result match {
           case ConnectionStatus(true) =>
-            println("DB connection succeed.")
+            log.info("DB connection succeed.")
           case ConnectionStatus(false) =>
-            println("DB connection failed.")
+            log.error("DB connection failed.")
             System.exit(1)
         }
 
@@ -103,7 +104,7 @@ object ClusterMain extends App {
           val datestring = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date())
           // Add Tasks
             for (a <- testMethods.asScala.toList) {
-              println(s"adding task ${a.classname}.${a.methodname} to table $datestring")
+              log.info(s"adding task ${a.classname}.${a.methodname} to table $datestring")
               var singleInstance: Boolean = true
               if (a.annotation.clusterType() == ClusterType.GROUPING)
                 singleInstance = false
@@ -127,6 +128,8 @@ object ClusterMain extends App {
         if(cli_config.debug)
           println(new PrivateMethodExposer(system)('printTree)())
         Await.result(system.terminate(), Duration.Inf)
+        println("IMPORTANT! Please check your hypervisor if there is still a VM running.")
+        println("Goodbye, have a nice day!")
         System.exit(0)
       }
       // CLIENT
@@ -160,6 +163,8 @@ object ClusterMain extends App {
         cluster.leave(cluster.selfAddress)
         println("Shutting down the client...")
         Await.result(system.terminate(), Duration.Inf)
+        println("IMPORTANT! Please check your hypervisor if there is still a VM running.")
+        println("Goodbye, have a nice day!")
         System.exit(0)
       }
 

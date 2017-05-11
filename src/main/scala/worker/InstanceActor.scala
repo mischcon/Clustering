@@ -40,8 +40,13 @@ class InstanceActor extends Actor with ActorLogging {
     * @param ref ActorRef of terminated DistributorActor
     */
   def handleRunComplete(ref : ActorRef) : Unit = {
+    val done = instances.filter(a => a._2 == ref).head
+    println(s"Run ${done._1} with version ${done._3} done!")
+    if(instances.length == 1)
+      println("No more instances present - upload new tasks or shutdown the cluster!")
+
     /*
-    * Enter code that should be executed once a run is complete here
+    * Enter additional code that should be executed once a run is complete here
     * */
   }
 

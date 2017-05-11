@@ -36,6 +36,7 @@ libraryDependencies ++= Seq(
 
   // logger
   "ch.qos.logback" % "logback-classic" % "1.2.2",
+  "org.codehaus.janino" % "janino" % "2.6.1",
 
   // akka
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
