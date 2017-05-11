@@ -14,7 +14,7 @@ trait WorkerMessagesTrait
   * @param task the actual task
   * @param version VM deploy info
   */
-case class AddTask(instanceId : String, group : List[String], task : Task, version : VagrantEnvironmentConfig = null) extends WorkerMessagesTrait
+case class AddTask(instanceId : String, group : List[String], task : Task, version : DeployInfoInterface = null) extends WorkerMessagesTrait
 
 /**
   * Used for getting a task
