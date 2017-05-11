@@ -4,7 +4,7 @@ alt Tasks with provided version available
     InstanceActor -> TaskActor: forward GetTask message
     TaskActor -> target: SendTask(task : Task)
     alt target accepts Task offer
-        target -> TaskActor: AcquireExecutor(vmInfo : Object, vmActorRef : ActorRef)
+        target -> TaskActor: AcquireExecutor(vmActorRef : ActorRef)
         TaskActor -> Executor: create executor
         alt executor could be created
             Executor -> TaskActor: ActorRef of Executor

@@ -220,7 +220,7 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
       log.debug("deregisterGetTask")
       deregisterGetTask
       log.debug(s"send AcquireExecutor(${vagrantEnvironmentConfig.version()}, $self)")
-      sender() ! AcquireExecutor(vagrantEnvironmentConfig.version(), self)
+      sender() ! AcquireExecutor(self)
     } else {
       sender() ! Failure(new Exception("no more tasks!"))
     }

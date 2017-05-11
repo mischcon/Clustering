@@ -50,10 +50,9 @@ case object NoMoreTasks extends WorkerMessagesTrait
 /* EXECUTORS */
 /**
   * Used for requesting an executor from the {@link utils.ExecutorDirectoryServiceActor ExecutorDirectoryServiceActor}
-  * @param vmInfo
   * @param vmActorRef actor ref of the target {@link vm#VMProxyActor VMProxyActor}
   */
-case class AcquireExecutor(vmInfo : Object, vmActorRef : ActorRef) extends WorkerMessagesTrait
+case class AcquireExecutor(vmActorRef : ActorRef) extends WorkerMessagesTrait
 
 /**
   * Container class for the actor ref of a {@link worker.TaskExecutorActor TaskExecutorActor}
