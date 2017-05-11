@@ -40,7 +40,7 @@ class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
     case GetGlobalStatusActor         if ready  => log.debug("got GetGlobalStatusActor");           handlerGetGlobalStatusActor
     case AddVmActor                   if ready  => log.debug("got AddVmActor");                     handlerAddVmActor
     case RemoveVmActor(actor)         if ready  => log.debug(s"got RemoveVmActor($actor)");         handlerRemoveVmActor(actor)
-    case DeployInfo(deployInfo)       if ready  => handleDeployInfo(deployInfo)
+    case DeployInfo(deployInfo : VagrantEnvironmentConfig)       if ready  => handleDeployInfo(deployInfo)
     case NoDeployInfo                 if ready  => handleNoDeployInfo()
     case SystemAttributes(attributes) if ready  => log.debug(s"got SystemAttributes($attributes)"); handlerSystemAttributes(attributes)
     case VmProvisioned                if ready  => log.debug("got VmProvisioned");                  handlerVmProvisioned

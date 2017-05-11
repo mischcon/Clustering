@@ -38,7 +38,7 @@ class NodeActorOrig extends Actor with ActorLogging {
     case GetGlobalStatusActor => log.debug("got GetGlobalStatusActor"); sender() ! SetGlobalStatusActor(globalStatusActor)
     case AddVmActor => log.debug("got AddVmActor"); deregisterAddVmActor; addVmActorInit
     case RemoveVmActor(actor) => log.debug(s"got RemoveVmActor from ${actor.path.name}"); removeVm(actor)
-    case DeployInfo(vagrantEnvironmentConfig) => log.debug("got DeployInfo"); this.vagrantEnvironmentConfig = vagrantEnvironmentConfig; deregisterGetDeployInfo; addVmActor
+    case DeployInfo(vagrantEnvironmentConfig : VagrantEnvironmentConfig) => log.debug("got DeployInfo"); this.vagrantEnvironmentConfig = vagrantEnvironmentConfig; deregisterGetDeployInfo; addVmActor
     case NoDeployInfo => log.debug("got NoDeployInfo"); this.vagrantEnvironmentConfig == null; registerGetDeployInfo
     case SystemAttributes(attributes) => log.debug("got SystemAttributes"); this.systemAttributes = attributes; addVmActor
     case VmProvisioned => log.debug("got VmProvisioned"); registerAddVmActor

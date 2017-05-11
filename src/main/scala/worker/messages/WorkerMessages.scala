@@ -99,7 +99,7 @@ case object GetDeployInfo extends WorkerMessagesTrait
   * Reply of a {@link worker.messages#GetDeployInfo GetDeployInfo} message.
   * @param vagrantEnvironmentConfig the actual deploy info
   */
-case class DeployInfo(vagrantEnvironmentConfig : VagrantEnvironmentConfig) extends WorkerMessagesTrait
+case class DeployInfo[T](vagrantEnvironmentConfig : T) extends WorkerMessagesTrait
 
 /**
   * Indicates that there is no deploy info available currently

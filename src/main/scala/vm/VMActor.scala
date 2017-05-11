@@ -58,7 +58,7 @@ class VMActor extends Actor with ActorLogging {
     case VmAddBoxe(boxName) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.addBoxe(boxName))
     case VmRemoveBoxes(boxName) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.removeBoxes(boxName))
     case VmUpdateBoxes(boxName) if vmProvisioned => sender() ! VmResponse(vagrantEnvironment.updateBoxes(boxName))
-    case DeployInfo(vagrantEnvironmentConfig) => {
+    case DeployInfo(vagrantEnvironmentConfig : VagrantEnvironmentConfig) => {
       log.debug("received DeployInfo")
       this.vagrantEnvironmentConfig = new Cloner().deepClone(vagrantEnvironmentConfig)
       if (cancellable != null) cancellable.cancel()
