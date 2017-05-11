@@ -1,5 +1,6 @@
 package de.oth.clustering.java;
 
+import utils.DeployInfoInterface;
 import vm.VmEnvironment;
 import vm.vagrant.configuration.VagrantEnvironmentConfig;
 
@@ -109,7 +110,7 @@ public abstract class BaseCodebaseLoader<T extends Entry> extends ClassLoader im
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public VagrantEnvironmentConfig getVmConfig() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public DeployInfoInterface getVmConfig() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         Class configClass = null;
         for(Class cls : classList){
             if(VmEnvironment.class.isAssignableFrom(cls)){

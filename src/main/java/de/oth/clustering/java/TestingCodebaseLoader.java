@@ -6,6 +6,10 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+/**
+ * Example class that uses the {@link de.oth.clustering.java.BaseCodebaseLoader} in combination with
+ * the {@link de.oth.clustering.java.TestEntry TestEntry} that extends the regular {@link de.oth.clustering.java.Entry Entry}.
+ */
 public class TestingCodebaseLoader extends BaseCodebaseLoader<TestEntry>{
 
     public TestingCodebaseLoader(){}
