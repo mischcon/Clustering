@@ -1,5 +1,6 @@
 package worker.traits
 
+import utils.DeployInfoInterface
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 
 /**
@@ -14,7 +15,7 @@ trait VMDeployWorkerTrait {
     * See wiki for more details about the workflow.
     * @param deployInfo
     */
-  def handleDeployInfo(deployInfo : VagrantEnvironmentConfig)
+  def handleDeployInfo[T >: DeployInfoInterface](deployInfo : T)
 
   /**
     * Response of a {@link worker.messages#GetDeployInfo GetDeployInfo} message.

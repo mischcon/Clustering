@@ -3,6 +3,7 @@ package vm
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
+import utils.DeployInfoInterface
 import utils.messages.SystemAttributes
 import vm.messages._
 import vm.vagrant.configuration.VagrantEnvironmentConfig
@@ -196,9 +197,10 @@ class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
     log.debug(s"goodbye from ${self.path.name}")
   }
 
-  override def handleDeployInfo(deployInfo: VagrantEnvironmentConfig): Unit = {
-    log.debug(s"got DeployInfo($deployInfo)")
-    handlerDeployInfo(deployInfo)
+  override def handleDeployInfo[T >: DeployInfoInterface](deployInfo: T): Unit = {
+    var info = deployInfo.asInstanceOf[VagrantEnvironmentConfig]
+    log.debug(s"got DeployInfo($info)")
+    handlerDeployInfo(info)
   }
 
   override def handleNoDeployInfo(): Unit = {

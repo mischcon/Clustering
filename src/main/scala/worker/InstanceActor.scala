@@ -1,6 +1,7 @@
 package worker
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
+import utils.DeployInfoInterface
 import vm.messages.{GetInstanceActor, SetInstanceActor}
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages._
@@ -14,8 +15,8 @@ import worker.messages._
   */
 class InstanceActor extends Actor with ActorLogging {
 
-  // InstanceID + Ref of child + Version + VagrantEnvironmentConfig
-  var instances : List[(String, ActorRef, String, VagrantEnvironmentConfig)] = List.empty
+  // InstanceID + Ref of child + Version + DeployInfoInterface
+  var instances : List[(String, ActorRef, String, DeployInfoInterface)] = List.empty
 
   override def preStart(): Unit = {
     log.debug(s"Hello from ${self.path.name}")

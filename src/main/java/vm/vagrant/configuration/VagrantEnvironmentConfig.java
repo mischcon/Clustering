@@ -1,5 +1,7 @@
 package vm.vagrant.configuration;
 
+import utils.DeployInfoInterface;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,7 +12,7 @@ import java.util.List;
  *
  * @author oliver.ziegert
  */
-public class VagrantEnvironmentConfig implements Serializable {
+public class VagrantEnvironmentConfig implements Serializable, DeployInfoInterface {
 
     private List<VagrantVmConfig> vmConfigs;
     private File path;
@@ -41,6 +43,7 @@ public class VagrantEnvironmentConfig implements Serializable {
 
     public File path() { return path; }
 
+    @Override
     public String version() { return version; }
 
     public void setVersion(String version) { this.version = version; }

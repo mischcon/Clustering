@@ -1,6 +1,7 @@
 package worker.messages
 
 import akka.actor.ActorRef
+import utils.DeployInfoInterface
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 
 trait WorkerMessagesTrait
@@ -99,7 +100,7 @@ case object GetDeployInfo extends WorkerMessagesTrait
   * Reply of a {@link worker.messages#GetDeployInfo GetDeployInfo} message.
   * @param vagrantEnvironmentConfig the actual deploy info
   */
-case class DeployInfo[T](vagrantEnvironmentConfig : T) extends WorkerMessagesTrait
+case class DeployInfo[T >: DeployInfoInterface](vagrantEnvironmentConfig : T) extends WorkerMessagesTrait
 
 /**
   * Indicates that there is no deploy info available currently
