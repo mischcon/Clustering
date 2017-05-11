@@ -1,7 +1,7 @@
 package worker.traits
 
 import akka.actor.{ActorRef, Terminated}
-import worker.messages.Task
+import worker.messages.{StillAlive, Task}
 
 /**
   * Created by mischcon on 11.05.17.
@@ -67,5 +67,5 @@ trait VMTaskWorkerTrait {
     *
     * See wiki for more details about the workflow.
     */
-  def handlerStillAlive()
+  def handlerStillAlive(msg: StillAlive)
 }

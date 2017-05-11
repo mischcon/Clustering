@@ -25,7 +25,7 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
   private var vmActor: ActorRef = _
   private var instanceActor : ActorRef = _
   private var portMapping: Map[String, (String, Int)] = Map()
-  private var scheduleOnceGetTask: Cancellable = _
+  private var scheduleGetTask: Cancellable = _
   private var haveSpaceForTasks: Boolean = _
   private var ready: Boolean = _
 
@@ -43,8 +43,8 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
     case CannotGetExecutor                   if ready  => log.debug("got CannotGetExecutor");                     handlerCannotGetExecutor
     case Terminated(actor)                   if ready  => log.debug(s"got Terminated($actor)");                   handlerTerminated(actor)
     case request: RestApiRequest             if ready  => log.debug(s"got RestApiRequest($request)");             handlerRestApiRequest(request)
-    case StillAlive                          if ready  => log.debug("got StillAlive");                            handlerStillAlive
-    case x: Any                              if !ready => log.debug(s"got Message but NotReadyJet");              handlerNotReady(x)
+    case s: StillAlive                       if ready  => log.debug("got StillAlive");                            handlerStillAlive(s)
+    case x: Any                              if !ready => log.debug(s"got Message $x but NotReadyJet");           handlerNotReady(x)
   }
 
   private def handlerInit = {
@@ -70,8 +70,8 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
     this.vagrantEnvironmentConfig = config
     getPortMapping
     checkReady
-    if (scheduleOnceGetTask == null)
-      scheduleOnceGetTask(5 seconds)
+    if (scheduleGetTask == null)
+      scheduleGetTask(5 seconds, 10 seconds)
   }
 
   private def handlerNotReady(any: Any) = {
@@ -83,7 +83,9 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
   }
 
   override def handlerSendTask(task: Task) = {
-    scheduleOnceGetTask = null
+    if (scheduleGetTask != null)
+      scheduleGetTask.cancel()
+    scheduleGetTask = null
     if (haveSpaceForTasks) {
       haveSpaceForTasks = false
       sender() ! AcquireExecutor(self)
@@ -92,7 +94,9 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
   }
 
   override def handlerNoMoreTasks = {
-    scheduleOnceGetTask = null
+    if (scheduleGetTask != null)
+      scheduleGetTask.cancel()
+    scheduleGetTask = null
     vmActor ! NoMoreTasks
     nodeActor ! RemoveVmActor(self)
     context.stop(self)
@@ -114,15 +118,15 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
   private def handlerFailure = {
     log.debug("releasing task - now I have space for a new task!")
     haveSpaceForTasks = true
-    if (scheduleOnceGetTask == null)
-      scheduleOnceGetTask(0 seconds)
+    if (scheduleGetTask == null)
+      scheduleGetTask(0 seconds, 10 seconds)
   }
 
   private def handlerSuccess(): Unit = {
     log.debug("task successfull - ask for new task")
     haveSpaceForTasks = true
-    if (scheduleOnceGetTask == null)
-      scheduleOnceGetTask(0 seconds)
+    if (scheduleGetTask == null)
+      scheduleGetTask(0 seconds, 10 seconds)
   }
 
   private def handlerRestApiRequest(request: RestApiRequest) = {
@@ -160,9 +164,9 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
     }
   }
 
-  override def handlerStillAlive = {
-    //ToDo: SNMP
-    sender() ! true
+  override def handlerStillAlive(msg: StillAlive) = {
+    log.debug(s"forward StillAlive from ${msg.self} to $vmActor")
+    vmActor.forward(StillAlive)
   }
 
   private def checkReady = {
@@ -207,8 +211,8 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
     handlerSuccess()
   }
 
-  private def scheduleOnceGetTask(delay: FiniteDuration): Unit = {
-    scheduleOnceGetTask = context.system.scheduler.scheduleOnce(delay, instanceActor, GetTask(vagrantEnvironmentConfig.version()))(context.dispatcher, self)
+  private def scheduleGetTask(delay: FiniteDuration, interval: FiniteDuration): Unit = {
+    scheduleGetTask = context.system.scheduler.schedule(delay, interval, instanceActor, GetTask(vagrantEnvironmentConfig.version()))(context.dispatcher, self)
   }
 
   private def scheduleOnceRetry(delay: FiniteDuration, receive: ActorRef, message: Any) = {

@@ -61,7 +61,7 @@ public class TestVagrantEnvironment implements VmEnvironment {
                 .withHostIp("127.0.0.1")
                 .withHostPort(1337)
                 .withProtocol(Protocol.TCP)
-                .withService("https")
+                .withService("httpi")
                 .build())
             .withVagrantSyncedFolderConfig(VagrantSyncedFoldersConfigBuilder
                 .createVirtualBoxConfig()

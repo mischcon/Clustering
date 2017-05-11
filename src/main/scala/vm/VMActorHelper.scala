@@ -9,7 +9,15 @@ import vm.messages.VmTask
 class VMActorHelper extends Actor with ActorLogging {
 
   override def receive: Receive = {
-    case VmTask(runnable) => log.debug(s"got mTask($runnable)"); new Thread(runnable).start()
+    case VmTask(runnable) => log.debug(s"got VmTask($runnable)"); new Thread(runnable).start()
+  }
+
+  override def preStart = {
+    log.debug(s"hello from ${self.path.name}")
+  }
+
+  override def postStop = {
+    log.debug(s"goodbye from ${self.path.name}")
   }
 
 }

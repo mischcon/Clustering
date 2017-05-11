@@ -43,7 +43,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
     case GetSystemAttributes          if ready  => log.debug("got GetSystemAttributes");           handlerGetSystemAttributes
     case SetPath(path)                          => log.debug(s"got SetPath($path)");               handlerSetPath(path)
     case SetGlobalStatusActor(actor)            => log.debug(s"got SetGlobalStatusActor($actor)"); handlerSetGlobalStatusActor(actor)
-    case x: Any                       if !ready => log.debug("got Message but NotReadyJet");       handlerNotReady(x)
+    case x: Any                       if !ready => log.debug(s"got Message $x but NotReadyJet");   handlerNotReady(x)
   }
 
   private def handlerInit = {
@@ -77,8 +77,8 @@ class NodeMonitorActor extends Actor with ActorLogging {
   private def handlerSetGlobalStatusActor(actorRef: ActorRef) = {
     this.globalStatusActor = actorRef
     vagrant = checkVagrant
-    globalStatusActor ! RegisterNodeMonitorActor
     ready = true
+    globalStatusActor ! RegisterNodeMonitorActor(self)
   }
 
   private def handlerNotReady(any: Any) = {

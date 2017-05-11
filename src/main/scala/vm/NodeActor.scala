@@ -39,13 +39,14 @@ class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
     case GetVmProxyActor(actor)       if ready  => log.debug(s"got GetVmProxyActor($actor)");       handlerGetVmProxyActor(actor)
     case GetVmActor(actor)            if ready  => log.debug(s"got GetVmActor($actor)");            handlerGetVmActor(actor)
     case GetGlobalStatusActor         if ready  => log.debug("got GetGlobalStatusActor");           handlerGetGlobalStatusActor
+    case GetNodeMonitorActor          if ready  => log.debug("got GetNodeMonitorActor");            handlerGetNodeMonitorActor
     case AddVmActor                   if ready  => log.debug("got AddVmActor");                     handlerAddVmActor
     case RemoveVmActor(actor)         if ready  => log.debug(s"got RemoveVmActor($actor)");         handlerRemoveVmActor(actor)
     case DeployInfo(deployInfo)       if ready  => log.debug(s"got DeployInfo($deployInfo)");       handlerDeployInfo(deployInfo)
     case NoDeployInfo                 if ready  => log.debug(s"got NoDeployInfo");                  handlerNoDeployInfo
     case SystemAttributes(attributes) if ready  => log.debug(s"got SystemAttributes($attributes)"); handlerSystemAttributes(attributes)
     case VmProvisioned                if ready  => log.debug("got VmProvisioned");                  handlerVmProvisioned
-    case x: Any                       if !ready => log.debug(s"got Message but NotReadyJet");       handlerNotReady(x)
+    case x: Any                       if !ready => log.debug(s"got Message $x but NotReadyJet");    handlerNotReady(x)
   }
 
   private def handlerInit = {
@@ -78,6 +79,10 @@ class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
       log.debug("NO VMProxyActor was found :(")
       sender() ! SetVmProxyActor(null)
     }
+  }
+
+  private def handlerGetNodeMonitorActor = {
+    sender() ! SetNodeMonitorActor(nodeMonitorActor)
   }
 
   private def handlerGetVmActor(actorRef: ActorRef) = {

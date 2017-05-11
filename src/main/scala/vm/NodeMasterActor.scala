@@ -31,13 +31,13 @@ class NodeMasterActor extends Actor with ActorLogging {
     case SetInstanceActor(actor)               => log.debug(s"got SetInstanceActor($actor)");     handlerSetInstanceActor(actor)
     case SetGlobalStatusActor(actor)           => log.debug(s"got SetGlobalStatusActor($actor)"); handlerSetGlobalStatusActor(actor)
     case NotReadyJet(message)                  => log.debug(s"got NotReadyJet($message)");        handlerNotReadyJet(message)
+    case Terminated(actor)                     => log.debug(s"got Terminated($actor)");           handlerDeregisterNodeActor(actor)
     case GetGlobalStatusActor        if ready  => log.debug("got GetGlobalStatusActor");          handlerGetGlobalStatusActor
     case GetInstanceActor            if ready  => log.debug("got GetInstanceActor");              handlerGetInstanceActor
     case DeregisterNodeActor(actor)  if ready  => log.debug("got DeregisterNodeActor");           handlerDeregisterNodeActor(actor)
     case IncludeNode(address)        if ready  => log.debug(s"got IncludeNode($address)");        handlerIncludeNode(address)
     case MemberJoined(member)        if ready  => log.debug(s"got MemberJoined($member)");        handlerIncludeNode(member.address)
-    case Terminated(actor)                     => log.debug(s"got Terminated($actor)");           handlerDeregisterNodeActor(actor)
-    case x: Any                      if !ready => log.debug("got Message but NotReadyJet");       handlerNotReady(x)
+    case x: Any                      if !ready => log.debug(s"got Message $x but NotReadyJet");   handlerNotReady(x)
   }
 
   private def handlerInit = {

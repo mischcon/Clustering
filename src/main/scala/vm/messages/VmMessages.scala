@@ -103,3 +103,5 @@ case class SetPath(path : File) extends VmMessages
 // VMActor
 
 case class SetNodeMonitorActor(nodeMonitorActor: ActorRef) extends VmMessages
+
+case object GetNodeMonitorActor extends VmMessages

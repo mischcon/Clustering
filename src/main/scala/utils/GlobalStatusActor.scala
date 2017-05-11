@@ -27,7 +27,7 @@ class GlobalStatusActor extends Actor with ActorLogging {
     log.info(s"actor ${nodeMonitorActor.path} registered")
     context.watch(nodeMonitorActor)
     val cancellable = context.system.scheduler.schedule(5 seconds,
-      60 seconds,
+      5 seconds,
       nodeMonitorActor,
       GetSystemAttributes)(
       context.dispatcher,

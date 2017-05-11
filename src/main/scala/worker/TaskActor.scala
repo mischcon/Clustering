@@ -89,7 +89,7 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
       log.debug("received TestFailException!")
 
       //ask the vm if it is still alive
-      val stillAliveFuture = targetVm ? StillAlive
+      val stillAliveFuture = targetVm ? StillAlive(self)
       val alive = Await.result(stillAliveFuture, 3 seconds)
       alive match {
         case true => log.debug("vm is still alive - escalating..."); taskDone = true; Escalate
