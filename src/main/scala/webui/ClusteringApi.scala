@@ -274,6 +274,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
 
   def handleUpload(bytes : Source[ByteString, Any]) ={
     val file = File.createTempFile(new Random().nextString(15),"b")
+    file.deleteOnExit()
     val sink = FileIO.toPath(file.toPath)
     val writing = bytes.runWith(sink)
     onSuccess(writing) { result =>

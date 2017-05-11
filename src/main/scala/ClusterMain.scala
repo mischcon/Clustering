@@ -116,7 +116,6 @@ object ClusterMain extends App {
             }
         }
 
-        //Thread.sleep(500)
         if(cli_config.debug)
           println(new PrivateMethodExposer(system)('printTree)())
 
