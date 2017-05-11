@@ -1,0 +1,32 @@
+title Aquire Task Workflow
+target -> InstanceActor: GetTask(version : String)
+alt Tasks with provided version available
+    InstanceActor -> TaskActor: forward GetTask message
+    TaskActor -> target: SendTask(task : Task)
+    alt target accepts Task offer
+        target -> TaskActor: AcquireExecutor(vmInfo : Object, vmActorRef : ActorRef)
+        TaskActor -> Executor: create executor
+        alt executor could be created
+            Executor -> TaskActor: ActorRef of Executor
+            TaskActor -> target: Executor(executor : ActorRef)
+            note right of target
+                Task now gets executed.
+                Target should supervise
+                the executor.
+            end note
+            Executor -> target: Terminated
+            note right of target
+                Executor termianted, which
+                means that the target
+                can aquire a new Task.
+            end note
+        else executor could NOT be created
+            TaskActor -> target: CannotGetExecutor
+        end
+    else target rejects Task offer
+        target -> TaskActor: Failure(new Exception())
+    end
+else NO Tasks with provided version available
+    InstanceActor  -> target: NoMoreTasks
+end
+
