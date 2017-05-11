@@ -9,6 +9,7 @@ import akka.util.Timeout
 import utils.db.{EndState, TaskStatus, UpdateTask, UpdateTaskStatus}
 import utils.messages.{ExecutorAddress, GetExecutorAddress}
 import worker.messages._
+import worker.traits.WorkerTrait
 
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._

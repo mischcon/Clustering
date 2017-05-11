@@ -7,6 +7,7 @@ import de.oth.clustering.java.TestingCodebaseLoader
 import org.junit.Test
 import org.junit.runner.{JUnitCore, Request, Result}
 import worker.messages.ExecuteTask
+import worker.traits.WorkerTrait
 
 /**
   * Actor responsible for executing tasks. Is created by a TaskActor and is being supervised / watched by

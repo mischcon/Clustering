@@ -1,6 +1,7 @@
 package worker
 import akka.actor.{Props, Terminated}
 import worker.messages.{AddTask, GetTask, PersistAndSuicide}
+import worker.traits.WorkerTrait
 
 /**
   * Sometimes tasks might affect other tasks (e.g. if one task changes a global configuration than the concurrent

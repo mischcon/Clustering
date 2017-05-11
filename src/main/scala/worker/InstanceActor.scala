@@ -13,7 +13,7 @@ import worker.messages._
   * version is deployed on the VM - the InstanceActor then searches for a suitable instance
   * (one with a matching version) an forwards the request.
   */
-class InstanceActor extends Actor with ActorLogging{
+class InstanceActor extends Actor with ActorLogging {
 
   // InstanceID + Ref of child + Version + VagrantEnvironmentConfig
   var instances : List[(String, ActorRef, String, VagrantEnvironmentConfig)] = List.empty

@@ -6,6 +6,7 @@ import akka.actor.{ActorRef, ActorSelection, OneForOneStrategy, Props, Superviso
 import akka.util.Timeout
 import utils.db.{EndState, TaskStatus, UpdateTask}
 import worker.messages._
+import worker.traits.WorkerTrait
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._

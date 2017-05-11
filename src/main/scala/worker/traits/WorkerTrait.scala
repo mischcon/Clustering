@@ -1,4 +1,4 @@
-package worker
+package worker.traits
 
 import akka.actor.{Actor, ActorLogging}
 

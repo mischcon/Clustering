@@ -7,6 +7,7 @@ import utils.messages.SystemAttributes
 import vm.messages._
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages.{DeployInfo, GetDeployInfo, NoDeployInfo}
+import worker.traits.VMDeployWorkerTrait
 
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
@@ -14,7 +15,7 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
 /**
   * Created by oliver.ziegert on 3/20/17.
   */
-class NodeActor extends Actor with ActorLogging {
+class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
 
   private var nodeMasterActor: ActorRef = _
   private var nodeMonitorActor: ActorRef = _
@@ -39,8 +40,8 @@ class NodeActor extends Actor with ActorLogging {
     case GetGlobalStatusActor         if ready  => log.debug("got GetGlobalStatusActor");           handlerGetGlobalStatusActor
     case AddVmActor                   if ready  => log.debug("got AddVmActor");                     handlerAddVmActor
     case RemoveVmActor(actor)         if ready  => log.debug(s"got RemoveVmActor($actor)");         handlerRemoveVmActor(actor)
-    case DeployInfo(deployInfo)       if ready  => log.debug(s"got DeployInfo($deployInfo)");       handlerDeployInfo(deployInfo)
-    case NoDeployInfo                 if ready  => log.debug("got NoDeployInfo");                   handlerNoDeployInfo
+    case DeployInfo(deployInfo)       if ready  => handleDeployInfo(deployInfo)
+    case NoDeployInfo                 if ready  => handleNoDeployInfo()
     case SystemAttributes(attributes) if ready  => log.debug(s"got SystemAttributes($attributes)"); handlerSystemAttributes(attributes)
     case VmProvisioned                if ready  => log.debug("got VmProvisioned");                  handlerVmProvisioned
     case x: Any                       if !ready => log.debug(s"got Message but NotReadyJet");       handlerNotReady(x)
@@ -195,4 +196,13 @@ class NodeActor extends Actor with ActorLogging {
     log.debug(s"goodbye from ${self.path.name}")
   }
 
+  override def handleDeployInfo(deployInfo: VagrantEnvironmentConfig): Unit = {
+    log.debug(s"got DeployInfo($deployInfo)")
+    handlerDeployInfo(deployInfo)
+  }
+
+  override def handleNoDeployInfo(): Unit = {
+    log.debug("got NoDeployInfo")
+    handlerNoDeployInfo
+  }
 }

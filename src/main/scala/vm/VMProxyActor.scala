@@ -12,6 +12,7 @@ import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantPortForwarding
 import worker.messages._
 import akka.pattern._
 import vm.vagrant.util.Service
+import worker.traits.VMTaskWorkerTrait
 
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 import scala.concurrent.Await
@@ -21,7 +22,7 @@ import scala.util.control
 /**
   * Created by mischcon on 3/20/17.
   */
-class VMProxyActor extends Actor with ActorLogging {
+class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
 
   private var uuid: String = _
   private var nodeActor: ActorRef = _
@@ -50,22 +51,11 @@ class VMProxyActor extends Actor with ActorLogging {
     case SetVmActor(vmActor) => log.debug("got SetVmActor");this.vmActor = vmActor; initGetVagrantEnvironmentConfig
     case SetInstanceActor(instanceActor) => log.debug("got SetInstanceActor");this.instanceActor = instanceActor
     case NotReadyJet => log.debug("got NotReadyJet"); registerGetVagrantEnvironmentConfig
-    case SendTask(task) if haveSpaceForTasks => {
-      log.debug(s"got SendTask, haveSpaceForTasks = $haveSpaceForTasks")
-      haveSpaceForTasks = false
-      log.debug("deregisterGetTask")
-      deregisterGetTask
-      log.debug(s"send AcquireExecutor(${vagrantEnvironmentConfig.version()}, $self)")
-      sender() ! AcquireExecutor(vagrantEnvironmentConfig.version(), self)
-    }
-    case SendTask(task) if !haveSpaceForTasks => /*log.debug(s"got SendTask, haveSpaceForTasks = $haveSpaceForTasks");*/ sender() ! Failure(new Exception("no more tasks!"))
-    case NoMoreTasks => log.debug("got NoMoreTasks"); destroyVm; deregisterGetTask
-    case Executor(executor) => log.debug("got Executor"); context.watch(executor)
-    case CannotGetExecutor => log.debug("got CannotGetExecutor"); handleFailure()
-    case t : Terminated => {
-      log.debug(s"received TERMINATED from ${t.actor.path.toString}, which means that the task is done - now I have space for a new task!")
-      handleFailure()
-    }
+    case SendTask(task) => handleSendTask(task)
+    case NoMoreTasks => handleNoMoreTasks()
+    case Executor(executor) => handleExecutor(executor)
+    case CannotGetExecutor => handleCannotGetExecutor()
+    case t : Terminated => handleTerminated(t)
     case request: RestApiRequest =>
       log.debug("got RestApiRequest");
       val url = new URL(request.getUrl)
@@ -99,7 +89,7 @@ class VMProxyActor extends Actor with ActorLogging {
         case exception: Exception =>
           sender() ! exception
       }
-    case StillAlive => log.debug("received StillAlive"); sender() ! checkVMStillAlive
+    case StillAlive => handleStillAlive()
 
   }
 
@@ -226,5 +216,44 @@ class VMProxyActor extends Actor with ActorLogging {
 
   override def postStop(): Unit = {
     log.debug(s"goodbye from ${self.path.name}")
+  }
+
+  override def handleSendTask(task: Task): Unit = {
+    if(haveSpaceForTasks){
+      log.debug(s"got SendTask, haveSpaceForTasks = $haveSpaceForTasks")
+      haveSpaceForTasks = false
+      log.debug("deregisterGetTask")
+      deregisterGetTask
+      log.debug(s"send AcquireExecutor(${vagrantEnvironmentConfig.version()}, $self)")
+      sender() ! AcquireExecutor(vagrantEnvironmentConfig.version(), self)
+    } else {
+      sender() ! Failure(new Exception("no more tasks!"))
+    }
+  }
+
+  override def handleNoMoreTasks(): Unit = {
+    log.debug("got NoMoreTasks")
+    destroyVm
+    deregisterGetTask
+  }
+
+  override def handleExecutor(executor: ActorRef): Unit = {
+    log.debug("got Executor")
+    context.watch(executor)
+  }
+
+  override def handleCannotGetExecutor(): Unit = {
+    log.debug("got CannotGetExecutor")
+    handleFailure()
+  }
+
+  override def handleTerminated(terminated: Terminated): Unit = {
+    log.debug(s"received TERMINATED from ${terminated.actor.path.toString}, which means that the task is done - now I have space for a new task!")
+    handleFailure()
+  }
+
+  override def handleStillAlive(): Unit = {
+    log.debug("received StillAlive")
+    sender() ! checkVMStillAlive
   }
 }
