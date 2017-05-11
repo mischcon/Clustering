@@ -2,9 +2,9 @@ import java.net.NetworkInterface
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import akka.pattern.ask
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
 import akka.cluster.Cluster
+import akka.pattern.ask
 import akka.util.Timeout
 import clustering.ClusterType
 import com.typesafe.config.ConfigFactory

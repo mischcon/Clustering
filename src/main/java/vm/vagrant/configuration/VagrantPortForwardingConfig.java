@@ -1,7 +1,6 @@
 package vm.vagrant.configuration;
 
 import vm.vagrant.util.Protocol;
-import vm.vagrant.util.Service;
 
 /**
  * Created by oliver.ziegert on 20.04.17.

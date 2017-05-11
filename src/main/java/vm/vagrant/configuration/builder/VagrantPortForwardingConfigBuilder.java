@@ -3,7 +3,6 @@ package vm.vagrant.configuration.builder;
 import vm.vagrant.configuration.VagrantNetworkConfig;
 import vm.vagrant.configuration.VagrantPortForwardingConfig;
 import vm.vagrant.util.Protocol;
-import vm.vagrant.util.Service;
 
 /**
  * Created by oliver.ziegert on 20.04.17.

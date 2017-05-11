@@ -1,7 +1,6 @@
 package worker
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
-import sun.security.jca.GetInstance
 import vm.messages.{GetInstanceActor, SetInstanceActor}
 import vm.vagrant.configuration.VagrantEnvironmentConfig
 import worker.messages._

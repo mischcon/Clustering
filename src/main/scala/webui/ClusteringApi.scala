@@ -4,12 +4,12 @@ import java.io._
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import akka.pattern.ask
-import akka.actor.{Actor, ActorLogging, ActorSystem}
+import akka.actor.{Actor, ActorLogging}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.{Directives, Route}
+import akka.pattern.ask
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.{ByteString, Timeout}
@@ -21,7 +21,7 @@ import utils.db._
 import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{Await, ExecutionContextExecutor}
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success}
 

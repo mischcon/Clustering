@@ -1,23 +1,18 @@
 package vm
 
-import java.net.{URI, URL}
+import java.net.URL
 
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Terminated}
-import akka.util.Timeout
 import communication._
 import org.apache.http.impl.client.HttpClientBuilder
 import vm.messages._
 import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantPortForwardingConfig}
 import worker.messages._
-import akka.pattern._
-import vm.vagrant.util.Service
 import worker.traits.VMTaskWorkerTrait
 
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
-import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import scala.util.control
 
 /**
   * Created by mischcon on 3/20/17.

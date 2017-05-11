@@ -1,7 +1,6 @@
 package vm.messages
 
 import java.io.File
-import java.util.concurrent.{Callable, FutureTask}
 
 import akka.actor.{ActorRef, Address}
 import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantVmConfig}

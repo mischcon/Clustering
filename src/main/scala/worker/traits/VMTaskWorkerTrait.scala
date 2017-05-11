@@ -1,7 +1,7 @@
 package worker.traits
 
 import akka.actor.{ActorRef, Terminated}
-import worker.messages.{Executor, Task}
+import worker.messages.Task
 
 /**
   * Created by mischcon on 11.05.17.

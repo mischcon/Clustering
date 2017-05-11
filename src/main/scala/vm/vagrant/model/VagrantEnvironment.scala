@@ -1,7 +1,7 @@
 package vm.vagrant.model
 
-import org.jruby.{RubyObject, RubyString}
 import org.jruby.exceptions.RaiseException
+import org.jruby.{RubyObject, RubyString}
 import vm.vagrant.configuration.VagrantVmConfig
 import vm.vagrant.util.{VagrantException, VagrantVmConfigUtils}
 

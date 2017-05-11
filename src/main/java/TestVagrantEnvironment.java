@@ -3,7 +3,6 @@ import vm.vagrant.configuration.VagrantEnvironmentConfig;
 import vm.vagrant.configuration.VagrantVmConfig;
 import vm.vagrant.configuration.builder.*;
 import vm.vagrant.util.Protocol;
-import vm.vagrant.util.Service;
 
 import java.io.File;
 

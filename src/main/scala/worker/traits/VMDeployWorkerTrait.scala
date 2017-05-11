@@ -1,7 +1,6 @@
 package worker.traits
 
 import vm.vagrant.configuration.VagrantEnvironmentConfig
-import worker.messages.DeployInfo
 
 /**
   * Created by mischcon on 11.05.17.

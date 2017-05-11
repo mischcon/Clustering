@@ -2,7 +2,6 @@ package vm
 
 
 import java.io.File
-import java.nio.file.Files
 import java.util.Random
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}

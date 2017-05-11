@@ -2,7 +2,7 @@ package worker
 
 import Exceptions._
 import akka.actor.SupervisorStrategy.{Escalate, Stop}
-import akka.actor.{ActorRef, Deploy, Kill, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
+import akka.actor.{ActorRef, Deploy, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.pattern._
 import akka.remote.RemoteScope
 import akka.util.Timeout
@@ -11,8 +11,8 @@ import utils.messages.{ExecutorAddress, GetExecutorAddress}
 import worker.messages._
 import worker.traits.WorkerTrait
 
-import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Random, Success}
 
 /**

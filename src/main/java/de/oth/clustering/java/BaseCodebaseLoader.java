@@ -2,7 +2,6 @@ package de.oth.clustering.java;
 
 import vm.VmEnvironment;
 import vm.vagrant.configuration.VagrantEnvironmentConfig;
-import vm.vagrant.configuration.VagrantVmConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
