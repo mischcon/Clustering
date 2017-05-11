@@ -1,0 +1,9 @@
+title Aquire Deploy Information Workflow
+target -> InstanceActor: GetDeployInfo
+
+alt DeployInfo available
+    InstanceActor -> target: DeployInfo[T extends DeployInfoInterface](deployInfo : T)
+else No DeployInfo available
+    InstanceActor -> target: NoDeployInfo
+end
+
