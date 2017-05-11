@@ -18,7 +18,7 @@ trait VMTaskWorkerTrait {
     * See wiki for more details about the workflow.
     * @param task The actual Task
     */
-  def handleSendTask(task : Task)
+  def handlerSendTask(task : Task)
 
   /**
     * Response of a {@link worker.messages#GetTask GetTask} message.
@@ -26,7 +26,7 @@ trait VMTaskWorkerTrait {
     *
     * See wiki for more details about the workflow.
     */
-  def handleNoMoreTasks()
+  def handlerNoMoreTasks()
 
   /**
     * Response of a {@link worker.messages#AcquireExecutor AcquireExecutor} message.
@@ -36,7 +36,7 @@ trait VMTaskWorkerTrait {
     * See wiki for more details about the workflow.
     * @param executor ActorRef of the executor
     */
-  def handleExecutor(executor : ActorRef)
+  def handlerExecutor(executor : ActorRef)
 
   /**
     * Response of a {@link worker.messages#AcquireExecutor AcquireExecutor} message.
@@ -45,7 +45,7 @@ trait VMTaskWorkerTrait {
     *
     * See wiki for more details about the workflow.
     */
-  def handleCannotGetExecutor()
+  def handlerCannotGetExecutor()
 
   /**
     * Since the target supervises the executor it has to react to the executors termination.
@@ -55,7 +55,7 @@ trait VMTaskWorkerTrait {
     * See wiki for more details about the workflow.
     * @param terminated The actual Termianted message
     */
-  def handleTerminated(terminated : Terminated)
+  def handlerTerminated(terminated : ActorRef)
 
   /**
     * If a task fails we need to check whether it has failed because of a failed VM (in this case the task
@@ -67,5 +67,5 @@ trait VMTaskWorkerTrait {
     *
     * See wiki for more details about the workflow.
     */
-  def handleStillAlive()
+  def handlerStillAlive()
 }

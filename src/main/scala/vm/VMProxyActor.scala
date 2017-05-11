@@ -12,7 +12,7 @@ import worker.messages._
 import worker.traits.VMTaskWorkerTrait
 
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 /**
   * Created by mischcon on 3/20/17.
@@ -25,85 +25,30 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
   private var vmActor: ActorRef = _
   private var instanceActor : ActorRef = _
   private var portMapping: Map[String, (String, Int)] = Map()
-  private var cancellableGetVagrantEnvironmentConfig: Cancellable = _
-  private var cancellableGetTask: Cancellable = _
+  private var scheduleOnceGetTask: Cancellable = _
   private var haveSpaceForTasks: Boolean = _
+  private var ready: Boolean = _
 
   self ! Init
 
   override def receive: Receive = {
-    case Init => log.debug("got Init"); init
-    case SetVagrantEnvironmentConfig(vagrantEnvironmentConfig) => {
-      log.debug("got SetVagrantEnvironmentConfig")
-      this.vagrantEnvironmentConfig = vagrantEnvironmentConfig
-      log.debug("deregisterGetVagrantEnvironmentConfig")
-      deregisterGetVagrantEnvironmentConfig
-      log.debug("getPortMapping")
-      getPortMapping
-      log.debug("registerGetTask")
-      registerGetTask
-    }
-    case SetVmActor(vmActor) => log.debug("got SetVmActor");this.vmActor = vmActor; initGetVagrantEnvironmentConfig
-    case SetInstanceActor(instanceActor) => log.debug("got SetInstanceActor");this.instanceActor = instanceActor
-    case NotReadyJet => log.debug("got NotReadyJet"); registerGetVagrantEnvironmentConfig
-    case SendTask(task) => handleSendTask(task)
-    case NoMoreTasks => handleNoMoreTasks()
-    case Executor(executor) => handleExecutor(executor)
-    case CannotGetExecutor => handleCannotGetExecutor()
-    case t : Terminated => handleTerminated(t)
-    case request: RestApiRequest =>
-      log.debug("got RestApiRequest");
-      val url = new URL(request.getUrl)
-      if (portMapping.contains(url.getProtocol)) {
-        val protocol = url.getProtocol
-        val port = portMapping{url.getProtocol}._2
-        val host = portMapping{url.getProtocol}._1
-        val builder = new StringBuilder()
-        builder.append(s"$protocol://$host:$port")
-        if (url.getPath != null) builder.append(url.getPath)
-        if (url.getQuery != null) builder.append(s"?${url.getQuery}")
-        if (url.getRef != null) builder.append(s"#${url.getRef}")
-        request.setUrl(builder.toString())
-      }
-      try {
-        request.getMethod match {
-          case "GET" =>
-            val httpGet: GetRequest = new GetRequest(request)
-            sendRequest(httpGet)
-          case "POST" =>
-            val httpPost: PostRequest = new PostRequest(request)
-            sendRequest(httpPost)
-          case "PUT" =>
-            val httpPut: PutRequest = new PutRequest(request)
-            sendRequest(httpPut)
-          case "DELETE" =>
-            val httpDelete: DeleteRequest = new DeleteRequest(request)
-            sendRequest(httpDelete)
-        }
-      } catch {
-        case exception: Exception =>
-          sender() ! exception
-      }
-    case StillAlive => handleStillAlive()
-
+    case Init                                          => log.debug("got Init");                                  handlerInit
+    case SetVmActor(actor)                             => log.debug(s"got SetVmActor($actor)");                   handlerSetVmActor(actor)
+    case SetInstanceActor(actor)                       => log.debug(s"got SetInstanceActor($actor)");             handlerSetInstanceActor(actor)
+    case NotReadyJet(message)                          => log.debug(s"got NotReadyJet($message)");                handlerNotReadyJet(message)
+    case SetVagrantEnvironmentConfig(config)           => log.debug(s"got SetVagrantEnvironmentConfig($config)"); handlerSetVagrantEnvironmentConfig(config)
+    case SendTask(task)                      if ready  => log.debug(s"got SendTask($task)");                      handlerSendTask(task)
+    case NoMoreTasks                         if ready  => log.debug("got NoMoreTasks");                           handlerNoMoreTasks
+    case Executor(actor)                     if ready  => log.debug(s"got Executor($actor)");                     handlerExecutor(actor)
+    case CannotGetExecutor                   if ready  => log.debug("got CannotGetExecutor");                     handlerCannotGetExecutor
+    case Terminated(actor)                   if ready  => log.debug(s"got Terminated($actor)");                   handlerTerminated(actor)
+    case request: RestApiRequest             if ready  => log.debug(s"got RestApiRequest($request)");             handlerRestApiRequest(request)
+    case StillAlive                          if ready  => log.debug("got StillAlive");                            handlerStillAlive
+    case x: Any                              if !ready => log.debug(s"got Message but NotReadyJet");              handlerNotReady(x)
   }
 
-  private def checkVMStillAlive() = {
-    /**
-      * @Oliver
-      *        bitte prüfe an dieser Stelle, ob die VM an sich (und für SSP: ob der tomcat) noch läuft
-      *        und erreichbar ist. Ist für mich sehr wichtig, weil ich keine ahnung habe, ob eine "TestFailException"
-      *        geworfen worden ist, weil der Test wirklich gefailed ist - oder weil die VM nicht erreichbar ist (z.B. IOException)
-      *
-      *        Wenn ja: @return true
-      *        Wenn nein: @return false
-      *
-      *        Merci!
-      */
-    true
-  }
-
-  private def init = {
+  private def handlerInit = {
+    ready = false
     uuid = self.path.name.split("_"){1}
     nodeActor = context.parent
     haveSpaceForTasks = true
@@ -111,56 +56,133 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
     nodeActor ! GetInstanceActor
   }
 
-  private def initGetVagrantEnvironmentConfig = {
-    if (vmActor != null) {
-      vmActor ! GetVagrantEnvironmentConfig
+  private def handlerSetVmActor(actor: ActorRef) = {
+    this.vmActor = actor
+    checkReady
+  }
+
+  private def handlerSetInstanceActor(actor: ActorRef) = {
+    this.instanceActor = actor
+    checkReady
+  }
+
+  private def handlerSetVagrantEnvironmentConfig(config: VagrantEnvironmentConfig) = {
+    this.vagrantEnvironmentConfig = config
+    getPortMapping
+    checkReady
+    if (scheduleOnceGetTask == null)
+      scheduleOnceGetTask(5 seconds)
+  }
+
+  private def handlerNotReady(any: Any) = {
+    sender() ! NotReadyJet(any)
+  }
+
+  private def handlerNotReadyJet(any: Any) = {
+    scheduleOnceRetry(5 seconds, sender(), any)
+  }
+
+  override def handlerSendTask(task: Task) = {
+    scheduleOnceGetTask = null
+    if (haveSpaceForTasks) {
+      haveSpaceForTasks = false
+      sender() ! AcquireExecutor(self)
+    } else
+      sender() ! Failure(new Exception("no more tasks!"))
+  }
+
+  override def handlerNoMoreTasks = {
+    scheduleOnceGetTask = null
+    vmActor ! NoMoreTasks
+    nodeActor ! RemoveVmActor(self)
+    context.stop(self)
+  }
+
+  override def handlerExecutor(executor: ActorRef) = {
+    context.watch(executor)
+  }
+
+  override def handlerCannotGetExecutor = {
+    handlerFailure
+  }
+
+  override def handlerTerminated(actorRef: ActorRef) = {
+    log.debug(s"received TERMINATED from ${actorRef.path.toString}, which means that the task is done - now I have space for a new task!")
+    handlerFailure
+  }
+
+  private def handlerFailure = {
+    log.debug("releasing task - now I have space for a new task!")
+    haveSpaceForTasks = true
+    if (scheduleOnceGetTask == null)
+      scheduleOnceGetTask(0 seconds)
+  }
+
+  private def handlerSuccess(): Unit = {
+    log.debug("task successfull - ask for new task")
+    haveSpaceForTasks = true
+    if (scheduleOnceGetTask == null)
+      scheduleOnceGetTask(0 seconds)
+  }
+
+  private def handlerRestApiRequest(request: RestApiRequest) = {
+    val url = new URL(request.getUrl)
+    if (portMapping.contains(url.getProtocol)) {
+      val protocol = url.getProtocol
+      val port = portMapping {
+        url.getProtocol
+      }._2
+      val host = portMapping {
+        url.getProtocol
+      }._1
+      val builder = new StringBuilder()
+      builder.append(s"$protocol://$host:$port")
+      if (url.getPath != null) builder.append(url.getPath)
+      if (url.getQuery != null) builder.append(s"?${url.getQuery}")
+      if (url.getRef != null) builder.append(s"#${url.getRef}")
+      request.setUrl(builder.toString())
+    }
+    try {
+      request.getMethod match {
+        case "GET" =>
+          val httpGet: GetRequest = new GetRequest(request)
+          sendRequest(httpGet)
+        case "POST" =>
+          val httpPost: PostRequest = new PostRequest(request)
+          sendRequest(httpPost)
+        case "PUT" =>
+          val httpPut: PutRequest = new PutRequest(request)
+          sendRequest(httpPut)
+        case "DELETE" =>
+          val httpDelete: DeleteRequest = new DeleteRequest(request)
+          sendRequest(httpDelete)
+      }
     }
   }
 
-   private def getPortMapping = {
-     portMapping = Map()
-     for (vmConfig <- vagrantEnvironmentConfig.vmConfigs().asScala) {
-       for (vagrantNetworkConfig <- vmConfig.vagrantNetworkConfigs().asScala) {
-         vagrantNetworkConfig match {
-           case x: VagrantPortForwardingConfig => {
-             if (x.guestPort() == 22)
-               portMapping += s"${x.service()}_${vmConfig.name()}" -> (x.hostIp(), x.hostPort())
-             else
-               portMapping += x.service() -> (x.hostIp(), x.hostPort())
-           }
-         }
-       }
-     }
+  override def handlerStillAlive = {
+    //ToDo: SNMP
+    sender() ! true
   }
 
-
-  private def registerGetVagrantEnvironmentConfig = {
-    if (cancellableGetVagrantEnvironmentConfig == null) {
-      log.debug(s"register GetVagrantEnvironmentConfig scheduler")
-      cancellableGetVagrantEnvironmentConfig = context.system.scheduler.schedule(10 seconds, 60 seconds, vmActor, GetVagrantEnvironmentConfig)(context.dispatcher, self)
-    }
+  private def checkReady = {
+    if (vmActor != null && instanceActor != null && vagrantEnvironmentConfig != null)
+      ready = true
   }
 
-  private def deregisterGetVagrantEnvironmentConfig = {
-    if (cancellableGetVagrantEnvironmentConfig != null) {
-      cancellableGetVagrantEnvironmentConfig.cancel()
-      cancellableGetVagrantEnvironmentConfig = null
-      log.debug("cancellableGetVagrantEnvironmentConfig = null")
-    }
-  }
-
-  private def registerGetTask = {
-    if (cancellableGetTask == null) {
-      log.debug(s"register GetTask scheduler with version: ${vagrantEnvironmentConfig.version()}")
-      cancellableGetTask = context.system.scheduler.schedule(10 seconds, 10 seconds, instanceActor, GetTask(vagrantEnvironmentConfig.version()))(context.dispatcher, self)
-    }
-  }
-
-  private def deregisterGetTask = {
-    if (cancellableGetTask != null) {
-      cancellableGetTask.cancel()
-      cancellableGetTask = null
-      log.debug("cancellableGetTask = null")
+  private def getPortMapping = {
+    portMapping = Map()
+    for (vmConfig <- vagrantEnvironmentConfig.vmConfigs().asScala) {
+      for (vagrantNetworkConfig <- vmConfig.vagrantNetworkConfigs().asScala) {
+        vagrantNetworkConfig match {
+          case x: VagrantPortForwardingConfig => {
+            if (x.guestPort() == 22)
+              portMapping += s"${x.service()}_${vmConfig.name()}" -> (x.hostIp(), x.hostPort())
+            else
+              portMapping += x.service() -> (x.hostIp(), x.hostPort())
+          }
+        }
+      }
     }
   }
 
@@ -182,27 +204,15 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
         sender() ! exception
     }
     client.close()
-    handleSuccess()
+    handlerSuccess()
   }
 
-
-
-  private def handleSuccess(): Unit = {
-    log.debug("task successfull - ask for new task")
-    haveSpaceForTasks = true
-    instanceActor ! GetTask(vagrantEnvironmentConfig.version())
-    registerGetTask
+  private def scheduleOnceGetTask(delay: FiniteDuration): Unit = {
+    scheduleOnceGetTask = context.system.scheduler.scheduleOnce(delay, instanceActor, GetTask(vagrantEnvironmentConfig.version()))(context.dispatcher, self)
   }
 
-  private def handleFailure(): Unit ={
-    log.debug("releasing task - now I have space for a new task!")
-    haveSpaceForTasks = true
-    registerGetTask
-  }
-
-  private def destroyVm = {
-    vmActor ! TasksDone
-    nodeActor ! RemoveVmActor(self)
+  private def scheduleOnceRetry(delay: FiniteDuration, receive: ActorRef, message: Any) = {
+    context.system.scheduler.scheduleOnce(delay, receive, message)(context.dispatcher, self)
   }
 
   override def preStart(): Unit = {
@@ -211,44 +221,5 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
 
   override def postStop(): Unit = {
     log.debug(s"goodbye from ${self.path.name}")
-  }
-
-  override def handleSendTask(task: Task): Unit = {
-    if(haveSpaceForTasks){
-      log.debug(s"got SendTask, haveSpaceForTasks = $haveSpaceForTasks")
-      haveSpaceForTasks = false
-      log.debug("deregisterGetTask")
-      deregisterGetTask
-      log.debug(s"send AcquireExecutor(${vagrantEnvironmentConfig.version()}, $self)")
-      sender() ! AcquireExecutor(self)
-    } else {
-      sender() ! Failure(new Exception("no more tasks!"))
-    }
-  }
-
-  override def handleNoMoreTasks(): Unit = {
-    log.debug("got NoMoreTasks")
-    destroyVm
-    deregisterGetTask
-  }
-
-  override def handleExecutor(executor: ActorRef): Unit = {
-    log.debug("got Executor")
-    context.watch(executor)
-  }
-
-  override def handleCannotGetExecutor(): Unit = {
-    log.debug("got CannotGetExecutor")
-    handleFailure()
-  }
-
-  override def handleTerminated(terminated: Terminated): Unit = {
-    log.debug(s"received TERMINATED from ${terminated.actor.path.toString}, which means that the task is done - now I have space for a new task!")
-    handleFailure()
-  }
-
-  override def handleStillAlive(): Unit = {
-    log.debug("received StillAlive")
-    sender() ! checkVMStillAlive
   }
 }

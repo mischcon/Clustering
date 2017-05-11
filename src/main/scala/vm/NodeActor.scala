@@ -31,7 +31,7 @@ class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
   self ! Init
 
   override def receive: Receive = {
-    case Init                                   => log.debug("got Init"); handlerInit
+    case Init                                   => log.debug("got Init");                           handlerInit
     case SetGlobalStatusActor(actor)            => log.debug(s"got SetGlobalStatusActor($actor)");  handlerSetGlobalStatusActor(actor)
     case SetInstanceActor(actor)                => log.debug(s"got SetInstanceActor($actor)");      handlerSetInstanceActor(actor)
     case NotReadyJet(message)                   => log.debug(s"got NotReadyJet($message)");         handlerNotReadyJet(message)
@@ -41,8 +41,8 @@ class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
     case GetGlobalStatusActor         if ready  => log.debug("got GetGlobalStatusActor");           handlerGetGlobalStatusActor
     case AddVmActor                   if ready  => log.debug("got AddVmActor");                     handlerAddVmActor
     case RemoveVmActor(actor)         if ready  => log.debug(s"got RemoveVmActor($actor)");         handlerRemoveVmActor(actor)
-    case DeployInfo(deployInfo : VagrantEnvironmentConfig)       if ready  => handleDeployInfo(deployInfo)
-    case NoDeployInfo                 if ready  => handleNoDeployInfo()
+    case DeployInfo(deployInfo)       if ready  => log.debug(s"got DeployInfo($deployInfo)");       handlerDeployInfo(deployInfo)
+    case NoDeployInfo                 if ready  => log.debug(s"got NoDeployInfo");                  handlerNoDeployInfo
     case SystemAttributes(attributes) if ready  => log.debug(s"got SystemAttributes($attributes)"); handlerSystemAttributes(attributes)
     case VmProvisioned                if ready  => log.debug("got VmProvisioned");                  handlerVmProvisioned
     case x: Any                       if !ready => log.debug(s"got Message but NotReadyJet");       handlerNotReady(x)
@@ -100,7 +100,13 @@ class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
     instanceActor ! GetDeployInfo
   }
 
-  private def handlerNoDeployInfo = {
+  override def handlerDeployInfo[T >: DeployInfoInterface](deployInfo: T): Unit = {
+    deployInfo match {
+      case config: VagrantEnvironmentConfig => handlerDeployInfo(config)
+    }
+  }
+
+  override def handlerNoDeployInfo = {
     this.vagrantEnvironmentConfig = null
     if (scheduleOnceAddVmActor == null)
       scheduleOnceAddVmActor(30 seconds)
@@ -197,14 +203,4 @@ class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
     log.debug(s"goodbye from ${self.path.name}")
   }
 
-  override def handleDeployInfo[T >: DeployInfoInterface](deployInfo: T): Unit = {
-    var info = deployInfo.asInstanceOf[VagrantEnvironmentConfig]
-    log.debug(s"got DeployInfo($info)")
-    handlerDeployInfo(info)
-  }
-
-  override def handleNoDeployInfo(): Unit = {
-    log.debug("got NoDeployInfo")
-    handlerNoDeployInfo
-  }
 }

@@ -15,7 +15,7 @@ trait VMDeployWorkerTrait {
     * See wiki for more details about the workflow.
     * @param deployInfo
     */
-  def handleDeployInfo[T >: DeployInfoInterface](deployInfo : T)
+  def handlerDeployInfo[T >: DeployInfoInterface](deployInfo : T)
 
   /**
     * Response of a {@link worker.messages#GetDeployInfo GetDeployInfo} message.
@@ -24,6 +24,6 @@ trait VMDeployWorkerTrait {
     *
     * See wiki for more details about the workflow.
     */
-  def handleNoDeployInfo()
+  def handlerNoDeployInfo()
 
 }
