@@ -28,6 +28,19 @@
         <encoder>
             <pattern>%date{yyyy-MM-dd} %X{akkaTimestamp} %-5level[%thread] %logger{1} - %msg%n</pattern>
         </encoder>
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <expression>Exceptions.TestSuccessException.class.isInstance(throwable)</expression>
+            </evaluator>
+            <onMatch>DENY</onMatch>
+        </filter>
+
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <expression>Exceptions.TestFailException.class.isInstance(throwable)</expression>
+            </evaluator>
+            <onMatch>DENY</onMatch>
+        </filter>
     </appender>
 
     <logger name="akka" level="DEBUG" />
