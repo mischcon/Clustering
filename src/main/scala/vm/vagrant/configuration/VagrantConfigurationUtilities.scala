@@ -164,7 +164,7 @@ object VagrantConfigurationUtilities {
 
   private def createVmUsablePortRangeConfig(value: String) = {
     val builder = new StringBuilder
-    builder.append(s"""    vm.vm.usable_port_range = "$value"""").append("\n")
+    builder.append(s"    vm.vm.usable_port_range = $value").append("\n")
     builder.toString
   }
 
