@@ -46,7 +46,7 @@ public class VagrantVmConfigBuilder implements Serializable {
         boxDownloadInsecure = false;
         boxDownloadLocationTrusted = false;
         gracefulHaltTimeout = 60;
-        usablePortRange = "2200..2250";
+        usablePortRange = "2200..3200";
     }
 
     public static VagrantVmConfigBuilder create() {
