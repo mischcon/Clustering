@@ -16,6 +16,7 @@ public class VagrantEnvironmentConfigBuilder implements Serializable {
 
     public VagrantEnvironmentConfigBuilder() {
         vmConfigs = new ArrayList<>();
+        this.path = new File(".");
     }
 
     public static VagrantEnvironmentConfigBuilder create() {
