@@ -152,7 +152,7 @@ class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
 
   private def handlerVmProvisioned = {
     if (scheduleOnceAddVmActor == null)
-      scheduleOnceAddVmActor(30 seconds)
+      scheduleOnceAddVmActor(2 seconds)
   }
 
   private def handlerNotReady(any: Any) = {
