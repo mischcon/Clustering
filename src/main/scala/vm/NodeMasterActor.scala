@@ -3,7 +3,7 @@ package vm
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Address, Deploy, Props, Terminated}
-import akka.cluster.Cluster
+import akka.cluster.{Cluster, Member}
 import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberJoined}
 import akka.remote.RemoteScope
 import vm.messages._
@@ -36,7 +36,7 @@ class NodeMasterActor extends Actor with ActorLogging {
     case GetInstanceActor            if ready  => log.debug("got GetInstanceActor");              handlerGetInstanceActor
     case DeregisterNodeActor(actor)  if ready  => log.debug("got DeregisterNodeActor");           handlerDeregisterNodeActor(actor)
     case IncludeNode(address)        if ready  => log.debug(s"got IncludeNode($address)");        handlerIncludeNode(address)
-    case MemberJoined(member)        if ready  => log.debug(s"got MemberJoined($member)");        handlerIncludeNode(member.address)
+    case MemberJoined(member)        if ready  => log.debug(s"got MemberJoined($member)");        handlerMemberJoined(member)
     case x: Any                      if !ready => log.debug(s"got Message $x but NotReadyJet");   handlerNotReady(x)
   }
 
@@ -62,6 +62,12 @@ class NodeMasterActor extends Actor with ActorLogging {
   private def handlerDeregisterNodeActor(actorRef: ActorRef) = {
     if (nodeActors.contains(actorRef))
       nodeActors = nodeActors.diff(actorRef :: Nil)
+  }
+
+  private def handlerMemberJoined(member : Member) = {
+    if(member.hasRole("vm")){
+      handlerIncludeNode(member.address)
+    }
   }
 
   private def handlerIncludeNode(address: Address) = {
