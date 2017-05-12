@@ -148,12 +148,9 @@ class VMActor extends Actor with ActorLogging {
 
   private def prepareProvisionVm = {
     if (vagrant && vagrantEnvironmentConfig != null) {
-      vagrantEnvironmentConfig.path().mkdirs()
-      if (!vagrantEnvironmentConfig.path().isDirectory)
-        throw new VagrantException("path is not a directory!")
       if (path != null)
         sbt.io.IO.delete(path)
-      path = new File(vagrantEnvironmentConfig.path(), uuid)
+      path = new File(".", uuid)
       val version = vagrantEnvironmentConfig.version()
       path.mkdir()
       vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vagrantEnvironmentConfig.vmConfigs(), path)
