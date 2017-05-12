@@ -20,6 +20,11 @@ public class VagrantEnvironmentConfig implements Serializable, DeployInfoInterfa
 
     public VagrantEnvironmentConfig(Iterable<VagrantVmConfig> vmConfigs, File path) {
         this.vmConfigs = new ArrayList<>();
+        if (path != null) {
+            this.path = path;
+        } else {
+            this.path = new File(".");
+        }
         if (vmConfigs != null) {
             for (VagrantVmConfig vagrantVmConfig : vmConfigs) {
                 this.vmConfigs.add(vagrantVmConfig);
