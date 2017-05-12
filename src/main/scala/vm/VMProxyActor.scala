@@ -39,7 +39,7 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
     case SetInstanceActor(actor)                       => log.debug(s"got SetInstanceActor($actor)");             handlerSetInstanceActor(actor)
     case NotReadyJet(message)                          => log.debug(s"got NotReadyJet($message)");                handlerNotReadyJet(message)
     case SetVagrantEnvironmentConfig(config)           => log.debug(s"got SetVagrantEnvironmentConfig($config)"); handlerSetVagrantEnvironmentConfig(config)
-    case SendTask(task)                      if ready  => log.debug(s"got SendTask($task)");                      handlerSendTask(task)
+    case SendTask(task)                      if ready  => /*log.debug(s"got SendTask($task)");*/                  handlerSendTask(task)
     case NoMoreTasks                         if ready  => log.debug("got NoMoreTasks");                           handlerNoMoreTasks
     case Executor(actor)                     if ready  => log.debug(s"got Executor($actor)");                     handlerExecutor(actor)
     case CannotGetExecutor                   if ready  => log.debug("got CannotGetExecutor");                     handlerCannotGetExecutor
