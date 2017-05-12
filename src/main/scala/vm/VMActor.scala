@@ -174,9 +174,9 @@ class VMActor extends Actor with ActorLogging {
         vagrantEnvironment = new Vagrant().createEnvironment(vagrantEnvironmentConfig)
         var output = ""
         try {
-          vagrantEnvironment.destroy()
-          vagrantEnvironment.updateBoxes()
-          output = vagrantEnvironment.up()
+          output = vagrantEnvironment.destroy()
+          //output += s"\n${vagrantEnvironment.updateBoxes()}"
+          output += s"\n${vagrantEnvironment.up()}"
           val vmConfigs = vagrantEnvironmentConfig.vmConfigs().asScala.map(vagrantEnvironment.getBoxePortMapping(_))
           vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vmConfigs.asJava, vagrantEnvironmentConfig.path())
           vagrantEnvironmentConfig.setVersion(version)
