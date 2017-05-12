@@ -52,7 +52,6 @@ class VMActor extends Actor with ActorLogging {
     case VmTaskResult(any)            if ready                      => log.debug(s"got VmTaskResult($any)");            handlerVmTaskResult(any)
     case NoMoreTasks                  if vmProvisioned              => log.debug("got NoMoreTasks");                    handlerNoMoreTasks
     case GetVagrantEnvironmentConfig  if vmProvisioned              => log.debug("got GetVagrantEnvironmentConfig");    handlerGetVagrantEnvironmentConfig
-    case StillAlive(actor)            if vmProvisioned              => log.debug("got StillAlive");                     handlerStillAlive(actor)
     case x: Any                       if (!ready || !vmProvisioned) => log.debug(s"got Message $x but NotReadyJet");    handlerNotReady(x)
   }
 
@@ -138,20 +137,6 @@ class VMActor extends Actor with ActorLogging {
     vmActorHelper ! VmTask(runnable)
   }
 
-  private def handlerStillAlive(actorRef: ActorRef) = {
-    log.debug(s"got StillAlive from $actorRef}")
-    val runnable: Runnable = () => {
-      val receiver = actorRef
-      val originSender = vmProxyActor
-      val status = vagrantEnvironment.status()
-      val response = !status.exists(_._2 != vm.vagrant.model.VmStatus.running)
-      log.debug(s"send $response to $receiver")
-      receiver.tell(response, originSender)
-    }
-    val vmActorHelper: ActorRef = context.actorOf(Props[VMActorHelper], s"vmActorHelper_${UUID.randomUUID().toString}")
-    vmActorHelper ! VmTask(runnable)
-  }
-
   private def checkReady = {
     if (instanceActor != null && vmProxyActor != null && nodeMonitorActor != null) {
       ready = true
@@ -181,6 +166,7 @@ class VMActor extends Actor with ActorLogging {
           vmCounter += 1
           d.provider().setVmName(s"${uuid}_$vmCounter")
         }
+        d.setName(d.provider().vmName())
       })
 
       val runnable: Runnable = () => {
@@ -189,6 +175,7 @@ class VMActor extends Actor with ActorLogging {
         var output = ""
         try {
           vagrantEnvironment.destroy()
+          vagrantEnvironment.updateBoxes()
           output = vagrantEnvironment.up()
           val vmConfigs = vagrantEnvironmentConfig.vmConfigs().asScala.map(vagrantEnvironment.getBoxePortMapping(_))
           vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vmConfigs.asJava, vagrantEnvironmentConfig.path())
@@ -196,6 +183,7 @@ class VMActor extends Actor with ActorLogging {
           vmActor ! VmTaskResult((vagrantEnvironment, output, vagrantEnvironmentConfig, vagrantEnvironment.status()))
         } catch {
           case e: Exception => {
+            log.debug(s"vagrant up faild: $e\n ${e.getStackTrace.mkString("\n")}")
             vagrantEnvironment.destroy()
             sbt.io.IO.delete(path)
             instanceActor.tell(GetDeployInfo, vmActor)

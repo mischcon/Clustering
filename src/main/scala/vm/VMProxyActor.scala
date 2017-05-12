@@ -45,7 +45,7 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
     case CannotGetExecutor                   if ready  => log.debug("got CannotGetExecutor");                     handlerCannotGetExecutor
     case Terminated(actor)                   if ready  => log.debug(s"got Terminated($actor)");                   handlerTerminated(actor)
     case request: RestApiRequest             if ready  => log.debug(s"got RestApiRequest($request)");             handlerRestApiRequest(request)
-    case s: StillAlive                       if ready  => log.debug("got StillAlive");                            handlerStillAlive(s)
+    case StillAlive                          if ready  => log.debug("got StillAlive");                            handlerStillAlive
     case x: Any                              if !ready => log.debug(s"got Message $x but NotReadyJet");           handlerNotReady(x)
   }
 
@@ -166,10 +166,10 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
     }
   }
 
-  override def handlerStillAlive(msg: StillAlive) = {
+  override def handlerStillAlive = {
     //log.debug(s"forward StillAlive from ${msg.self} to $vmActor")
     //vmActor.forward(StillAlive)
-    checkSsh(msg.self)
+    checkSsh
   }
 
   private def checkReady = {
@@ -193,54 +193,50 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
     }
   }
 
-  private def checkSsh(sender: ActorRef) = {
-    val runnable: Runnable = () => {
-      import java.net.InetSocketAddress
-      import java.util.concurrent.Executors
+  private def checkSsh = {
+    import java.net.InetSocketAddress
+    import java.util.concurrent.Executors
 
-      import org.jboss.netty.bootstrap.ClientBootstrap
-      import org.jboss.netty.channel.ChannelFuture
-      import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
+    import org.jboss.netty.bootstrap.ClientBootstrap
+    import org.jboss.netty.channel.ChannelFuture
+    import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 
-      val reciver = sender
-      var result = true
+    val reciver = sender
+    var result = true
 
-      portMapping.filter(_._1.contains("ssh")).map(_._2).toList.foreach( entry => {
-        val host = entry._1
-        val port = entry._2
-        log.debug(s"check ssh for host $host on port $port")
+    portMapping.filter(_._1.contains("ssh")).map(_._2).toList.foreach( entry => {
+      val host = entry._1
+      val port = entry._2
+      log.debug(s"check ssh for host $host on port $port")
 
-        // Configure the client.
-        val bootstrap = new ClientBootstrap(
-          new NioClientSocketChannelFactory(Executors.newCachedThreadPool, Executors.newCachedThreadPool))
+      // Configure the client.
+      val bootstrap = new ClientBootstrap(
+        new NioClientSocketChannelFactory(Executors.newCachedThreadPool, Executors.newCachedThreadPool))
 
-        // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(new TelnetClientPipelineFactory)
-        try {
-          // Start the connection attempt.
-          val future: ChannelFuture = bootstrap.connect(new InetSocketAddress(host, port))
+      // Set up the pipeline factory.
+      bootstrap.setPipelineFactory(new TelnetClientPipelineFactory)
+      try {
+        // Start the connection attempt.
+        val future: ChannelFuture = bootstrap.connect(new InetSocketAddress(host, port))
 
-          // Wait until the connection attempt succeeds or fails.
-          val channel = future.awaitUninterruptibly.getChannel
-          if (!future.isSuccess) {
-            result = false
-            bootstrap.releaseExternalResources()
-          }
-          // Close the connection.  Make sure the close operation ends because
-          // all I/O operations are asynchronous in Netty.
-          channel.close().awaitUninterruptibly
-
-          // Shut down all thread pools to exit.
+        // Wait until the connection attempt succeeds or fails.
+        val channel = future.awaitUninterruptibly.getChannel
+        if (!future.isSuccess) {
+          result = false
           bootstrap.releaseExternalResources()
-        } catch {
-          case e: Exception => log.debug(s"could not connect to $host:$port")
         }
-      })
-      log.debug(s"send $result to $reciver")
-      reciver ! result
-    }
-    val vmActorHelper: ActorRef = context.actorOf(Props[VMActorHelper], s"vmActorHelper_${UUID.randomUUID().toString}")
-    vmActorHelper ! VmTask(runnable)
+        // Close the connection.  Make sure the close operation ends because
+        // all I/O operations are asynchronous in Netty.
+        channel.close().awaitUninterruptibly
+
+        // Shut down all thread pools to exit.
+        bootstrap.releaseExternalResources()
+      } catch {
+        case e: Exception => log.debug(s"could not connect to $host:$port")
+      }
+    })
+    log.debug(s"send $result to $reciver")
+    sender() ! result
   }
 
   private def sendRequest(httpRequest: HttpRequest) = {

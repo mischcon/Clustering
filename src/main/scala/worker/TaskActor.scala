@@ -33,7 +33,7 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
   var targetVm : ActorRef = null
   var executorActor : ActorRef = null
 
-  implicit val timeout = Timeout(10 seconds)
+  implicit val timeout = Timeout(1 seconds)
   implicit val ec : ExecutionContext = ExecutionContext.Implicits.global
 
   override def preStart(): Unit = {
@@ -89,8 +89,8 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
       log.debug("received TestFailException!")
 
       //ask the vm if it is still alive
-      val stillAliveFuture = targetVm ? StillAlive(self)
-      val alive = Await.result(stillAliveFuture, 10 seconds)
+      val stillAliveFuture = targetVm ? StillAlive
+      val alive = Await.result(stillAliveFuture, 3 seconds)
       alive match {
         case true => log.debug("vm is still alive - escalating..."); taskDone = true; Escalate
         case a => log.debug(s"vm is NOT alive anymore (received: ${a}) - the TestFailException seems to be caused by this - resetting the task..."); taskDone = false; Stop

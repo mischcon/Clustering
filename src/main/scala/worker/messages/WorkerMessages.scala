@@ -84,7 +84,7 @@ case class PersistAndSuicide(reason : String) extends WorkerMessagesTrait
 /**
   * Asks a {@link vm#VMProxyActor VMProxyActor} if it is still alive
   */
-case class StillAlive(self: ActorRef) extends WorkerMessagesTrait
+case object StillAlive extends WorkerMessagesTrait
 
 /* DEPLOYMENT */
 /**

@@ -155,9 +155,9 @@ class VagrantEnvironment(var vagrantEnvironment: RubyObject) {
 
   def updateBoxes(boxName: String = null): String = try {
     if (boxName == null) {
-      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "box"), RubyString.newString(vagrantEnvironment.getRuntime, "update"), RubyString.newString(vagrantEnvironment.getRuntime, "--box"), RubyString.newString(vagrantEnvironment.getRuntime, boxName)).convertToString().toString
-    } else {
-      vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "box"), RubyString.newString(vagrantEnvironment.getRuntime, "update")).convertToString().toString
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "box"), RubyString.newString(vagrantEnvironment.getRuntime, "update")).convertToString().toString
+      } else {
+        vagrantEnvironment.callMethod("get_output", RubyString.newString(vagrantEnvironment.getRuntime, "box"), RubyString.newString(vagrantEnvironment.getRuntime, "update"), RubyString.newString(vagrantEnvironment.getRuntime, "--box"), RubyString.newString(vagrantEnvironment.getRuntime, boxName)).convertToString().toString
     }
   } catch {
     case exception: RaiseException =>

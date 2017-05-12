@@ -67,5 +67,5 @@ trait VMTaskWorkerTrait {
     *
     * See wiki for more details about the workflow.
     */
-  def handlerStillAlive(msg: StillAlive)
+  def handlerStillAlive
 }

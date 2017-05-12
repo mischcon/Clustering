@@ -68,6 +68,8 @@ public class VagrantVmConfig implements Serializable {
         return name;
     }
 
+    public void setName(String name) { this.name = name; }
+
     public String hostName() {
         return hostName;
     }
