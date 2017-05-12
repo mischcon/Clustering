@@ -54,15 +54,19 @@ object ClusterMain extends App {
         }
       }
 
+
       var localIp = ips_list.reverse(StdIn.readInt())
-      val hostnameConfig = ConfigFactory.parseString(s"akka.remote.netty.tcp.hostname = $localIp")
+      var hostnameConfig = ConfigFactory.parseString(s"akka.remote.netty.tcp.hostname = $localIp")
+
+      // port
+      var port : Int = cli_config.port
+      hostnameConfig = hostnameConfig.withFallback(ConfigFactory.parseString(s"akka.remote.netty.tcp.port = $port"))
 
       // MASTER
       if (cli_config.mode == "master") {
         val system : ActorSystem = ActorSystem("the-cluster", hostnameConfig
-          .withFallback(config.getConfig("master")
-            .withFallback(ConfigFactory.parseString("akka.cluster.roles = [master, vm, executor]"))
-            .withFallback(config)))
+          .withFallback(ConfigFactory.parseString("akka.cluster.roles = [master, vm, executor]"))
+            .withFallback(config))
 
         val log = Logging.getLogger(system, this);
         Cluster(system).join(Address("akka.tcp", "the-cluster", localIp, 2550))

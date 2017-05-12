@@ -12,6 +12,7 @@ class ClusterOptionParser() {
 
     opt[Unit]("debug").optional().action((_, c) => c.copy(debug = true)).text("Start in debug mode")
     opt[Unit]("verbose").optional().action((_, c) => c.copy(verbose = true)).text("Verbose mode")
+    opt[Int]('p', "port").optional().action((port, config) => config.copy(port = port)).text("Use Port [Default: 2550]")
     help("help").text("prints this usage text")
 
     cmd("master").action( (_, c) => c.copy(mode = "master") ).
@@ -37,6 +38,6 @@ class ClusterOptionParser() {
 
 case class Config(mode: String = "", debug : Boolean = false, db : File = null, input : String = null,
                   verbose : Boolean = false, seednode : String = "localhost", withVm : Boolean = true,
-                  withExecutor : Boolean = true)
+                  withExecutor : Boolean = true, port : Int = 2550)
 
 
