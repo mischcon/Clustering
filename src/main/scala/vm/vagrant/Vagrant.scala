@@ -18,7 +18,7 @@ import scala.io.Source.fromURL
 
 class Vagrant(debug: Boolean = false){
 
-  private val scriptingContainer: ScriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETHREAD)
+  private val scriptingContainer: ScriptingContainer = new ScriptingContainer(LocalContextScope.THREADSAFE)
   if (debug) this.debugVM()
 
   private def debugVM() = {

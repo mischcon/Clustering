@@ -86,7 +86,7 @@ class NodeMonitorActor extends Actor with ActorLogging {
   }
 
   def checkVagrant: Boolean = {
-    val scriptingContainer: ScriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETHREAD)
+    val scriptingContainer: ScriptingContainer = new ScriptingContainer(LocalContextScope.THREADSAFE)
     val os = if (System.getProperty("os.name").toLowerCase.contains("windows")) "windows" else "java"
     scriptingContainer.put("RUBY_PLATFORM", os)
     try {
