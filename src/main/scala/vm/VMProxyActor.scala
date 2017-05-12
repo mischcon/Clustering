@@ -1,11 +1,13 @@
 package vm
 
 import java.net.URL
+import java.util.UUID
 
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Terminated}
+import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props, Terminated}
 import communication._
 import org.apache.http.impl.client.HttpClientBuilder
+import utils.telnet.TelnetClientPipelineFactory
 import vm.messages._
 import vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantPortForwardingConfig}
 import worker.messages._
@@ -165,8 +167,9 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
   }
 
   override def handlerStillAlive(msg: StillAlive) = {
-    log.debug(s"forward StillAlive from ${msg.self} to $vmActor")
-    vmActor.forward(StillAlive)
+    //log.debug(s"forward StillAlive from ${msg.self} to $vmActor")
+    //vmActor.forward(StillAlive)
+    checkSsh(msg.self)
   }
 
   private def checkReady = {
@@ -188,6 +191,56 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
         }
       }
     }
+  }
+
+  private def checkSsh(sender: ActorRef) = {
+    val runnable: Runnable = () => {
+      import java.net.InetSocketAddress
+      import java.util.concurrent.Executors
+
+      import org.jboss.netty.bootstrap.ClientBootstrap
+      import org.jboss.netty.channel.ChannelFuture
+      import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
+
+      val reciver = sender
+      var result = true
+
+      portMapping.filter(_._1.contains("ssh")).map(_._2).toList.foreach( entry => {
+        val host = entry._1
+        val port = entry._2
+        log.debug(s"check ssh for host $host on port $port")
+
+        // Configure the client.
+        val bootstrap = new ClientBootstrap(
+          new NioClientSocketChannelFactory(Executors.newCachedThreadPool, Executors.newCachedThreadPool))
+
+        // Set up the pipeline factory.
+        bootstrap.setPipelineFactory(new TelnetClientPipelineFactory)
+        try {
+          // Start the connection attempt.
+          val future: ChannelFuture = bootstrap.connect(new InetSocketAddress(host, port))
+
+          // Wait until the connection attempt succeeds or fails.
+          val channel = future.awaitUninterruptibly.getChannel
+          if (!future.isSuccess) {
+            result = false
+            bootstrap.releaseExternalResources()
+          }
+          // Close the connection.  Make sure the close operation ends because
+          // all I/O operations are asynchronous in Netty.
+          channel.close().awaitUninterruptibly
+
+          // Shut down all thread pools to exit.
+          bootstrap.releaseExternalResources()
+        } catch {
+          case e: Exception => log.debug(s"could not connect to $host:$port")
+        }
+      })
+      log.debug(s"send $result to $reciver")
+      reciver ! result
+    }
+    val vmActorHelper: ActorRef = context.actorOf(Props[VMActorHelper], s"vmActorHelper_${UUID.randomUUID().toString}")
+    vmActorHelper ! VmTask(runnable)
   }
 
   private def sendRequest(httpRequest: HttpRequest) = {
