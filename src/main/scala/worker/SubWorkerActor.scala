@@ -124,7 +124,7 @@ abstract class SubWorkerActor(var group : List[String], tablename : String) exte
     * If not, than the actor kills itsself.
     */
   def check_suicide(): Unit ={
-    if(taskActors.isEmpty && context.children.isEmpty) {
+    if(context.children.isEmpty) {
       log.debug("no more tasks available and no more children present - performing suicide for the greater good")
       context.stop(self)
     } else {
