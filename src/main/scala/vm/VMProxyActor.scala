@@ -201,7 +201,6 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
     import org.jboss.netty.channel.ChannelFuture
     import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 
-    val reciver = sender
     var result = true
 
     portMapping.filter(_._1.contains("ssh")).map(_._2).toList.foreach( entry => {
@@ -235,7 +234,7 @@ class VMProxyActor extends Actor with ActorLogging with VMTaskWorkerTrait{
         case e: Exception => log.debug(s"could not connect to $host:$port")
       }
     })
-    log.debug(s"send $result to $reciver")
+    log.debug(s"send $result to ${sender()}")
     sender() ! result
   }
 
