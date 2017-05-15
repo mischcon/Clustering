@@ -35,9 +35,9 @@ Theoretically yes, but our main goal was to provide a testing cluster. If you re
 ### ENOUGH OF THE THEORETICAL STUFF - I WANT TO SEE SOME ACTION!!!
 It seems as if you are one of the unpatient guys... you want action? You get action!
 
-1) Install / Complile the cluster (described [here](../wikis/basics/1-prerequisites-and-installation)
-2) Navigate to ```PROJECT_ROOT/TestJar``` and run the ```create_test_jar.sh``` script - now you have a ```PROJECT_ROOT/TestJar/TestJar.jar``` file
-3) Run ```java -jar PROJECT_ROOT/target/scala-*.*/Clustering.jar master -i PROJECT_ROOT/TestJar/TestJar.jar --debug``` and feel the magic...
+1. Install / Complile the cluster (described [here](../wikis/basics/1-prerequisites-and-installation)
+2. Navigate to ```PROJECT_ROOT/TestJar``` and run the ```create_test_jar.sh``` script - now you have a ```PROJECT_ROOT/TestJar/TestJar.jar``` file
+3. Run ```java -jar PROJECT_ROOT/target/scala-*.*/Clustering.jar master -i PROJECT_ROOT/TestJar/TestJar.jar --debug``` and feel the magic...
 
 You now can check your hypervisor - eventually more and more VMs will be started.
 
