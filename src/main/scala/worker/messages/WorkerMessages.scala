@@ -20,8 +20,9 @@ case class AddTask(instanceId : String, group : List[String], task : Task, versi
   * Used for getting a task
   * Request for a {@link worker.messages#SendTask SendTask} response
   * @param version VM deploy info - the response (task) should have the same VM deploy info
+  * @param singleInstance request a task of type 'SINGLEINSTANCE' (true), 'GROUP' (false) or any task (null - default)
   */
-case class GetTask(version : String) extends WorkerMessagesTrait
+case class GetTask(version : String, singleInstance : Boolean = null) extends WorkerMessagesTrait
 
 /* TASK SENDING AND RECEIVING */
 

@@ -1,5 +1,5 @@
 package worker
-import akka.actor.{Props, Terminated}
+import akka.actor.{ActorRef, Props, Terminated}
 import worker.messages.{AddTask, GetTask, PersistAndSuicide}
 import worker.traits.WorkerTrait
 
@@ -13,6 +13,9 @@ import worker.traits.WorkerTrait
   * in this case the actor kills itsself.
   */
 class DistributorActor extends WorkerTrait{
+
+  private var singleInstanceList : List[ActorRef] = List.empty
+  private var groupInstanceList : List[ActorRef] = List.empty
 
   override def preStart(): Unit = {
     super.preStart()
@@ -29,7 +32,7 @@ class DistributorActor extends WorkerTrait{
   override def receive: Receive = {
     case p : AddTask => addTask(p)
     case p : GetTask => getTask(p)
-    case t : Terminated => if(context.children.isEmpty) context.stop(self)
+    case t : Terminated => handleTermianted(t)
     case a => log.warning(s"received unexpected message: $a")
   }
 
@@ -44,8 +47,16 @@ class DistributorActor extends WorkerTrait{
       case Some(child) => child ! msg
       case None => {
         msg.task.singleInstance match {
-          case false => context.actorOf(Props(classOf[GroupActor], msg.group.take(1), self.path.name), api) ! msg
-          case true => context.actorOf(Props(classOf[SingleInstanceActor], msg.group.take(1), self.path.name), api) ! msg
+          case false => {
+            var ref = context.actorOf(Props(classOf[GroupActor], msg.group.take(1), self.path.name), api)
+            groupInstanceList = ref :: groupInstanceList
+            ref ! msg
+          }
+          case true => {
+            var ref = context.actorOf(Props(classOf[SingleInstanceActor], msg.group.take(1), self.path.name), api)
+            singleInstanceList = ref :: singleInstanceList
+            ref ! msg
+          }
         }
       }
     }
@@ -53,16 +64,56 @@ class DistributorActor extends WorkerTrait{
   }
 
   /**
-    * Forwards {@link worker.messages#GetTask} messages to all its children.
+    * Handle the termination of a child actor
+    * Remove the terminated actor from the list.
+    * Commit suicide if there are no more children.
+    * @param t
+    */
+  def handleTermianted(t : Terminated) = {
+    if(context.children.isEmpty){
+      context.stop(self)
+    } else {
+      singleInstanceList = singleInstanceList.filter(x => x != t.actor)
+      groupInstanceList = groupInstanceList.filter(x => x != t.actor)
+    }
+  }
+
+  /**
+    * Forwards {@link worker.messages#GetTask} messages to its singleInstance / groupInstance / all children (depending on the parameter).
     * If there are no more children left this actor will be killed.
     * @param msg
     */
   def getTask(msg : GetTask) = {
-    if(context.children.isEmpty){
+    if (context.children.isEmpty) {
       log.debug("No children present - stopping self")
       context.stop(self)
+    } else {
+      // check single instance
+      msg.singleInstance match {
+        case true => {
+          if(singleInstanceList.nonEmpty) {
+            log.debug(s"received getTask with singleInstance: true - forwarding (have singleInstance: ${singleInstanceList.size})")
+            singleInstanceList.foreach(u => u forward msg)
+          } else {
+            log.debug(s"received getTask with singleInstance: true, but we have no singleInstances - forwarding to all (have children: ${context.children.size})")
+            context.children.foreach(u => u forward msg)
+          }
+        }
+        case false => {
+          if(groupInstanceList.nonEmpty) {
+            log.debug(s"received getTask with singleInstance: false - forwarding (have groupInstance: ${groupInstanceList.size})")
+            groupInstanceList.foreach(u => u forward msg)
+          } else {
+            log.debug(s"received getTask with singleInstance: false, but we have no groupInstance - forwarding to all (have children: ${context.children.size})")
+            context.children.foreach(u => u forward msg)
+          }
+        }
+        case _ => {
+          log.debug(s"received getTask with singleInstance: null - forwarding (have children: ${context.children.size})")
+          context.children.foreach(u => u forward msg)
+        }
+      }
+
     }
-    log.debug(s"received getTask - forwarding (have children: ${context.children.size})")
-    context.children.foreach(u => u forward msg)
   }
 }
