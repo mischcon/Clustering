@@ -7,32 +7,27 @@ import vm.vagrant.util.Protocol;
 import java.io.File;
 
 /**
- * Created by oliver.ziegert on 20.04.17.
+ * <strong>Contains Test Vagrant-Environment for the clustertest</strong><br><br>
+ *
+ * TODO: remove or outsource to Documentation / Wiki
  */
 public class TestVagrantEnvironment implements VmEnvironment {
 
     public VagrantEnvironmentConfig createEnvironment() {
-        VagrantVmConfig vmConfig1 = VagrantVmConfigBuilder
+        VagrantVmConfig vmConfig = VagrantVmConfigBuilder
             .create()
             .withName("Test-VM")
             .withHostName("Test-VM.pc-ziegert.local")
-            .withBoxName("centos/7")
+            .withBoxName("ubuntu/trusty64;")
             .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
                 .createPortForwardingConfig()
                 .withName("Test-PortForwarding")
                 .withAutoCorrect(true)
-                .withGuestPort(1337)
+                .withGuestPort(80)
                 .withHostIp("127.0.0.1")
                 .withHostPort(1337)
                 .withProtocol(Protocol.TCP)
                 .withService("http")
-                .build())
-            .withVagrantSyncedFolderConfig(VagrantSyncedFoldersConfigBuilder
-                .createVirtualBoxConfig()
-                .withCreate(true)
-                .withName("Test")
-                .withHostPath("/Volumes/Daten/Vagrant/scala.local/share")
-                .withGuestPath("/share")
                 .build())
             .withBootTimeout(120)
             .withBoxCheckUpdate(true)
@@ -46,52 +41,14 @@ public class TestVagrantEnvironment implements VmEnvironment {
                 .withCpus(2)
                 .withVmName("Test-VM")
                 .build())
-            .build();
-        VagrantVmConfig vmConfig2 = VagrantVmConfigBuilder
-            .create()
-            .withName("Test-VM2")
-            .withHostName("Test-VM.pc-ziegert.local")
-            .withBoxName("centos/7")
-            .withBoxCheckUpdate(true)
-            .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
-                .createPortForwardingConfig()
-                .withName("Test-PortForwarding")
-                .withAutoCorrect(true)
-                .withGuestPort(1337)
-                .withHostIp("127.0.0.1")
-                .withHostPort(1337)
-                .withProtocol(Protocol.TCP)
-                .withService("httpi")
-                .build())
-            .withVagrantSyncedFolderConfig(VagrantSyncedFoldersConfigBuilder
-                .createVirtualBoxConfig()
-                .withCreate(true)
-                .withName("Test")
-                .withHostPath("/Volumes/Daten/Vagrant/scala.local/share")
-                .withGuestPath("/share")
-                .build())
-            .withBootTimeout(120)
-            .withBoxCheckUpdate(true)
-            .withCommunicator("ssh")
-            .withPostUpMessage("Alles Geil!!")
-            .withProvider(VagrantProviderConfigBuilder
-                .create()
-                .withName("virtualbox")
-                .withGuiMode(false)
-                .withMemory(4096)
-                .withCpus(2)
-                .withVmName("Test-VM2").build())
-            .withVagrantProvisionerConfig(VagrantProvisionerConfigBuilder
-                .createShellConfig()
-                .withInline("echo 'Alles Toll!!'")
-                .withName("Test-Inline")
-                .build())
+                .withVagrantProvisionerConfig(VagrantProvisionerConfigBuilder
+                    .createShellConfig()
+                    .withInline("apt-get -y update; apt-get-y install apache2; systemctl start apache2")
+                    .build())
             .build();
         VagrantEnvironmentConfig environmentConfig = VagrantEnvironmentConfigBuilder
                 .create()
-                .withVagrantVmConfig(vmConfig1)
-                .withVagrantVmConfig(vmConfig2)
-                .withPath(new File("/Volumes/Daten/Vagrant/scala.local"))
+                .withVagrantVmConfig(vmConfig)
                 .build();
         return environmentConfig;
     }
