@@ -1,10 +1,13 @@
 image: 1science/sbt:latest
 
 pages:
+  stage: deploy
   script:
   - sbt doc
+  - mkdir public
+  - cp -r docs/* public
   artifacts:
     paths:
-    - docs
+    - public
   only:
   - master
