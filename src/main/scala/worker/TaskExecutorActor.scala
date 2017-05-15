@@ -74,27 +74,26 @@ class TaskExecutorActor extends WorkerTrait{
       val method = obj.getClass.getMethod(msg.task.method)
       val an = method.getAnnotation(classOf[Test])
       if (an != null) {
-        println(s"JUnit test method found\ninvoking (method is: ${method}")
+        log.debug(s"JUnit test method found\ninvoking (method is: $method")
         val result : Result = new JUnitCore().run(Request.method(cls, method.getName))
         if (result.wasSuccessful()) {
           if (result.getIgnoreCount == 1)
-            throw new TestSuccessException(msg.task, "IGNORE")
+            throw TestSuccessException(msg.task, "IGNORE")
           else
-            throw new TestSuccessException(msg.task, "SUCCESS")
+            throw TestSuccessException(msg.task, "SUCCESS")
         }
         else
-          throw new TestFailException(msg.task, result.getFailures.get(0).getException)
+          throw TestFailException(msg.task, result.getFailures.get(0).getException)
       }
       else {
-        println(s"invoking (method is: ${method}")
+        log.debug(s"invoking (method is: $method")
         val res = method.invoke(obj)
-        throw new TestSuccessException(msg.task, res)
+        throw TestSuccessException(msg.task, res)
       }
     } catch {
-      case e : Exception => {
+      case e : Exception =>
         log.debug(s"invocation failed - ${e.getCause.toString}")
-        throw new TestFailException(msg.task, e.getCause)
-      }
+        throw TestFailException(msg.task, e.getCause)
     }
 
   }

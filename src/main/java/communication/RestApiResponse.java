@@ -64,6 +64,7 @@ public class RestApiResponse implements Serializable {
             }
         }
     }
+
     public Integer getStatusCode() {
         return statusCode;
     }
