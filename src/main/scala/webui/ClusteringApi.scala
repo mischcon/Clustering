@@ -19,15 +19,17 @@ import de.oth.clustering.java._
 import spray.json.DefaultJsonProtocol._
 import utils.PrivateMethodExposer
 import utils.db._
+import webui.messages.WebUIMessage
 import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.language.postfixOps
 import scala.util.{Failure, Success}
 
 
-case class UploadJar(content : Array[Byte])
+case class UploadJar(content : Array[Byte]) extends WebUIMessage
 
 /**
   * = Cluster API =
@@ -45,8 +47,7 @@ case class UploadJar(content : Array[Byte])
   * }}}
   * @param ip ip to bind API on
   */
-class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives with SprayJsonSupport{
-
+class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives with SprayJsonSupport {
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = context.system.dispatcher
   implicit val timeout = Timeout(5 seconds)
@@ -195,10 +196,27 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     <script src='https://rawgit.com/enyo/dropzone/master/dist/dropzone.js'></script>
     <link rel='stylesheet' href='https://rawgit.com/enyo/dropzone/master/dist/dropzone.css'>
   </head>
+  <script>
+    Dropzone.options.jarDropzone = {
+      maxFilesize: 200,
+      addRemoveLinks: true,
+      headers: {'Content-Type': 'application/octet-stream', 'Accept-Encoding': 'gzip,deflate'},
+      acceptedFiles: '.jar'
+    };
+  </script>
   <body>
     <h1>Upload your .jar file</h1>
     <br>
-    <form class='dropzone' method='POST' action='http://$ip:$port/api/upload' enctype='multipart/form-data'></form>
+    <form
+      id='jar-dropzone'
+      class='dropzone'
+      method='POST'
+      action='http://$ip:$port/api/upload'
+      enctype='multipart/form-data'>
+      <div class="fallback">
+        <input name="file" type="file"/>
+      </div>
+    </form>
   </body>
 </html>"""
   }
@@ -372,7 +390,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     case a => println(s"received $a")
   }
 
-  def handleUpload(bytes : Source[ByteString, Any]): Route ={
+  def handleUpload(bytes : Source[ByteString, Any]): Route = {
     val file = File.createTempFile(java.util.UUID.randomUUID.toString, ".bin")
     file.deleteOnExit()
     val sink = FileIO.toPath(file.toPath)

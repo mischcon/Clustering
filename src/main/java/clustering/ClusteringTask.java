@@ -8,8 +8,8 @@ import communication.ProxyRequest;
  * Establishes the communication between task & proxy (cluster¹ or local VM²).<br>
  * <p>e.g. scenario for HTTP requests</p>
  * <ul>
- *     <li><pre>cluster¹  : Java <-----> Scala <-----> VM <-----> Internet 🌐</pre></li>
- *     <li><pre>local VM² : Java <-------------------> VM <-----> Internet 🌐</pre></li>
+ *     <li><pre>cluster¹  : Java <-----> Scala <-----> VM <-----> Internet</pre></li>
+ *     <li><pre>local VM² : Java <-------------------> VM <-----> Internet</pre></li>
  * </ul>
  * Usage:<br><br>
  * Call <i>request.getResponse('request object')</i> to execute your request and getting a response.
