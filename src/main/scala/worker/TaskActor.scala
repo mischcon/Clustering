@@ -176,31 +176,43 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
         targetVm = target.vmActorRef
         context.watch(targetVm)
 
-        // get executor
-        (context.system.actorSelection("/user/ExecutorDirectory") ? GetExecutorAddress) onComplete{
-          case Success(addr : ExecutorAddress) => {
-            executorActor = context.actorOf(Props[TaskExecutorActor].withDeploy(
-              Deploy(scope = RemoteScope(addr.address))
-            ), s"EXECUTOR-${task.method}-${new Random().nextLong()}")
-
-            // monitor executor
-            context.watch(executorActor)
-
-            // send actorRef to targetVm
-            log.debug("sending actorRef of EXECUTOR to targetVmActor")
-            targetVm ! Executor(executorActor)
-
-            log.debug("sending ExecuteTask to EXECUTOR")
-            executorActor ! ExecuteTask(task, target.vmActorRef)
-
-            // updating database
-            context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING, tablename)
+        // check if the task should be run on the same physical node
+        if(task.run_locally) {
+          var executorAddress = targetVm.path.address
+          executorActor = context.actorOf(Props[TaskExecutorActor].withDeploy(
+            Deploy(scope = RemoteScope(executorAddress))
+          ), s"EXECUTOR-${task.method}-${new Random().nextLong()}")
+          monitor_send_and_execute()
+        } else {
+          // get executor
+          (context.system.actorSelection("/user/ExecutorDirectory") ? GetExecutorAddress) onComplete {
+            case Success(addr: ExecutorAddress) => {
+              executorActor = context.actorOf(Props[TaskExecutorActor].withDeploy(
+                Deploy(scope = RemoteScope(addr.address))
+              ), s"EXECUTOR-${task.method}-${new Random().nextLong()}")
+              monitor_send_and_execute()
+            }
+            case Failure(_) => {
+              //log.error("could not get an executor - sending CannotGetExecutor to targetVm and goind back to isTaken = false")
+              targetVm ! CannotGetExecutor
+              isTaken = false
+            }
           }
-          case Failure(_) => {
-            //log.error("could not get an executor - sending CannotGetExecutor to targetVm and goind back to isTaken = false")
-            targetVm ! CannotGetExecutor
-            isTaken = false
-          }
+        }
+
+        def monitor_send_and_execute() = {
+          // monitor executor
+          context.watch(executorActor)
+
+          // send actorRef to targetVm
+          log.debug("sending actorRef of EXECUTOR to targetVmActor")
+          targetVm ! Executor(executorActor)
+
+          log.debug("sending ExecuteTask to EXECUTOR")
+          executorActor ! ExecuteTask(task, target.vmActorRef)
+
+          // updating database
+          context.system.actorSelection("/user/db") ! UpdateTaskStatus(s"${task.classname}.${task.method}", TaskStatus.RUNNING, tablename)
         }
       }
       case Failure(exception) => {
@@ -208,5 +220,7 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
         isTaken = false
       }
     }
+
+
   }
 }

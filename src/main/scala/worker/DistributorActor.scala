@@ -25,6 +25,8 @@ class DistributorActor extends WorkerTrait{
   override def postStop(): Unit = {
     // persists the current status
     context.children.foreach(x => x ! PersistAndSuicide)
+    singleInstanceList = List.empty
+    groupInstanceList = List.empty
     super.postStop()
     log.debug("Goodbye from distributor!")
   }

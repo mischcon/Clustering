@@ -22,7 +22,7 @@ case class AddTask(instanceId : String, group : List[String], task : Task, versi
   * @param version VM deploy info - the response (task) should have the same VM deploy info
   * @param singleInstance request a task of type 'SINGLEINSTANCE' (true), 'GROUP' (false) or any task (null - default)
   */
-case class GetTask(version : String, singleInstance : Boolean = null) extends WorkerMessagesTrait
+case class GetTask(version : String, singleInstance : Boolean = null.asInstanceOf[Boolean]) extends WorkerMessagesTrait
 
 /* TASK SENDING AND RECEIVING */
 
@@ -40,8 +40,10 @@ case class SendTask(task : Task)
   * @param method the name of the method
   * @param singleInstance indicates whether this task can be executed in parallel with other tasks or if should be
   *                       run on a single instance
+  * @param run_locally Indicates whether the task should be executed locally (on the same physical node as the
+  *                    target) because of a high traffic load
   */
-case class Task(raw_cls : Array[Byte], classname : String, method : String, singleInstance: Boolean) extends WorkerMessagesTrait
+case class Task(raw_cls : Array[Byte], classname : String, method : String, singleInstance: Boolean, run_locally : Boolean = false) extends WorkerMessagesTrait
 
 /**
   * Indicates that there are no more tasks (for a given version string) available

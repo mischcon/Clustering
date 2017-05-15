@@ -7,7 +7,7 @@ import akka.cluster.Cluster
 import akka.event.Logging
 import akka.pattern.ask
 import akka.util.Timeout
-import clustering.ClusterType
+import clustering.{ClusterType, TrafficLoad}
 import com.typesafe.config.ConfigFactory
 import de.oth.clustering.java._
 import utils._
@@ -113,8 +113,13 @@ object ClusterMain extends App {
               if (a.annotation.clusterType() == ClusterType.GROUPING)
                 singleInstance = false
 
+              // check if the executor should be run locally
+              var run_locally = false
+              if(a.annotation.expectedTraffic() == TrafficLoad.MAJOR)
+                run_locally = true
+
               // Add Task to dependency tree
-              instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance), version)
+              instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance, run_locally), version)
 
               // Add Task to Database
               dBActor ! CreateTask(s"${a.classname}.${a.methodname}", datestring)
