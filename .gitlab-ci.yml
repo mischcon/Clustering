@@ -1,0 +1,10 @@
+image: 1science/sbt:latest
+
+pages:
+  script:
+  - sbt doc
+  artifacts:
+    paths:
+    - doc
+  only:
+  - master
