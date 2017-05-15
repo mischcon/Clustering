@@ -35,7 +35,8 @@ public class TestConfig implements VmEnvironment {
                         .build())
                 .withVagrantProvisionerConfig(new VagrantProvisionerConfigBuilder().createShellConfig()
                         .withInline(
-                                "apt-get -y install apache2 && " +
+                                "apt-get -y update &&" +
+                                        "apt-get -y install apache2 && " +
                                         "echo 'Hi from your local Test-VM!' > /var/www/html/index.html && " +
                                         "systemctl start apache2")
                         .build())
