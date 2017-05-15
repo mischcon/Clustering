@@ -82,6 +82,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
            */
           if (query.getClass != classOf[DBGetTables]) {
             new DBCreateTasksTable(query.table).perform(connection)
+            log.debug(s"table '${query.table} created.'")
           }
         }
         query.perform(connection) match {
@@ -97,7 +98,9 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
   /**
     * = Answers w/ [[utils.db.Tables]] =
     */
+  //noinspection AccessorLikeMethodIsUnit
   def getTables(): Unit = {
+    log.debug("performing 'DBGetTables'")
     performQuery(new DBGetTables)
   }
 
@@ -106,6 +109,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def generateTextReport(tableName : String): Unit = {
+    log.debug(s"performing 'DBGenerateTextReport' for '$tableName'")
     performQuery(new DBGenerateTextReport(tableName))
   }
 
@@ -114,6 +118,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def generateJsonReport(tableName : String): Unit = {
+    log.debug(s"performing 'DBGenerateJsonReport' for '$tableName'")
     performQuery(new DBGenerateJsonReport(tableName))
   }
 
@@ -122,6 +127,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def countTaskStatus(tableName : String): Unit = {
+    log.debug(s"performing 'DBCountTaskStatus' for '$tableName'")
     performQuery(new DBCountTaskStatus(tableName))
   }
 
@@ -130,6 +136,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def countEndState(tableName : String): Unit = {
+    log.debug(s"performing 'DBCountEndState' for '$tableName'")
     performQuery(new DBCountEndState(tableName))
   }
 
@@ -139,6 +146,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def createTask(method : String, tableName: String): Unit = {
+    log.debug(s"performing 'DBCreateTask' for '$tableName'")
     performQuery(new DBCreateTask(method, tableName))
   }
 
@@ -149,6 +157,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def createTask(method : String, params : Map[String, String], tableName: String): Unit = {
+    log.debug(s"performing 'DBCreateTask' for '$tableName'")
     performQuery(new DBCreateTask(method, params, tableName))
   }
 
@@ -158,6 +167,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def createTasks(methods : List[String], tableName: String): Unit = {
+    log.debug(s"performing 'DBCreateTasks' for '$tableName'")
     performQuery(new DBCreateTasks(methods, tableName))
   }
 
@@ -167,6 +177,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def createTasks(methods : Map[String, Map[String, String]], tableName: String): Unit = {
+    log.debug(s"performing 'DBCreateTasks' for '$tableName'")
     performQuery(new DBCreateTasks(methods, tableName))
   }
 
@@ -179,6 +190,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     */
   //noinspection AccessorLikeMethodIsUnit
   def getTask(method : String, tableName: String): Unit = {
+    log.debug(s"performing 'DBGetTask' for '$tableName'")
     performQuery(new DBGetTask(method, tableName))
   }
 
@@ -191,6 +203,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     */
   //noinspection AccessorLikeMethodIsUnit
   def getTasks(methods : List[String], tableName: String): Unit = {
+    log.debug(s"performing 'DBGetTasks' for '$tableName'")
     performQuery(new DBGetTasks(methods, tableName))
   }
 
@@ -203,6 +216,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     */
   //noinspection AccessorLikeMethodIsUnit
   def getTasksWithStatus(task_status: TaskStatus, tableName: String): Unit = {
+    log.debug(s"performing 'DBGetTasksWithStatus' for '$tableName'")
     performQuery(new DBGetTasksWithStatus(task_status, tableName))
   }
 
@@ -216,6 +230,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     */
   def updateTask(method : String, task_status : TaskStatus, end_state : EndState, task_result : String,
                  tableName: String): Unit = {
+    log.debug(s"performing 'DBUpdateTask' for '$tableName'")
     performQuery(new DBUpdateTask(method, task_status, end_state, task_result, tableName))
   }
 
@@ -229,6 +244,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     */
   def updateTasks(methods : List[String], task_status : TaskStatus, end_state : EndState, task_result : String,
                   tableName: String): Unit = {
+    log.debug(s"performing 'DBUpdateTasks' for '$tableName'")
     performQuery(new DBUpdateTasks(methods, task_status, end_state, task_result, tableName))
   }
 
@@ -239,6 +255,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def updateTaskStatus(method : String, task_status : TaskStatus, tableName: String): Unit = {
+    log.debug(s"performing 'DBUpdateTaskStatus' for '$tableName'")
     performQuery(new DBUpdateTaskStatus(method, task_status, tableName))
   }
 
@@ -249,6 +266,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def updateTasksStatus(methods : List[String], task_status : TaskStatus, tableName: String): Unit = {
+    log.debug(s"performing 'DBUpdateTasksStatus' for '$tableName'")
     performQuery(new DBUpdateTasksStatus(methods, task_status, tableName))
   }
 
@@ -258,6 +276,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def deleteTask(method : String, tableName: String): Unit = {
+    log.debug(s"performing 'DBDeleteTask' for '$tableName'")
     performQuery(new DBDeleteTask(method, tableName))
   }
 
@@ -267,6 +286,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
     * @param tableName table name
     */
   def deleteTasks(methods : List[String], tableName: String): Unit = {
+    log.debug(s"performing 'DBDeleteTasks' for '$tableName'")
     performQuery(new DBDeleteTasks(methods, tableName))
   }
 

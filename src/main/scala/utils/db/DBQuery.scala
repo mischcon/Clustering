@@ -20,8 +20,6 @@ class DBGetTables extends DBQuery {
       val tableName = resultSet.getString("table_name")
       tables = tableName :: tables
     }
-    for (table <- tables)
-      println(s"[DB]: table - $table")
     Tables(tables)
   }
 }
@@ -44,7 +42,6 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
        "UNIQUE KEY method_UQ (method));"
     var statement : PreparedStatement = connection.prepareStatement(sql)
     statement.executeUpdate()
-    println(s"[DB]: '$tableName' table created")
     sql =
       s"CREATE OR REPLACE TRIGGER ${tableName}_update_timestamps " +
        "BEFORE UPDATE " +
@@ -59,7 +56,6 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
          "END"
     statement = connection.prepareStatement(sql)
     statement.executeUpdate()
-    println(s"[DB]: '${tableName}_update_timestamps' trigger created")
   }
 }
 
@@ -102,9 +98,8 @@ class DBGenerateTextReport(tableName : String) extends DBQuery {
         sb.append("===================================================================================================")
         w.write(sb.toString)
         w.close()
-        println(s"[DB]: '$tableName.txt' generated; you will find it in ${tmp.getParent}")
       case None =>
-        println("[DB]: nothing to generate")
+
     }
     Report(path)
   }
@@ -149,9 +144,8 @@ class DBGenerateJsonReport(tableName : String) extends DBQuery {
 }"""
         w.write(jsonString)
         w.close()
-        println(s"[DB]: 'data.json' generated; you will find it in ${tmp.getParent}")
       case None =>
-        println("[DB]: nothing to generate")
+
     }
     Report(path)
   }
@@ -175,8 +169,6 @@ class DBCountTaskStatus(tableName : String) extends DBQuery {
       val amount = resultSet.getInt("amount")
       result += (task_status -> amount)
     }
-    for ((task_status, amount) <- result)
-      println(s"[DB]: $task_status - $amount")
     CountedTaskStatus(result)
   }
 }
@@ -207,8 +199,6 @@ class DBCountEndState(tableName : String) extends DBQuery {
       val amount = resultSet.getInt("amount")
       result += (end_state -> amount)
     }
-    for ((end_state, amount) <- result)
-      println(s"[DB]: $end_state - $amount")
     CountedEndState(result)
   }
 }
@@ -241,9 +231,7 @@ class DBCreateTask(method : String, tableName : String) extends DBQuery {
       paramsAsString dropRight 1
       statement.setString(2, paramsAsString)
     }
-    val result = statement.executeUpdate()
-    assert(result equals 1)
-    println(s"[DB]: task created")
+    statement.executeUpdate()
   }
 }
 
@@ -286,9 +274,7 @@ class DBCreateTasks(methods : List[String], tableName : String) extends DBQuery 
         j += 2
       }
     }
-    val result = statement.executeUpdate()
-    assert(result equals methods.size)
-    println(s"[DB]: ${methods.size} tasks created")
+    statement.executeUpdate()
   }
 }
 
@@ -299,10 +285,8 @@ class DBGetTask(method : String, tableName : String) extends DBQuery {
     val statement : PreparedStatement = connection.prepareStatement(sql)
     statement.setString(1, method)
     val resultSet = statement.executeQuery()
-    if (!resultSet.isBeforeFirst) {
-      println(s"[DB]: task: $method not found")
+    if (!resultSet.isBeforeFirst)
       None
-    }
     else {
       var task : RequestedTask = null
       var paramsstr = ""
@@ -325,8 +309,6 @@ class DBGetTask(method : String, tableName : String) extends DBQuery {
         val time_spent = resultSet.getInt("time_spent")
         task = RequestedTask(method, params, task_status, end_state, task_result, started_at, finished_at, time_spent)
       }
-      println(s"[DB]: task found: ${task.method} - $paramsstr - ${task.task_status} - " +
-        s"${task.end_state} - ${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
       Some(task)
     }
   }
@@ -343,10 +325,8 @@ class DBGetTasks(methods : List[String], tableName : String) extends DBQuery {
     for (i <- 1 to methods.size)
       statement.setString(i, methods(i - 1))
     val resultSet = statement.executeQuery()
-    if (!resultSet.isBeforeFirst) {
-      println(s"[DB]: no tasks found")
+    if (!resultSet.isBeforeFirst)
       None
-    }
     else {
       var taskList = List[RequestedTask]()
       var paramsstr = ""
@@ -371,9 +351,6 @@ class DBGetTasks(methods : List[String], tableName : String) extends DBQuery {
         taskList = RequestedTask(method, params, task_status, end_state, task_result,
           started_at, finished_at, time_spent) :: taskList
       }
-      for (task <- taskList)
-        println(s"[DB]: task found: ${task.method} - $paramsstr - ${task.task_status} - " +
-          s"${task.end_state} - ${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
       Some(taskList)
     }
   }
@@ -386,10 +363,8 @@ class DBGetTasksWithStatus(task_status : TaskStatus, tableName : String) extends
     val statement : PreparedStatement = connection.prepareStatement(sql)
     statement.setString(1, task_status.toString)
     val resultSet = statement.executeQuery()
-    if (!resultSet.isBeforeFirst) {
-      println(s"[DB]: no tasks w/ status $task_status found")
+    if (!resultSet.isBeforeFirst)
       None
-    }
     else {
       var taskList = List[RequestedTask]()
       var paramsstr = ""
@@ -413,9 +388,6 @@ class DBGetTasksWithStatus(task_status : TaskStatus, tableName : String) extends
         taskList = RequestedTask(method, params, task_status, end_state, task_result,
           started_at, finished_at, time_spent) :: taskList
       }
-      for (task <- taskList)
-        println(s"[DB]: task found: ${task.method} - $paramsstr - ${task.task_status} - " +
-          s"${task.end_state} - ${task.task_result} - ${task.started_at} - ${task.finished_at} - ${task.time_spent}")
       Some(taskList)
     }
   }
@@ -434,9 +406,7 @@ class DBUpdateTask(method : String, task_status: TaskStatus, end_state: EndState
       statement.setString(2, end_state.toString)
     statement.setString(3, task_result)
     statement.setString(4, method)
-    val result = statement.executeUpdate()
-    assert(result equals 1)
-    println(s"[DB]: task updated")
+    statement.executeUpdate()
   }
 }
 
@@ -457,9 +427,7 @@ class DBUpdateTasks(methods : List[String], task_status: TaskStatus, end_state: 
     statement.setString(3, task_result)
     for (i <- 1 to methods.size)
       statement.setString(3 + i, methods(i - 1))
-    val result = statement.executeUpdate()
-    assert(result equals methods.size)
-    println(s"[DB]: ${methods.size} tasks updated")
+    statement.executeUpdate()
   }
 }
 
@@ -470,9 +438,7 @@ class DBUpdateTaskStatus(method : String, task_status: TaskStatus, tableName : S
     val statement : PreparedStatement  = connection.prepareStatement(sql)
     statement.setString(1, task_status.toString)
     statement.setString(2, method)
-    val result = statement.executeUpdate()
-    assert(result equals 1)
-    println(s"[DB]: task updated")
+    statement.executeUpdate()
   }
 }
 
@@ -487,9 +453,7 @@ class DBUpdateTasksStatus(methods : List[String], task_status: TaskStatus, table
     statement.setString(1, task_status.toString)
     for (i <- 1 to methods.size)
       statement.setString(1 + i, methods(i - 1))
-    val result = statement.executeUpdate()
-    assert(result equals methods.size)
-    println(s"[DB]: ${methods.size} tasks updated")
+    statement.executeUpdate()
   }
 }
 
@@ -499,9 +463,7 @@ class DBDeleteTask(method : String, tableName : String) extends DBQuery {
     val sql = s"DELETE FROM $tableName WHERE method = ?;"
     val statement : PreparedStatement  = connection.prepareStatement(sql)
     statement.setString(1, method.toString)
-    val result = statement.executeUpdate()
-    assert(result equals 1)
-    println(s"[DB]: task deleted")
+    statement.executeUpdate()
   }
 }
 
@@ -515,8 +477,6 @@ class DBDeleteTasks(methods : List[String], tableName : String) extends DBQuery 
     val statement : PreparedStatement = connection.prepareStatement(sql)
     for (i <- 1 to methods.size)
       statement.setString(i, methods(i - 1))
-    val result = statement.executeUpdate()
-    assert(result equals methods.size)
-    println(s"[DB]: ${methods.size} tasks deleted")
+    statement.executeUpdate()
   }
 }
