@@ -191,13 +191,13 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
 <html>
   <title>Upload your .jar file</title>
   <head>
-    <script src="https://rawgit.com/enyo/dropzone/master/dist/dropzone.js"></script>
-    <link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+    <script src='https://rawgit.com/enyo/dropzone/master/dist/dropzone.js'></script>
+    <link rel='stylesheet' href='https://rawgit.com/enyo/dropzone/master/dist/dropzone.css'>
   </head>
   <body>
     <h1>Upload your .jar file</h1>
     <br>
-    <form action="http://$ip:$port/api/upload" class="dropzone"></form>
+    <form class='dropzone' method='POST' action='http://$ip:$port/api/upload' enctype='multipart/form-data'></form>
   </body>
 </html>"""
   }
@@ -294,7 +294,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   }
 
   def handleUpload(bytes : Source[ByteString, Any]): Route ={
-    val file = File.createTempFile(new Random().nextString(15),"b")
+    val file = File.createTempFile(java.util.UUID.randomUUID.toString, ".bin")
     file.deleteOnExit()
     val sink = FileIO.toPath(file.toPath)
     val writing = bytes.runWith(sink)
