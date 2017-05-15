@@ -69,7 +69,7 @@ class DBGenerateTextReport(tableName : String) extends DBQuery {
     var path = ""
     doneTasks match {
       case Some(tasks) =>
-        val tmp = File.createTempFile(s"$tableName", ".txt")
+        val tmp = File.createTempFile(java.util.UUID.randomUUID.toString, ".txt")
         tmp.deleteOnExit()
         path = tmp.getAbsolutePath
         val w = new PrintWriter(tmp)
@@ -113,7 +113,7 @@ class DBGenerateJsonReport(tableName : String) extends DBQuery {
     var path = ""
     doneTasks match {
       case Some(tasks) =>
-        val tmp = File.createTempFile("data", ".json")
+        val tmp = File.createTempFile(java.util.UUID.randomUUID.toString, ".json")
         tmp.deleteOnExit()
         path = tmp.getAbsolutePath
         val w = new PrintWriter(tmp)
