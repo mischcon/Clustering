@@ -5,6 +5,6 @@ pages:
   - sbt doc
   artifacts:
     paths:
-    - doc
+    - docs
   only:
   - master
