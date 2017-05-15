@@ -21,7 +21,7 @@ import utils.db._
 import worker.messages.{AddTask, Task}
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Await
+import scala.concurrent.{Await, ExecutionContextExecutor}
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success}
 
@@ -72,6 +72,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     <h1>welcome to cluster API</h1>
     <br>
     <ul><h3>available endpoints</h3>
+      <li><a href='http://$ip:$port/api/upload' style='font-size: 20px;'>/upload</a></li>
       <li><a href='http://$ip:$port/api/reporting' style='font-size: 20px;'>/reporting</a></li>
       <li><a href='http://$ip:$port/api/tree' style='font-size: 20px;'>/tree</a></li>
     </ul>
@@ -86,7 +87,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
   <title>Reporting</title>
   <body>
     <h1>available sets</h1>
-    ${report}
+    $report
   </body>
 </html>"""
   }
@@ -184,6 +185,23 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
 </html>"""
   }
 
+  def getDropzoneContent: String = {
+    s"""
+<!DOCTYPE html>
+<html>
+  <title>Upload your .jar file</title>
+  <head>
+    <script src="https://rawgit.com/enyo/dropzone/master/dist/dropzone.js"></script>
+    <link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+  </head>
+  <body>
+    <h1>Upload your .jar file</h1>
+    <br>
+    <form action="http://$ip:$port/api/upload" class="dropzone"></form>
+  </body>
+</html>"""
+  }
+
   def report: String = {
     val future = dBActor ? GetTables
     val result = Await.result(future, timeout.duration).asInstanceOf[Tables]
@@ -242,6 +260,9 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
       }
     } ~
     path("api" / "upload") {
+      get {
+        complete(HttpEntity(contentTypeHtml, getDropzoneContent))
+      } ~
       post {
         withoutSizeLimit {
           extractDataBytes {
@@ -272,14 +293,14 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     case a => println(s"received $a")
   }
 
-  def handleUpload(bytes : Source[ByteString, Any]) ={
+  def handleUpload(bytes : Source[ByteString, Any]): Route ={
     val file = File.createTempFile(new Random().nextString(15),"b")
     file.deleteOnExit()
     val sink = FileIO.toPath(file.toPath)
     val writing = bytes.runWith(sink)
     onSuccess(writing) { result =>
       result.status match {
-        case Success(_) => {
+        case Success(_) =>
           val content = java.nio.file.Files.readAllBytes(file.toPath)
           val loader : TestingCodebaseLoader = new TestingCodebaseLoader(content)
           val testMethods = loader.getClassClusterMethods
@@ -299,7 +320,6 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
           }
           file.delete()
           complete("upload done")
-        }
         case Failure(e) => file.delete(); complete(500, e.getMessage)
       }
     }
