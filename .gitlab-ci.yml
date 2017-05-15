@@ -4,8 +4,7 @@ pages:
   stage: deploy
   script:
   - sbt doc
-  - mkdir public
-  - cp -r docs/* public
+  - mv docs public
   artifacts:
     paths:
     - public
