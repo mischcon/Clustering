@@ -9,7 +9,7 @@ public class TestTasks implements ClusteringTask {
 
     private void testBody() throws InterruptedException {
         JsonObject json = new JsonObject();
-        Thread.sleep(5000);
+        Thread.sleep(20000);
         json.addProperty("method", "get");
         RestApiRequest req = new RestApiRequest(RequestMethod.GET, "http://www.this-is-a-test-url.com/index.html");
         req.setBody(json);
