@@ -32,6 +32,18 @@ Check our documentation!
 ### CAN I DO OTHER THINGS APART FROM TESTING WITH THIS THING?
 Theoretically yes, but our main goal was to provide a testing cluster. If you read through the documentation you will get an idea about how this thing works ;)
 
+### ENOUGH OF THE THEORETICAL STUFF - I WANT TO SEE SOME ACTION!!!
+It seems as if you are one of the unpatient guys... you want action? You get action!
+
+1. Install / Complile the cluster (described [here](/../wikis/basics/1-prerequisites-and-installation))
+2. Navigate to ```PROJECT_ROOT/TestJar``` and run the ```create_test_jar.sh``` script - now you have a ```PROJECT_ROOT/TestJar/TestJar.jar``` file
+3. Run ```java -jar PROJECT_ROOT/target/scala-*.*/Clustering.jar master -i PROJECT_ROOT/TestJar/TestJar.jar --debug``` (where ```*.*``` is your scala version) and feel the magic...
+
+You now can check your hypervisor - eventually more and more VMs will be started.
+
+If you check the API (http://IP_OF_YOUR_CLUSTER/api) you can see the actor hierarchy (/tree) and a report of the tasks (/reporting).
+
+
 ### DOCUMENTATION:
 * [Wiki](/../wikis/pages)
 * [FAQ](/../wikis/faq)
