@@ -2,7 +2,7 @@
 ### WHAT IS THIS?
 We are proud to present our *Scala-Java-based Testing Cluster* to you!
 The basic idea is to run test agains multiple instances of an to-be-tested application.
-The instances of the application are run in virtual machines, since virtual machines make provisioning and reconfiguring very easy - and they also provide the ability to run anything you want (Linux, Windows, OSX, iOS, Android, ...) on anything you want (Linux, Windows, OSX, even your smartphone (Jup, Scala can be run on a smartphone)).
+The instances of the application are run in virtual machines, since virtual machines make provisioning and reconfiguring very easy - and they also provide the ability to run anything you want (Linux, Windows, OS X, iOS, Android, ...) on anything you want (Linux, Windows, OS X, even your smartphone (Yup, Scala can be run on a smartphone)).
 
 The cluster can be seen as three different parts that work together:
 
