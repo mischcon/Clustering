@@ -1,7 +1,7 @@
 package utils
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Terminated}
-import utils.messages.{DeregisterNodeMonitorActor, RegisterNodeMonitorActor, SystemAttributes}
+import akka.actor.{Actor, ActorLogging, ActorRef, Address, Cancellable, Terminated}
+import utils.messages._
 import vm.messages.{GetGlobalStatusActor, GetSystemAttributes, NotReadyJet, SetGlobalStatusActor}
 
 import scala.concurrent.duration._
@@ -13,6 +13,7 @@ import scala.concurrent.duration._
 class GlobalStatusActor extends Actor with ActorLogging {
 
   private var nodeMonitorActors: Map[ActorRef, Cancellable] = Map()
+  private var nodeAttributes: Map[ActorRef, Map[String, String]] = Map.empty
 
   override def receive: Receive = {
     case RegisterNodeMonitorActor(actor)   => log.debug(s"got RegisterNodeMonitorActor($actor)");   handlerRegisterNodeMonitorActor(actor)
@@ -20,6 +21,7 @@ class GlobalStatusActor extends Actor with ActorLogging {
     case SystemAttributes(attributes)      => log.debug("got SystemAttributes");                    handlerSystemAttributes(attributes)
     case Terminated(actor)                 => log.debug(s"got Terminated($actor)");                 handlerDeregisterNodeMonitorActor(actor)
     case GetGlobalStatusActor              => log.debug(s"got GetGlobalStatusActor");               handlerGetGlobalStatusActor
+    case GetGlobalSystemAttributes         => log.debug("got GetGlobalSystemAttributes");           handlerGetGlobalSystemAttributes
     case NotReadyJet(message)              => log.debug(s"got NotReadyJet($message)");              handlerNotReadyJet(message)
   }
 
@@ -42,6 +44,7 @@ class GlobalStatusActor extends Actor with ActorLogging {
       val cancellable = nodeMonitorActors{nodeMonitorActor}
       cancellable.cancel()
       nodeMonitorActors -= nodeMonitorActor
+      nodeAttributes -= nodeMonitorActor
     }
   }
 
@@ -49,8 +52,13 @@ class GlobalStatusActor extends Actor with ActorLogging {
     sender() ! SetGlobalStatusActor(self)
   }
 
+  private def handlerGetGlobalSystemAttributes = {
+    sender() ! GlobalSystemAttributes(nodeAttributes)
+  }
+
   private def handlerSystemAttributes(attributes: Map[String, String]) = {
     log.debug(s"got system Attributes from ${sender().path}")
+    nodeAttributes += (sender() -> attributes)
   }
 
   private def handlerNotReadyJet(any: Any) = {

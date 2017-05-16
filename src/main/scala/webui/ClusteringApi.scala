@@ -19,6 +19,7 @@ import de.oth.clustering.java._
 import spray.json.DefaultJsonProtocol._
 import utils.PrivateMethodExposer
 import utils.db._
+import utils.messages.{GetGlobalSystemAttributes, GlobalSystemAttributes}
 import webui.messages.WebUIMessage
 import worker.messages.{AddTask, Task}
 
@@ -57,6 +58,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
 
   val instanceActor = context.actorSelection("/user/instances")
   val dBActor = context.actorSelection("/user/db")
+  val globalStatusActor = context.actorSelection("/user/globalStatus")
 
   val port = 8080
 
@@ -76,6 +78,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     <ul><h3>available endpoints</h3>
       <li><a href='http://$ip:$port/api/upload' style='font-size: 20px;'>/upload</a></li>
       <li><a href='http://$ip:$port/api/reporting' style='font-size: 20px;'>/reporting</a></li>
+      <li><a href='http://$ip:$port/api/status', style='font-size: 20px;'>/status</a></li>
       <li><a href='http://$ip:$port/api/tree' style='font-size: 20px;'>/tree</a></li>
     </ul>
   </body>
@@ -335,6 +338,28 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     new PrivateMethodExposer(system)('printTree)().toString
   }
 
+  def printStatus: String = {
+    val future = globalStatusActor ? GetGlobalSystemAttributes
+    val result = Await.result(future, timeout.duration).asInstanceOf[GlobalSystemAttributes]
+    result match {
+      case GlobalSystemAttributes(globalAttributes) => {
+        var sb = new StringBuilder
+        sb.append("GLOBAL STATUS:\n")
+        for(address <- globalAttributes){
+          var src = address.toString().split("_"){1}.split("/"){0}
+          sb.append(s"   $src\n")
+          for(attributes <- address._2){
+            sb.append(s"      ${attributes._1} -> ${attributes._2}\n")
+          }
+          sb.append("   ----------\n")
+        }
+        sb.toString()
+      }
+      case _ =>
+        "Something went wrong. API cannot access global status."
+    }
+  }
+
   val routes : Route =
     path("files" / "data.json") {
       get {
@@ -379,6 +404,11 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
           report(name)
           complete(HttpEntity(contentTypeHtml, getApiSingleReportContent(name)))
         }
+    } ~
+    path("api" / "status") {
+      get {
+        complete(HttpEntity(contentTypeText, printStatus))
+      }
     } ~
     path("api" / "tree") {
       get {
