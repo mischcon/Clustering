@@ -1,15 +1,14 @@
 package de.oth.clustering.scala.vm
 
 import java.net.URL
-import java.util.UUID
 
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props, Terminated}
+import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Terminated}
 import de.oth.clustering.java.communication._
+import de.oth.clustering.java.vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantPortForwardingConfig}
 import org.apache.http.impl.client.HttpClientBuilder
 import de.oth.clustering.scala.utils.telnet.TelnetClientPipelineFactory
 import de.oth.clustering.scala.vm.messages._
-import de.oth.clustering.scala.vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantPortForwardingConfig}
 import de.oth.clustering.scala.worker.messages._
 import de.oth.clustering.scala.worker.traits.VMTaskWorkerTrait
 

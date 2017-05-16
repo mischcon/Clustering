@@ -1,7 +1,7 @@
 package de.oth.clustering.scala.worker.traits
 
-import de.oth.clustering.scala.utils.DeployInfoInterface
-import de.oth.clustering.scala.vm.vagrant.configuration.VagrantEnvironmentConfig
+import de.oth.clustering.java.utils.DeployInfoInterface
+import de.oth.clustering.java.vm.vagrant.configuration.VagrantEnvironmentConfig
 
 /**
   * Created by mischcon on 11.05.17.

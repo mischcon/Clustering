@@ -6,13 +6,13 @@ import java.util.{Random, UUID}
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
 import com.rits.cloning.Cloner
-import de.oth.clustering.scala.utils.DeployInfoInterface
+import de.oth.clustering.java.utils.DeployInfoInterface
+import de.oth.clustering.java.vm.vagrant.configuration.VagrantEnvironmentConfig
+import de.oth.clustering.java.vm.vagrant.util.VagrantException
 import de.oth.clustering.scala.utils.messages.{DeregisterVmActor, RegisterVmActor, SystemAttributes}
 import de.oth.clustering.scala.vm.messages._
 import de.oth.clustering.scala.vm.vagrant.Vagrant
-import de.oth.clustering.scala.vm.vagrant.configuration.VagrantEnvironmentConfig
 import de.oth.clustering.scala.vm.vagrant.model.VagrantEnvironment
-import de.oth.clustering.scala.vm.vagrant.util.VagrantException
 import de.oth.clustering.scala.worker.messages._
 
 import scala.collection.JavaConverters.{asJavaIterableConverter, iterableAsScalaIterableConverter}

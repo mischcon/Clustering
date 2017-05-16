@@ -1,9 +1,10 @@
 package de.oth.clustering.scala.vm.vagrant.model
 
+import de.oth.clustering.java.vm.vagrant.configuration.VagrantVmConfig
+import de.oth.clustering.java.vm.vagrant.util.VagrantException
 import org.jruby.exceptions.RaiseException
 import org.jruby.{RubyObject, RubyString}
-import de.oth.clustering.scala.vm.vagrant.configuration.VagrantVmConfig
-import de.oth.clustering.scala.vm.vagrant.util.{VagrantException, VagrantVmConfigUtils}
+import de.oth.clustering.scala.vm.vagrant.util.VagrantVmConfigUtils
 
 /**
   * A {@link VmEnvironment} manages a set of VMs. By using the environment you can manage the lifecycle of all VMs inside the environment or access a specific VM.

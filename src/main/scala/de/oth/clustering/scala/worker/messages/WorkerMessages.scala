@@ -1,8 +1,8 @@
 package de.oth.clustering.scala.worker.messages
 
 import akka.actor.ActorRef
-import de.oth.clustering.scala.utils.DeployInfoInterface
-import de.oth.clustering.scala.vm.vagrant.configuration.VagrantEnvironmentConfig
+import de.oth.clustering.java.utils.DeployInfoInterface
+import de.oth.clustering.java.vm.vagrant.configuration.VagrantEnvironmentConfig
 
 trait WorkerMessagesTrait
 

@@ -3,7 +3,7 @@ package de.oth.clustering.scala.worker
 import de.oth.clustering.scala.exceptions.{TestFailException, TestSuccessException}
 import de.oth.clustering.java.clustering.ClusteringTask
 import de.oth.clustering.java.communication.ProxyRequest
-import de.oth.clustering.java.TestingCodebaseLoader
+import de.oth.clustering.java.utils.TestingCodebaseLoader
 import org.junit.Test
 import org.junit.runner.{JUnitCore, Request, Result}
 import de.oth.clustering.scala.worker.messages.ExecuteTask

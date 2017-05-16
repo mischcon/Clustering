@@ -7,7 +7,8 @@ package de.oth.clustering.scala.vm.vagrant.configuration
 import java.io.File
 import java.net.URL
 
-import de.oth.clustering.scala.vm.vagrant.util.{ChecksumType, Protocol, Run}
+import de.oth.clustering.java.vm.vagrant.configuration._
+import de.oth.clustering.java.vm.vagrant.util.{ChecksumType, Protocol, Run}
 
 import scala.collection.JavaConverters._
 

@@ -3,10 +3,10 @@ package de.oth.clustering.scala.vm
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
-import de.oth.clustering.scala.utils.DeployInfoInterface
+import de.oth.clustering.java.utils.DeployInfoInterface
+import de.oth.clustering.java.vm.vagrant.configuration.VagrantEnvironmentConfig
 import de.oth.clustering.scala.utils.messages.SystemAttributes
 import de.oth.clustering.scala.vm.messages._
-import de.oth.clustering.scala.vm.vagrant.configuration.VagrantEnvironmentConfig
 import de.oth.clustering.scala.worker.messages.{DeployInfo, GetDeployInfo, NoDeployInfo}
 import de.oth.clustering.scala.worker.traits.VMDeployWorkerTrait
 

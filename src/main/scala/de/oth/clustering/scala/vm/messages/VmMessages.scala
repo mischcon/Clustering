@@ -3,7 +3,7 @@ package de.oth.clustering.scala.vm.messages
 import java.io.File
 
 import akka.actor.{ActorRef, Address}
-import de.oth.clustering.scala.vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantVmConfig}
+import de.oth.clustering.java.vm.vagrant.configuration.{VagrantEnvironmentConfig, VagrantVmConfig}
 
 /**
   * Created by oliver.ziegert on 22.04.17.

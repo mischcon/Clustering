@@ -1,4 +1,4 @@
-package de.oth.clustering.scala.utils;
+package de.oth.clustering.java.utils;
 
 /**
  * Created by mischcon on 11.05.17.

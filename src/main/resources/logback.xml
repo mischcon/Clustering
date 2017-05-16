@@ -9,14 +9,14 @@
 
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
-                <expression>de.oth.de.oth.clustering.java.clustering.scala.exceptions.TestSuccessException.class.isInstance(throwable)</expression>
+                <expression>de.oth.clustering.scala.exceptions.TestSuccessException.class.isInstance(throwable)</expression>
             </evaluator>
             <onMatch>DENY</onMatch>
         </filter>
 
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
-                <expression>de.oth.de.oth.clustering.java.clustering.scala.exceptions.TestFailException.class.isInstance(throwable)</expression>
+                <expression>de.oth.clustering.scala.exceptions.TestFailException.class.isInstance(throwable)</expression>
             </evaluator>
             <onMatch>DENY</onMatch>
         </filter>
@@ -30,14 +30,14 @@
         </encoder>
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
-                <expression>de.oth.de.oth.clustering.java.clustering.scala.exceptions.TestSuccessException.class.isInstance(throwable)</expression>
+                <expression>de.oth.clustering.scala.exceptions.TestSuccessException.class.isInstance(throwable)</expression>
             </evaluator>
             <onMatch>DENY</onMatch>
         </filter>
 
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
-                <expression>de.oth.de.oth.clustering.java.clustering.scala.exceptions.TestFailException.class.isInstance(throwable)</expression>
+                <expression>de.oth.clustering.scala.exceptions.TestFailException.class.isInstance(throwable)</expression>
             </evaluator>
             <onMatch>DENY</onMatch>
         </filter>

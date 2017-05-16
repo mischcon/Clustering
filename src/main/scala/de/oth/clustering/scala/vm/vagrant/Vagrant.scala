@@ -3,6 +3,7 @@ package de.oth.clustering.scala.vm.vagrant
 import java.io.{File, IOException}
 import java.nio.charset.Charset
 
+import de.oth.clustering.java.vm.vagrant.configuration.{VagrantConfiguration, VagrantEnvironmentConfig, VagrantFileTemplateConfiguration, VagrantFolderTemplateConfiguration}
 import org.jruby.RubyObject
 import org.jruby.embed.{LocalContextScope, ScriptingContainer}
 import sbt.io.IO.{copyDirectory, copyFile, write}

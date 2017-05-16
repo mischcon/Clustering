@@ -1,9 +1,9 @@
 package de.oth.clustering.scala.worker
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
-import de.oth.clustering.scala.utils.DeployInfoInterface
+import de.oth.clustering.java.utils.DeployInfoInterface
+import de.oth.clustering.java.vm.vagrant.configuration.VagrantEnvironmentConfig
 import de.oth.clustering.scala.vm.messages.{GetInstanceActor, SetInstanceActor}
-import de.oth.clustering.scala.vm.vagrant.configuration.VagrantEnvironmentConfig
 import de.oth.clustering.scala.worker.messages._
 
 /**

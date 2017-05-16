@@ -9,7 +9,7 @@ then
       SimpleCov::Formatter::HTMLFormatter,
       Coveralls::SimpleCov::Formatter,
     ]
-    command_name "Unit Tests"
+    command_name "Unit de.oth.clustering.java.example.Tests"
     add_filter "/test/"
     add_filter "/demo/"
   end

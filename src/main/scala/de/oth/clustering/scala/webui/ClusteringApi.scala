@@ -16,6 +16,7 @@ import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.{ByteString, Timeout}
 import de.oth.clustering.java.clustering.{ClusterType, TrafficLoad}
 import de.oth.clustering.java._
+import de.oth.clustering.java.utils.TestingCodebaseLoader
 import spray.json.DefaultJsonProtocol._
 import de.oth.clustering.scala.utils.PrivateMethodExposer
 import de.oth.clustering.scala.utils.db._
