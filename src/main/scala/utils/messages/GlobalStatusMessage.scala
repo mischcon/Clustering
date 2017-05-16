@@ -17,3 +17,7 @@ case class SystemAttributes(attributes: Map[String, String]) extends GlobalStatu
 case class GlobalSystemAttributes(globalAttributes : Map[ActorRef, Map[String, String]]) extends GlobalStatusMessage
 
 case object GetGlobalSystemAttributes extends GlobalStatusMessage
+
+case object GetVMInfos extends GlobalStatusMessage
+
+case class VMInfos(infos: Map[Address, Int]) extends GlobalStatusMessage

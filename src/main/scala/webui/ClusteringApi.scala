@@ -19,7 +19,7 @@ import de.oth.clustering.java._
 import spray.json.DefaultJsonProtocol._
 import utils.PrivateMethodExposer
 import utils.db._
-import utils.messages.{GetGlobalSystemAttributes, GlobalSystemAttributes}
+import utils.messages.{GetGlobalSystemAttributes, GetVMInfos, GlobalSystemAttributes, VMInfos}
 import webui.messages.WebUIMessage
 import worker.messages.{AddTask, Task}
 
@@ -79,6 +79,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
       <li><a href='http://$ip:$port/api/upload' style='font-size: 20px;'>/upload</a></li>
       <li><a href='http://$ip:$port/api/reporting' style='font-size: 20px;'>/reporting</a></li>
       <li><a href='http://$ip:$port/api/status', style='font-size: 20px;'>/status</a></li>
+      <li><a href='http://$ip:$port/api/vms', style='font-size: 20px;'>/vms</a></li>
       <li><a href='http://$ip:$port/api/tree' style='font-size: 20px;'>/tree</a></li>
     </ul>
   </body>
@@ -366,6 +367,22 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     }
   }
 
+  def printVMs: String = {
+    val future = globalStatusActor ? GetVMInfos
+    val result = Await.result(future, timeout.duration).asInstanceOf[VMInfos]
+    result match {
+      case VMInfos(infos) => {
+        var sb = new StringBuilder
+        sb.append("VMs per Node:\n")
+        for(x <- infos.map(x => (s"${x._1.host.get}:${x._1.port.get}", x._2))){
+          sb.append(s"   ${x._1} ---> ${x._2}\n")
+        }
+        sb.toString()
+      }
+      case _ => "Something went wrong. API cannot access VM infos."
+    }
+  }
+
   val routes : Route =
     path("files" / "data.json") {
       get {
@@ -414,6 +431,11 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     path("api" / "status") {
       get {
         complete(HttpEntity(contentTypeText, printStatus))
+      }
+    } ~
+    path("api" / "vms") {
+      get {
+        complete(HttpEntity(contentTypeText, printVMs))
       }
     } ~
     path("api" / "tree") {

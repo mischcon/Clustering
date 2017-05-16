@@ -91,6 +91,10 @@ class GlobalStatusActor extends Actor with ActorLogging {
     sender() ! GlobalSystemAttributes(nodeAttributes)
   }
 
+  private def handlerGetVMInfo = {
+    sender() ! nodeVms
+  }
+
   private def handlerSystemAttributes(attributes: Map[String, String]) = {
     log.debug(s"got system Attributes from ${sender().path}")
     nodeAttributes += (sender() -> attributes)
