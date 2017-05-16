@@ -204,7 +204,13 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
       maxFilesize: 200,
       addRemoveLinks: true,
       headers: {'Content-Type': 'application/octet-stream', 'Accept-Encoding': 'gzip,deflate'},
-      acceptedFiles: '.jar'
+      acceptedFiles: '.jar',
+      sending: function(file, xhr) {
+           var _send = xhr.send;
+           xhr.send = function() {
+             _send.call(xhr, file);
+           };
+         }
     };
   </script>
   <body>

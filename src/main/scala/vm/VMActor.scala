@@ -191,7 +191,7 @@ class VMActor extends Actor with ActorLogging {
           vmActor ! VmTaskResult((vagrantEnvironment, output, vagrantEnvironmentConfig, vagrantEnvironment.status()))
         } catch {
           case e: Exception => {
-            log.debug(s"vagrant up faild: $e\n ${e.getStackTrace.mkString("\n")}")
+            log.error(e, "vagrant up faild")
             vagrantEnvironment.destroy()
             sbt.io.IO.delete(path)
             instanceActor.tell(GetDeployInfo, vmActor)
@@ -205,13 +205,13 @@ class VMActor extends Actor with ActorLogging {
 
   private def finishProvisionVm(x: (VagrantEnvironment, String, VagrantEnvironmentConfig, Iterator[(String, vm.vagrant.model.VmStatus.Value)])) = {
     if (x._4.exists(_._2 != vm.vagrant.model.VmStatus.running)) {
-      log.debug("vm not provisioned")
-      log.debug(x._2)
+      log.info("vm not provisioned")
+      log.info(x._2)
       vmProvisioned = false
       prepareProvisionVm
     } else {
-      log.debug("vm provisioned")
-      log.debug(x._2)
+      log.info("vm provisioned")
+      log.info(x._2)
       vmProvisioned = true
       nodeActor ! VmProvisioned
       vmProxyActor ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)

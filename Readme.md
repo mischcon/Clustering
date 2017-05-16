@@ -41,7 +41,7 @@ It seems as if you are one of the unpatient guys... you want action? You get act
 
 You now can check your hypervisor - eventually more and more VMs will be started.
 
-If you check the API (http://IP_OF_YOUR_CLUSTER:8080/api) you can see the actor hierarchy (/tree), the global status (/status) and a report of the tasks (/reporting).
+If you check the API (http://IP_OF_YOUR_CLUSTER:8080/api) you can see the actor hierarchy (/tree), the global status (/status) and a report of the tasks (/reporting). Via /upload you can also upload new task jar files.
 
 
 ### DOCUMENTATION:
