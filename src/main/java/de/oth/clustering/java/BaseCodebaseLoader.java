@@ -1,8 +1,8 @@
 package de.oth.clustering.java;
 
-import utils.DeployInfoInterface;
-import vm.VmEnvironment;
-import vm.vagrant.configuration.VagrantEnvironmentConfig;
+import de.oth.clustering.scala.utils.DeployInfoInterface;
+import de.oth.clustering.scala.vm.VmEnvironment;
+import de.oth.clustering.scala.vm.vagrant.configuration.VagrantEnvironmentConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

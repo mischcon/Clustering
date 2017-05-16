@@ -19,7 +19,7 @@ import java.io.IOException;
 public class ProxyRequest<T> {
     /**
      * If executed in cluster, this field will be <i>post-injected</i> w/ instance of
-     * {@link vm.VMProxyActor} by executing actor
+     * {@link de.oth.clustering.scala.vm.VMProxyActor} by executing actor
      */
     private ActorRef vmProxy;
     private Future<Object> future;

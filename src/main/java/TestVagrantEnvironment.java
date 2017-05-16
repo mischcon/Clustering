@@ -1,10 +1,8 @@
-import vm.VmEnvironment;
-import vm.vagrant.configuration.VagrantEnvironmentConfig;
-import vm.vagrant.configuration.VagrantVmConfig;
-import vm.vagrant.configuration.builder.*;
-import vm.vagrant.util.Protocol;
-
-import java.io.File;
+import de.oth.clustering.scala.vm.VmEnvironment;
+import de.oth.clustering.scala.vm.vagrant.configuration.VagrantEnvironmentConfig;
+import de.oth.clustering.scala.vm.vagrant.configuration.VagrantVmConfig;
+import de.oth.clustering.scala.vm.vagrant.configuration.builder.*;
+import de.oth.clustering.scala.vm.vagrant.util.Protocol;
 
 /**
  * <strong>Contains Test Vagrant-Environment for the clustertest</strong><br><br>

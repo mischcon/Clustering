@@ -136,7 +136,7 @@
   * Using -target 1.5 to force Java bits to compile with 1.5.
 
 ## 2011-09-12 (1.6.0)
-  * Extract utilities (prettifier and GUI-editor) in its own gem json-utils.
+  * Extract utilities (prettifier and GUI-editor) in its own gem json-de.oth.clustering.scala.utils.
   * Split json/add/core into different files for classes to be serialised.
 
 ## 2011-08-31 (1.5.4)

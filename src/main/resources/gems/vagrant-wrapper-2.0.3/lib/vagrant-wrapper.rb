@@ -40,9 +40,9 @@ class VagrantWrapper
   def require_version(version)
     version_req = Gem::Requirement.new(version)
     vagrant_ver = vagrant_version
-    raise Exceptions::NotInstalled, "Vagrant is not installed." if vagrant_ver.nil?
+    raise de.oth.clustering.scala.Exceptions::NotInstalled, "Vagrant is not installed." if vagrant_ver.nil?
     unless version_req.satisfied_by?(Gem::Version.new(vagrant_ver))
-      raise Exceptions::Version, "Vagrant #{version} is required. You have #{vagrant_ver}."
+      raise de.oth.clustering.scala.Exceptions::Version, "Vagrant #{version} is required. You have #{vagrant_ver}."
     end
   end
 
@@ -125,7 +125,7 @@ class VagrantWrapper
   def self.require_or_help_install(version)
     begin
       vw = VagrantWrapper.new(version)
-    rescue Exceptions::Version => e
+    rescue de.oth.clustering.scala.Exceptions::Version => e
       $stderr.print e.message + "\n"
       $stderr.print install_instructions
       exit(1)
