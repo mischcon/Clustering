@@ -108,7 +108,7 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
     case t : Terminated => handleTermianted(t)
     case a : PersistAndSuicide => {
       log.debug("received PersistAndSuicide")
-      context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.FAILURE, s"DEPENDENCY FAILED: ${a.reason}", tablename)
+      context.system.actorSelection("/user/db") ! UpdateTask(s"${task.classname}.${task.method}", TaskStatus.NOT_STARTED, EndState.ABANDONED, s"DEPENDENCY FAILED: ${a.reason}", tablename)
       context.stop(self)
     }
   }
