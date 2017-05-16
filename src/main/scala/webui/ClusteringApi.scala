@@ -41,9 +41,12 @@ case class UploadJar(content : Array[Byte]) extends WebUIMessage
   * {{{
   *   GET /api - landing page
   *
+  *       GET  /api/upload                   drag & drop .jar file upload
   *       POST /api/upload                   .jar file upload
   *       GET  /api/reporting                reporting API; check available task sets
   *       GET  /api/reporting/[table name]   single report for requested task set; check status of done tasks
+  *       GET  /api/status                   health status (CPU load, RAM usage etc.) of all attached phys. nodes
+  *       GET  /api/vms                      information about amount of deployed VMs on each node
   *       GET  /api/tree                     actor tree w/i the cluster
   * }}}
   * @param ip ip to bind API on
@@ -395,7 +398,9 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
               run_locally = true
 
             // Add Task to dependency tree
-            instanceActor ! AddTask(datestring, a.annotation.members().toList, Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance, run_locally), version)
+            instanceActor ! AddTask(
+              datestring, a.annotation.members().toList,
+              Task(loader.getRawTestClass(a.classname), a.classname, a.methodname, singleInstance, run_locally), version)
 
             // Add Task to Database
             dBActor ! CreateTask(s"${a.classname}.${a.methodname}", datestring)
