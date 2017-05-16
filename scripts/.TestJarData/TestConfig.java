@@ -10,7 +10,7 @@ public class TestConfig implements VmEnvironment {
                 .create()
                 .withName("Test-VM")
                 .withHostName("Cluster.TestVM")
-                .withBoxName("ubuntu/trusty64")
+                .withBoxName("ubuntu/xenial64")
                 .withVagrantNetworkConfig(VagrantNetworkConfigBuilder
                         .createPortForwardingConfig()
                         .withName("Test-PortForwarding")
