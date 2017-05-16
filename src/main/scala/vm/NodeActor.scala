@@ -183,7 +183,7 @@ class NodeActor extends Actor with ActorLogging with VMDeployWorkerTrait {
       val vmActor: ActorRef = context.actorOf(Props[VMActor], s"vmActor_$uuid")
       vmActors += uuid -> (vmActor, vmProxyActor)
     } else {
-      log.debug(s"can not create new vmActor & vmProxyActor, needed Memory: $memoryNeeded, freeMemory: ${freeMemory}")
+      log.info(s"can not create new vmActor & vmProxyActor, needed Memory: $memoryNeeded, freeMemory: ${freeMemory}")
       log.debug(s"vagrant is intalled: $vagrant")
       if (scheduleOnceAddVmActor == null)
         scheduleOnceAddVmActor(30 seconds)
