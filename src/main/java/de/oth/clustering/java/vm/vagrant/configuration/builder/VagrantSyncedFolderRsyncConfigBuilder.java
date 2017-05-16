@@ -1,7 +1,7 @@
 package de.oth.clustering.java.vm.vagrant.configuration.builder;
 
-import de.oth.clustering.java.vm.vagrant.configuration.VagrantSyncedFolderRsyncConfig;
 import de.oth.clustering.java.vm.vagrant.configuration.VagrantSyncedFolderConfig;
+import de.oth.clustering.java.vm.vagrant.configuration.VagrantSyncedFolderRsyncConfig;
 
 import java.util.ArrayList;
 import java.util.List;

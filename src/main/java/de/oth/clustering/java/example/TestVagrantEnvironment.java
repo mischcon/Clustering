@@ -1,9 +1,9 @@
 package de.oth.clustering.java.example;
 
-import de.oth.clustering.java.vm.vagrant.configuration.builder.*;
 import de.oth.clustering.java.vm.VmEnvironment;
 import de.oth.clustering.java.vm.vagrant.configuration.VagrantEnvironmentConfig;
 import de.oth.clustering.java.vm.vagrant.configuration.VagrantVmConfig;
+import de.oth.clustering.java.vm.vagrant.configuration.builder.*;
 import de.oth.clustering.java.vm.vagrant.util.Protocol;
 
 /**

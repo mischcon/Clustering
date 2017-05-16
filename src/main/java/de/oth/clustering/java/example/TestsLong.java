@@ -1,8 +1,8 @@
 package de.oth.clustering.java.example;
 
+import com.google.gson.JsonObject;
 import de.oth.clustering.java.clustering.Clustering;
 import de.oth.clustering.java.clustering.ClusteringTask;
-import com.google.gson.JsonObject;
 import de.oth.clustering.java.communication.RequestMethod;
 import de.oth.clustering.java.communication.RestApiRequest;
 import de.oth.clustering.java.communication.RestApiResponse;

@@ -1,16 +1,14 @@
 package de.oth.clustering.scala.utils.telnet
 
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import java.io.{BufferedReader, InputStreamReader}
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
-
-import scala.util.control.Breaks.break
-import scala.util.control.Breaks.breakable
 
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel.ChannelFuture
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
+
+import scala.util.control.Breaks.{break, breakable}
 
 /**
  * Simplistic telnet client.

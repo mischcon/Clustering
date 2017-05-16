@@ -1,9 +1,9 @@
 package de.oth.clustering.java.vm.vagrant.configuration.builder;
 
+import de.oth.clustering.java.vm.vagrant.configuration.VagrantConfiguration;
 import de.oth.clustering.java.vm.vagrant.configuration.VagrantEnvironmentConfig;
 import de.oth.clustering.java.vm.vagrant.configuration.VagrantFileTemplateConfiguration;
 import de.oth.clustering.java.vm.vagrant.configuration.VagrantFolderTemplateConfiguration;
-import de.oth.clustering.java.vm.vagrant.configuration.VagrantConfiguration;
 import de.oth.clustering.java.vm.vagrant.configuration.builder.util.VagrantBuilderException;
 
 import java.io.Serializable;

@@ -2,6 +2,7 @@ package de.oth.clustering.scala.utils.telnet
 
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
+
 import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 

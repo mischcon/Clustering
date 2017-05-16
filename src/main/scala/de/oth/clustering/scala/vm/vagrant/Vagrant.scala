@@ -4,11 +4,11 @@ import java.io.{File, IOException}
 import java.nio.charset.Charset
 
 import de.oth.clustering.java.vm.vagrant.configuration.{VagrantConfiguration, VagrantEnvironmentConfig, VagrantFileTemplateConfiguration, VagrantFolderTemplateConfiguration}
+import de.oth.clustering.scala.vm.vagrant.configuration._
+import de.oth.clustering.scala.vm.vagrant.model.VagrantEnvironment
 import org.jruby.RubyObject
 import org.jruby.embed.{LocalContextScope, ScriptingContainer}
 import sbt.io.IO.{copyDirectory, copyFile, write}
-import de.oth.clustering.scala.vm.vagrant.configuration._
-import de.oth.clustering.scala.vm.vagrant.model.VagrantEnvironment
 
 import scala.collection.JavaConverters._
 import scala.io.Source.fromURL

@@ -5,10 +5,10 @@ import java.lang.management.ManagementFactory
 import javax.management.{Attribute, MBeanServer, ObjectName}
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
-import org.jruby.RubyObject
-import org.jruby.embed.{LocalContextScope, ScriptingContainer}
 import de.oth.clustering.scala.utils.messages.{DeregisterNodeMonitorActor, RegisterNodeMonitorActor, SystemAttributes}
 import de.oth.clustering.scala.vm.messages._
+import org.jruby.RubyObject
+import org.jruby.embed.{LocalContextScope, ScriptingContainer}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.{DurationInt, FiniteDuration}

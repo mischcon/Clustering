@@ -1,8 +1,8 @@
 package de.oth.clustering.java.vm.vagrant.configuration.builder;
 
 import de.oth.clustering.java.vm.vagrant.configuration.*;
-import de.oth.clustering.java.vm.vagrant.util.ChecksumType;
 import de.oth.clustering.java.vm.vagrant.configuration.builder.util.VagrantBuilderException;
+import de.oth.clustering.java.vm.vagrant.util.ChecksumType;
 
 import java.io.File;
 import java.io.Serializable;

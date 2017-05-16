@@ -1,9 +1,9 @@
 package de.oth.clustering.scala.worker
 
-import de.oth.clustering.scala.exceptions.{TestFailException, TestSuccessException}
 import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{ActorRef, ActorSelection, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.util.Timeout
+import de.oth.clustering.scala.exceptions.{TestFailException, TestSuccessException}
 import de.oth.clustering.scala.utils.db.{EndState, TaskStatus, UpdateTask}
 import de.oth.clustering.scala.worker.messages._
 import de.oth.clustering.scala.worker.traits.WorkerTrait

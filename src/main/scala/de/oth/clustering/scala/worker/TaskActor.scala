@@ -1,11 +1,11 @@
 package de.oth.clustering.scala.worker
 
-import de.oth.clustering.scala.exceptions._
 import akka.actor.SupervisorStrategy.{Escalate, Stop}
 import akka.actor.{ActorRef, Deploy, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.pattern._
 import akka.remote.RemoteScope
 import akka.util.Timeout
+import de.oth.clustering.scala.exceptions._
 import de.oth.clustering.scala.utils.db.{EndState, TaskStatus, UpdateTask, UpdateTaskStatus}
 import de.oth.clustering.scala.utils.messages.{ExecutorAddress, GetExecutorAddress}
 import de.oth.clustering.scala.worker.messages._

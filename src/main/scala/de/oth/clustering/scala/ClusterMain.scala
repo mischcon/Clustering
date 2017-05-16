@@ -5,23 +5,22 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import akka.actor.{ActorRef, ActorSystem, Address, Props}
-import akka.pattern._
 import akka.cluster.Cluster
 import akka.event.Logging
+import akka.pattern._
 import akka.util.Timeout
-import de.oth.clustering.java.clustering.{ClusterType, TrafficLoad}
 import com.typesafe.config.ConfigFactory
+import de.oth.clustering.java.clustering.{ClusterType, TrafficLoad}
 import de.oth.clustering.java.utils.TestingCodebaseLoader
-
-import scala.collection.JavaConverters._
-import de.oth.clustering.scala.utils.db.{ConnectionStatus, ConnectionTest, CreateTask, DBActor}
 import de.oth.clustering.scala.utils._
+import de.oth.clustering.scala.utils.db.{ConnectionStatus, ConnectionTest, CreateTask, DBActor}
 import de.oth.clustering.scala.vm.NodeMasterActor
 import de.oth.clustering.scala.vm.messages.IncludeNode
 import de.oth.clustering.scala.webui.ClusteringApi
 import de.oth.clustering.scala.worker.InstanceActor
 import de.oth.clustering.scala.worker.messages.{AddTask, Task}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.io.StdIn

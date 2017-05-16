@@ -1,6 +1,6 @@
 package de.oth.clustering.scala.utils
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Address, Cancellable, Terminated}
+import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Terminated}
 import de.oth.clustering.scala.utils.messages._
 import de.oth.clustering.scala.vm.messages.{GetGlobalStatusActor, GetSystemAttributes, NotReadyJet, SetGlobalStatusActor}
 

@@ -3,8 +3,8 @@ package de.oth.clustering.scala.vm
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Address, Deploy, Props, Terminated}
-import akka.cluster.{Cluster, Member}
 import akka.cluster.ClusterEvent.{InitialStateAsEvents, MemberJoined}
+import akka.cluster.{Cluster, Member}
 import akka.remote.RemoteScope
 import de.oth.clustering.scala.vm.messages._
 

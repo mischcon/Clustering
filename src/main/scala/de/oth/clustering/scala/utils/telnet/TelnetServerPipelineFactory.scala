@@ -1,13 +1,7 @@
 package de.oth.clustering.scala.utils.telnet
-import org.jboss.netty.bootstrap.ClientBootstrap
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
-import java.util.concurrent.Executors
-import org.jboss.netty.channel.ChannelPipelineFactory
-import org.jboss.netty.channel.ChannelPipeline
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder
-import org.jboss.netty.handler.codec.string.StringDecoder
-import org.jboss.netty.handler.codec.frame.Delimiters
-import org.jboss.netty.handler.codec.string.StringEncoder
+import org.jboss.netty.channel.{ChannelPipeline, ChannelPipelineFactory}
+import org.jboss.netty.handler.codec.frame.{DelimiterBasedFrameDecoder, Delimiters}
+import org.jboss.netty.handler.codec.string.{StringDecoder, StringEncoder}
 
 /**
  * Creates a newly configured ChannelPipeline for a new channel.

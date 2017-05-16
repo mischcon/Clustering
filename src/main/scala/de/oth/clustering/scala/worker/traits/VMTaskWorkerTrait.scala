@@ -1,7 +1,7 @@
 package de.oth.clustering.scala.worker.traits
 
-import akka.actor.{ActorRef, Terminated}
-import de.oth.clustering.scala.worker.messages.{StillAlive, Task}
+import akka.actor.ActorRef
+import de.oth.clustering.scala.worker.messages.Task
 
 /**
   * Created by mischcon on 11.05.17.

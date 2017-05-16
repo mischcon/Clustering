@@ -2,7 +2,6 @@ package de.oth.clustering.scala.vm.vagrant.util
 
 import de.oth.clustering.java.vm.vagrant.configuration.{VagrantPortForwardingConfig, VagrantVmConfig}
 import de.oth.clustering.java.vm.vagrant.util.Protocol
-import de.oth.clustering.scala.vm.vagrant.configuration._
 
 import scala.collection.JavaConverters._
 

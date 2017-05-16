@@ -15,14 +15,13 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.{ByteString, Timeout}
 import de.oth.clustering.java.clustering.{ClusterType, TrafficLoad}
-import de.oth.clustering.java._
 import de.oth.clustering.java.utils.TestingCodebaseLoader
-import spray.json.DefaultJsonProtocol._
 import de.oth.clustering.scala.utils.PrivateMethodExposer
 import de.oth.clustering.scala.utils.db._
 import de.oth.clustering.scala.utils.messages.{GetGlobalSystemAttributes, GetVMInfos, GlobalSystemAttributes, VMInfos}
 import de.oth.clustering.scala.webui.messages.WebUIMessage
 import de.oth.clustering.scala.worker.messages.{AddTask, Task}
+import spray.json.DefaultJsonProtocol._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Await

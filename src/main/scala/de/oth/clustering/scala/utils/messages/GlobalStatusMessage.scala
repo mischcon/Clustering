@@ -1,6 +1,6 @@
 package de.oth.clustering.scala.utils.messages
 
-import akka.actor.{ActorRef, Address}
+import akka.actor.ActorRef
 
 trait GlobalStatusMessage
 

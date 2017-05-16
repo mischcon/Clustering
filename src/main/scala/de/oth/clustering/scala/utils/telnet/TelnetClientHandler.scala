@@ -1,19 +1,8 @@
 package de.oth.clustering.scala.utils.telnet
 
-import java.util.concurrent.atomic.AtomicLong
-import org.jboss.netty.buffer.{ ChannelBuffer, ChannelBuffers }
-import org.jboss.netty.channel.{
-  Channel,
-  ChannelEvent,
-  ChannelHandlerContext,
-  ChannelState,
-  ChannelStateEvent,
-  ExceptionEvent,
-  MessageEvent,
-  SimpleChannelUpstreamHandler,
-  WriteCompletionEvent
-}
 import java.util.logging.Logger
+
+import org.jboss.netty.channel._
 
 /**
  * Handles a client-side channel.
