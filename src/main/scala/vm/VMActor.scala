@@ -7,7 +7,7 @@ import java.util.{Random, UUID}
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
 import com.rits.cloning.Cloner
 import utils.DeployInfoInterface
-import utils.messages.SystemAttributes
+import utils.messages.{DeregisterVmActor, RegisterVmActor, SystemAttributes}
 import vm.messages._
 import vm.vagrant.Vagrant
 import vm.vagrant.configuration.VagrantEnvironmentConfig
@@ -28,6 +28,7 @@ class VMActor extends Actor with ActorLogging {
   private var nodeActor: ActorRef = _
   private var nodeMonitorActor: ActorRef = _
   private var instanceActor: ActorRef = _
+  private var globalStatusActor: ActorRef = _
   private var vagrantEnvironmentConfig: VagrantEnvironmentConfig = _
   private var vagrantEnvironment: VagrantEnvironment = _
   private var vmProxyActor: ActorRef = _
@@ -45,6 +46,7 @@ class VMActor extends Actor with ActorLogging {
     case SetInstanceActor(actor)                                    => log.debug(s"got SetInstanceActor($actor)");      handlerSetInstanceActor(actor)
     case SetVmProxyActor(actor)                                     => log.debug(s"got SetVmProxyActor($actor)");       handlerSetVmProxyActor(actor)
     case SetNodeMonitorActor(actor)                                 => log.debug(s"got SetNodeMonitorActor($actor)");   handlerSetNodeMonitorActor(actor)
+    case SetGlobalStatusActor(actor)                                => log.debug(s"got SetGlobalStatusActor($actor)");  handlerSetGlobalStatusActor(actor)
     case NotReadyJet(message)                                       => log.debug(s"got NotReadyJet($message)");         handlerNotReadyJet(message)
     case DeployInfo(config)           if ready                      => log.debug(s"got DeployInfo($config)");           handlerDeployInfo(config)
     case SystemAttributes(attributes) if ready                      => log.debug(s"got SystemAttributes($attributes)"); handlerSystemAttributes(attributes)
@@ -64,6 +66,7 @@ class VMActor extends Actor with ActorLogging {
     nodeActor ! GetInstanceActor
     nodeActor ! GetVmProxyActor(self)
     nodeActor ! GetNodeMonitorActor
+    nodeActor ! GetGlobalStatusActor
   }
 
   private def handlerSetInstanceActor(actor: ActorRef) = {
@@ -78,6 +81,11 @@ class VMActor extends Actor with ActorLogging {
 
   private def handlerSetNodeMonitorActor(actor: ActorRef) = {
     this.nodeMonitorActor = actor
+    checkReady
+  }
+
+  private def handlerSetGlobalStatusActor(actor: ActorRef) = {
+    this.globalStatusActor = actor
     checkReady
   }
 
@@ -121,7 +129,7 @@ class VMActor extends Actor with ActorLogging {
   private def handlerVmTaskResult(any: Any) = {
     any match {
       case x: (VagrantEnvironment, String, VagrantEnvironmentConfig, Iterator[(String, vm.vagrant.model.VmStatus.Value)]) => finishProvisionVm(x)
-      case x: VmDestroy => nodeActor ! RemoveVmActor(self); context.stop(self)
+      case x: VmDestroy => nodeActor ! RemoveVmActor(self); globalStatusActor ! DeregisterVmActor(self.path.address); context.stop(self)
     }
   }
 
@@ -138,7 +146,7 @@ class VMActor extends Actor with ActorLogging {
   }
 
   private def checkReady = {
-    if (instanceActor != null && vmProxyActor != null && nodeMonitorActor != null) {
+    if (instanceActor != null && vmProxyActor != null && nodeMonitorActor != null && globalStatusActor != null) {
       ready = true
       if (scheduleOnceGetDeployInfo == null)
         scheduleOnceGetDeployInfo(0 seconds)
@@ -175,7 +183,7 @@ class VMActor extends Actor with ActorLogging {
         var output = ""
         try {
           output = vagrantEnvironment.destroy()
-          //output += s"\n${vagrantEnvironment.updateBoxes()}"
+          output += s"\n${vagrantEnvironment.updateBoxes()}"
           output += s"\n${vagrantEnvironment.up()}"
           val vmConfigs = vagrantEnvironmentConfig.vmConfigs().asScala.map(vagrantEnvironment.getBoxePortMapping(_))
           vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vmConfigs.asJava, vagrantEnvironmentConfig.path())
@@ -207,6 +215,7 @@ class VMActor extends Actor with ActorLogging {
       vmProvisioned = true
       nodeActor ! VmProvisioned
       vmProxyActor ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
+      globalStatusActor ! RegisterVmActor(self.path.address)
     }
   }
 

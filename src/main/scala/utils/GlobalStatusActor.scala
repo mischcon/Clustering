@@ -13,11 +13,14 @@ import scala.concurrent.duration._
 class GlobalStatusActor extends Actor with ActorLogging {
 
   private var nodeMonitorActors: Map[ActorRef, Cancellable] = Map()
-  private var nodeAttributes: Map[ActorRef, Map[String, String]] = Map.empty
+  private var nodeAttributes: Map[ActorRef, Map[String, String]] = Map()
+  private var nodeVms: Map[Address, Int] = Map()
 
   override def receive: Receive = {
     case RegisterNodeMonitorActor(actor)   => log.debug(s"got RegisterNodeMonitorActor($actor)");   handlerRegisterNodeMonitorActor(actor)
+    case RegisterVmActor(address)          => log.debug(s"got RegisterVmActor($address)");          handlerRegisterVmActor(address)
     case DeregisterNodeMonitorActor(actor) => log.debug(s"got DeregisterNodeMonitorActor($actor)"); handlerDeregisterNodeMonitorActor(actor)
+    case DeregisterVmActor(address)        => log.debug(s"got DeregisterVmActor($address)");        handlerDeregisterVmActor(address)
     case SystemAttributes(attributes)      => log.debug("got SystemAttributes");                    handlerSystemAttributes(attributes)
     case Terminated(actor)                 => log.debug(s"got Terminated($actor)");                 handlerDeregisterNodeMonitorActor(actor)
     case GetGlobalStatusActor              => log.debug(s"got GetGlobalStatusActor");               handlerGetGlobalStatusActor
@@ -45,6 +48,38 @@ class GlobalStatusActor extends Actor with ActorLogging {
       cancellable.cancel()
       nodeMonitorActors -= nodeMonitorActor
       nodeAttributes -= nodeMonitorActor
+      nodeVms -= nodeMonitorActor.path.address
+    }
+  }
+
+  private def handlerRegisterVmActor(address: Address) = {
+    log.info(s"vmActor ${address} registered")
+    if (nodeVms.contains(address)) {
+      log.debug(s"vmActor ${address} found")
+      var countVms = nodeVms{address}
+      countVms += 1
+      nodeVms -= address
+      nodeVms += address -> countVms
+      log.debug(s"vmActor ${address} increased")
+    } else {
+      nodeVms += address -> 1
+      log.debug(s"vmActor $address added to Map")
+    }
+  }
+
+  private def handlerDeregisterVmActor(address: Address) = {
+    if (nodeVms.contains(address)) {
+      log.debug(s"vmActor ${address} found")
+      var countVms = nodeVms{address}
+      if (countVms > 0 ) {
+        countVms -= 1
+        nodeVms -= address
+        nodeVms += address -> countVms
+        log.debug(s"vmActor ${address} decreased")
+      } else {
+        log.debug("can not decrease vm Counter!!!")
+        log.debug(s"vmActor ${address} countVm: $countVms")
+      }
     }
   }
 
