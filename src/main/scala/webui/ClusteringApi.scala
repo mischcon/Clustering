@@ -374,7 +374,7 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
       case VMInfos(infos) => {
         var sb = new StringBuilder
         sb.append("VMs per Node:\n")
-        for(x <- infos.map(x => (s"${x._1.host.get}:${x._1.port.get}", x._2))){
+        for(x <- infos){
           sb.append(s"   ${x._1} ---> ${x._2}\n")
         }
         sb.toString()

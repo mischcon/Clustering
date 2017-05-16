@@ -129,7 +129,7 @@ class VMActor extends Actor with ActorLogging {
   private def handlerVmTaskResult(any: Any) = {
     any match {
       case x: (VagrantEnvironment, String, VagrantEnvironmentConfig, Iterator[(String, vm.vagrant.model.VmStatus.Value)]) => finishProvisionVm(x)
-      case x: VmDestroy => nodeActor ! RemoveVmActor(self); globalStatusActor ! DeregisterVmActor(self.path.address); context.stop(self)
+      case x: VmDestroy => nodeActor ! RemoveVmActor(self); globalStatusActor ! DeregisterVmActor(self.path.toString.split("_"){1}.split("/"){0}); context.stop(self)
     }
   }
 
@@ -183,7 +183,7 @@ class VMActor extends Actor with ActorLogging {
         var output = ""
         try {
           output = vagrantEnvironment.destroy()
-          output += s"\n${vagrantEnvironment.updateBoxes()}"
+          //output += s"\n${vagrantEnvironment.updateBoxes()}"
           output += s"\n${vagrantEnvironment.up()}"
           val vmConfigs = vagrantEnvironmentConfig.vmConfigs().asScala.map(vagrantEnvironment.getBoxePortMapping(_))
           vagrantEnvironmentConfig = new VagrantEnvironmentConfig(vmConfigs.asJava, vagrantEnvironmentConfig.path())
@@ -215,7 +215,7 @@ class VMActor extends Actor with ActorLogging {
       vmProvisioned = true
       nodeActor ! VmProvisioned
       vmProxyActor ! SetVagrantEnvironmentConfig(vagrantEnvironmentConfig)
-      globalStatusActor ! RegisterVmActor(self.path.address)
+      globalStatusActor ! RegisterVmActor(self.path.toString.split("_"){1}.split("/"){0})
     }
   }
 

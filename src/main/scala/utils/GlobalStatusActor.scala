@@ -14,7 +14,7 @@ class GlobalStatusActor extends Actor with ActorLogging {
 
   private var nodeMonitorActors: Map[ActorRef, Cancellable] = Map()
   private var nodeAttributes: Map[ActorRef, Map[String, String]] = Map()
-  private var nodeVms: Map[Address, Int] = Map()
+  private var nodeVms: Map[String, Int] = Map()
 
   override def receive: Receive = {
     case RegisterNodeMonitorActor(actor)   => log.debug(s"got RegisterNodeMonitorActor($actor)");   handlerRegisterNodeMonitorActor(actor)
@@ -25,6 +25,7 @@ class GlobalStatusActor extends Actor with ActorLogging {
     case Terminated(actor)                 => log.debug(s"got Terminated($actor)");                 handlerDeregisterNodeMonitorActor(actor)
     case GetGlobalStatusActor              => log.debug(s"got GetGlobalStatusActor");               handlerGetGlobalStatusActor
     case GetGlobalSystemAttributes         => log.debug("got GetGlobalSystemAttributes");           handlerGetGlobalSystemAttributes
+    case GetVMInfos                        => log.debug("got GetVmInfos");                          handlerGetVMInfo
     case NotReadyJet(message)              => log.debug(s"got NotReadyJet($message)");              handlerNotReadyJet(message)
   }
 
@@ -48,11 +49,10 @@ class GlobalStatusActor extends Actor with ActorLogging {
       cancellable.cancel()
       nodeMonitorActors -= nodeMonitorActor
       nodeAttributes -= nodeMonitorActor
-      nodeVms -= nodeMonitorActor.path.address
     }
   }
 
-  private def handlerRegisterVmActor(address: Address) = {
+  private def handlerRegisterVmActor(address: String) = {
     log.info(s"vmActor ${address} registered")
     if (nodeVms.contains(address)) {
       log.debug(s"vmActor ${address} found")
@@ -67,7 +67,7 @@ class GlobalStatusActor extends Actor with ActorLogging {
     }
   }
 
-  private def handlerDeregisterVmActor(address: Address) = {
+  private def handlerDeregisterVmActor(address: String) = {
     if (nodeVms.contains(address)) {
       log.debug(s"vmActor ${address} found")
       var countVms = nodeVms{address}
@@ -92,7 +92,7 @@ class GlobalStatusActor extends Actor with ActorLogging {
   }
 
   private def handlerGetVMInfo = {
-    sender() ! nodeVms
+    sender() ! VMInfos(nodeVms)
   }
 
   private def handlerSystemAttributes(attributes: Map[String, String]) = {
