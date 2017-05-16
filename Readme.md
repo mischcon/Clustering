@@ -47,4 +47,4 @@ If you check the API (http://IP_OF_YOUR_CLUSTER:8080/api) you can see the actor 
 ### DOCUMENTATION:
 * [Wiki](/../wikis/pages)
 * [FAQ](/../wikis/faq)
-* [ScalaDoc / JavaDoc](/../wikis/dev/how-to-generate-documentation)
+* [ScalaDoc / JavaDoc](/../wikis/basics/6-how-to-generate-documentation)
