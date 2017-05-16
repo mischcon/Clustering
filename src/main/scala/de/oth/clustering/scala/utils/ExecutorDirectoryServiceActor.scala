@@ -14,8 +14,8 @@ import scala.util.Random
   *
   * Reacts to 'MemberJoined' and 'UnreachableMember' cluster events.
   *
-  * {@link de.oth.clustering.scala.utils.messages#GetExecutorAddress GetExecutorAddress} result in returning the address of
-  * a suitable physical node through a {@link de.oth.clustering.scala.utils.messages#ExecutorAddress ExecutorAddress} message.
+  * {@link de.oth.de.oth.clustering.java.clustering.scala.utils.messages#GetExecutorAddress GetExecutorAddress} result in returning the address of
+  * a suitable physical node through a {@link de.oth.de.oth.clustering.java.clustering.scala.utils.messages#ExecutorAddress ExecutorAddress} message.
   */
 class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
 
@@ -49,8 +49,8 @@ class ExecutorDirectoryServiceActor extends Actor with ActorLogging{
 
   /**
     * Return the address of a physical node that can be used to create a new
-    * {@link de.oth.clustering.scala.worker.TaskExecutorActor TaskExecutorActor} through a
-    * {@link de.oth.clustering.scala.utils.messages#ExecutorAddress ExecutorAddress} message
+    * {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskExecutorActor TaskExecutorActor} through a
+    * {@link de.oth.de.oth.clustering.java.clustering.scala.utils.messages#ExecutorAddress ExecutorAddress} message
     */
   def getMember() = {
     /* until a health status is available we simply use a random approach */

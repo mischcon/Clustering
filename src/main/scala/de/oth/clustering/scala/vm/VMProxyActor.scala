@@ -5,7 +5,7 @@ import java.util.UUID
 
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props, Terminated}
-import communication._
+import de.oth.clustering.java.communication._
 import org.apache.http.impl.client.HttpClientBuilder
 import de.oth.clustering.scala.utils.telnet.TelnetClientPipelineFactory
 import de.oth.clustering.scala.vm.messages._

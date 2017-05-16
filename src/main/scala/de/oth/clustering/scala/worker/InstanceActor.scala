@@ -8,8 +8,8 @@ import de.oth.clustering.scala.worker.messages._
 
 /**
   * This Actor keeps track of all uploaded task runs / .jar files.
-  * For every uploaded file it creates a new  {@link de.oth.clustering.scala.worker#DistributorActor DistributorActor}.
-  * If an {@link de.oth.clustering.scala.vm#VMProxyActor VMProxyActor} requests a new task than it sends its request together with information about what
+  * For every uploaded file it creates a new  {@link de.oth.de.oth.clustering.java.clustering.scala.worker#DistributorActor DistributorActor}.
+  * If an {@link de.oth.de.oth.clustering.java.clustering.scala.vm#VMProxyActor VMProxyActor} requests a new task than it sends its request together with information about what
   * version is deployed on the VM - the InstanceActor then searches for a suitable instance
   * (one with a matching version) an forwards the request.
   */
@@ -60,7 +60,7 @@ class InstanceActor extends Actor with ActorLogging {
 
   /**
     * Creates a DistributorActor (if there are no suitable) and forwards incoming
-    * {@link de.oth.clustering.scala.worker.messages#AddTask AddTask} messages to it
+    * {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#AddTask AddTask} messages to it
     * @param msg
     */
   def handleAddTask(msg : AddTask): Unit ={
@@ -79,8 +79,8 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   /**
-    * Forwards {@link de.oth.clustering.scala.worker.messages#GetTask GetTask} messages to all its children with a suitable version.
-    * If no suitable child was found, then a {@link de.oth.clustering.scala.worker.messages#NoMoreTasks NoMoreTasks} message is sent as reply to the request.
+    * Forwards {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#GetTask GetTask} messages to all its children with a suitable version.
+    * If no suitable child was found, then a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#NoMoreTasks NoMoreTasks} message is sent as reply to the request.
     * @param msg
     */
   def handleGetTask(msg : GetTask): Unit = {
@@ -94,8 +94,8 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   /**
-    * Sends the to-be-deployed version of a task run to the {@link de.oth.clustering.scala.vm#VMActor VMActor}.
-    * If there are no task run instances it replies with a {@link de.oth.clustering.scala.worker.messages#NoDeployInfo NoDeployInfo} message.
+    * Sends the to-be-deployed version of a task run to the {@link de.oth.de.oth.clustering.java.clustering.scala.vm#VMActor VMActor}.
+    * If there are no task run instances it replies with a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#NoDeployInfo NoDeployInfo} message.
     */
   def handleGetDeployInfo() : Unit = {
     log.debug("GetDeployInfo called")

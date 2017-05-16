@@ -1,4 +1,4 @@
-package communication;
+package de.oth.clustering.java.communication;
 
 
 import org.apache.http.Header;

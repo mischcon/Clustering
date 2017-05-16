@@ -68,7 +68,7 @@ Ruby functions exist for even deeper integration. For full documentation, please
 ```ruby
  require 'vagrant-wrapper'
     
- # Will throw VagrantWrapper::de.oth.clustering.scala.Exceptions::Version
+ # Will throw VagrantWrapper::de.oth.de.oth.clustering.java.clustering.scala.Exceptions::Version
  vw = VagrantWrapper.new(">= 1.1")
     
  # This does the same thing:
@@ -82,7 +82,7 @@ Ruby functions exist for even deeper integration. For full documentation, please
  # You could handle the error like this:
  begin
    vw = VagrantWrapper.new(">= 1.1")
- rescue VagrantWrapper::de.oth.clustering.scala.Exceptions::Version => e
+ rescue VagrantWrapper::de.oth.de.oth.clustering.java.clustering.scala.Exceptions::Version => e
    $stderr.print e.message + "\n"
    $stderr.print vw.install_instructions
    exit(1)

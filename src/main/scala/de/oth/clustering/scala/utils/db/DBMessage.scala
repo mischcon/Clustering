@@ -217,7 +217,7 @@ case class RequestedTask(method : String, params : Map[String, String], task_sta
 case class Tables(names : List[String]) extends DBMessage
 
 /**
-  * = Response message for [[de.oth.clustering.scala.utils.db.GenerateTextReport]] or [[de.oth.clustering.scala.utils.db.GenerateJsonReport]] =
+  * = Response message for [[de.oth.clustering.scala.utils.db.GenerateTextReport]] or [[de.oth.de.oth.clustering.java.clustering.scala.utils.db.GenerateJsonReport]] =
   */
 case class Report(path : String) extends DBMessage
 

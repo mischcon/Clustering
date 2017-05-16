@@ -8,7 +8,7 @@ import de.oth.clustering.scala.worker.traits.WorkerTrait
   * execution of this task might affect other tasks that are being executed on the same machine), which is why a
   * separation between tasks that should be run on a SINGLE_INSTANCE and tasks that can safely be executed together
   * with other tasks in a GROUP is necessary. Every DistributorActor can have many instances of
-  * {@link de.oth.clustering.scala.worker.SingleInstanceActor SingleInstanceActors} / {@link de.oth.clustering.scala.worker.GroupActor GroupActors} as its children. If a DistributorActor has no more children,
+  * {@link de.oth.de.oth.clustering.java.clustering.scala.worker.SingleInstanceActor SingleInstanceActors} / {@link de.oth.de.oth.clustering.java.clustering.scala.worker.GroupActor GroupActors} as its children. If a DistributorActor has no more children,
   * than this means that all tasks that belong to a specific task run have been processed -
   * in this case the actor kills itsself.
   */
@@ -39,8 +39,8 @@ class DistributorActor extends WorkerTrait{
   }
 
   /**
-    * Creates {@link de.oth.clustering.scala.worker.SingleInstanceActor SingleInstanceActors} / {@link de.oth.clustering.scala.worker.GroupActor GroupActors} (if there are no) and forwards incoming
-    * {@link de.oth.clustering.scala.worker.messages#AddTask} messages to them
+    * Creates {@link de.oth.de.oth.clustering.java.clustering.scala.worker.SingleInstanceActor SingleInstanceActors} / {@link de.oth.de.oth.clustering.java.clustering.scala.worker.GroupActor GroupActors} (if there are no) and forwards incoming
+    * {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#AddTask} messages to them
     * @param msg
     */
   def addTask(msg : AddTask) = {
@@ -81,7 +81,7 @@ class DistributorActor extends WorkerTrait{
   }
 
   /**
-    * Forwards {@link de.oth.clustering.scala.worker.messages#GetTask} messages to its singleInstance / groupInstance / all children (depending on the parameter).
+    * Forwards {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#GetTask} messages to its singleInstance / groupInstance / all children (depending on the parameter).
     * If there are no more children left this actor will be killed.
     * @param msg
     */

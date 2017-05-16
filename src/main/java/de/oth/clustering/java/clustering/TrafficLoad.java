@@ -1,4 +1,4 @@
-package clustering;
+package de.oth.clustering.java.clustering;
 
 /**
  * <strong>Indicates traffic usage of a task</strong><br><br>

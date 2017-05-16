@@ -25,7 +25,7 @@ class ClusterOptionParser() {
     cmd("client").action( (_, c) => c.copy(mode = "client"))
       .text("run as cluster client").children(
       opt[String]('s', "seed-node").optional().action((x, c) => c.copy(seednode = x)).valueName("<seed-node-ip:seed-node-port>").text(s"manually choose seed node ip"),
-      opt[Unit]("without-de.oth.clustering.scala.vm").optional().action((_, c) => c.copy(withVm = false)).text("client should not provide VMs"),
+      opt[Unit]("without-de.oth.de.oth.clustering.java.clustering.scala.vm").optional().action((_, c) => c.copy(withVm = false)).text("client should not provide VMs"),
       opt[Unit]("without-executor").optional().action((_, c) => c.copy(withExecutor = false)).text("client should not provide Executors"),
 
       checkConfig(c => if (!c.withVm && !c.withExecutor) failure("a client that provides neither a VM nor an Executor is useless") else success)

@@ -18,7 +18,7 @@ case class AddTask(instanceId : String, group : List[String], task : Task, versi
 
 /**
   * Used for getting a task
-  * Request for a {@link de.oth.clustering.scala.worker.messages#SendTask SendTask} response
+  * Request for a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#SendTask SendTask} response
   * @param version VM deploy info - the response (task) should have the same VM deploy info
   * @param singleInstance request a task of type 'SINGLEINSTANCE' (true), 'GROUP' (false) or any task (null - default)
   */
@@ -28,7 +28,7 @@ case class GetTask(version : String, singleInstance : Boolean = null.asInstanceO
 
 /**
   * Used for sending a task
-  * Reply of a {@link de.oth.clustering.scala.worker.messages#GetTask GetTask} message
+  * Reply of a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#GetTask GetTask} message
   * @param task the actual task
   */
 case class SendTask(task : Task)
@@ -52,13 +52,13 @@ case object NoMoreTasks extends WorkerMessagesTrait
 
 /* EXECUTORS */
 /**
-  * Used for requesting an executor from the {@link de.oth.clustering.scala.utils.ExecutorDirectoryServiceActor ExecutorDirectoryServiceActor}
-  * @param vmActorRef actor ref of the target {@link de.oth.clustering.scala.vm#VMProxyActor VMProxyActor}
+  * Used for requesting an executor from the {@link de.oth.de.oth.clustering.java.clustering.scala.utils.ExecutorDirectoryServiceActor ExecutorDirectoryServiceActor}
+  * @param vmActorRef actor ref of the target {@link de.oth.de.oth.clustering.java.clustering.scala.vm#VMProxyActor VMProxyActor}
   */
 case class AcquireExecutor(vmActorRef : ActorRef) extends WorkerMessagesTrait
 
 /**
-  * Container class for the actor ref of a {@link de.oth.clustering.scala.worker.TaskExecutorActor TaskExecutorActor}
+  * Container class for the actor ref of a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskExecutorActor TaskExecutorActor}
   * @param ref
   */
 case class Executor(ref : ActorRef) extends WorkerMessagesTrait
@@ -66,7 +66,7 @@ case class Executor(ref : ActorRef) extends WorkerMessagesTrait
 /**
   * Container class and command message for the execution of a task
   * @param task the actual task
-  * @param targetVM actor ref of the target {@link de.oth.clustering.scala.vm#VMProxyActor VMProxyActor}
+  * @param targetVM actor ref of the target {@link de.oth.de.oth.clustering.java.clustering.scala.vm#VMProxyActor VMProxyActor}
   */
 case class ExecuteTask(task: Task, targetVM: ActorRef) extends WorkerMessagesTrait
 
@@ -77,36 +77,36 @@ case object CannotGetExecutor extends WorkerMessagesTrait
 
 /* UTILITIES */
 /**
-  * Command message sent to {@link de.oth.clustering.scala.worker.TaskActor TaskActor} indicating that a dependency in the
-  * dependency tree has failed. The target {@link de.oth.clustering.scala.worker.TaskActor TaskActors} will update the status
+  * Command message sent to {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskActor TaskActor} indicating that a dependency in the
+  * dependency tree has failed. The target {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskActor TaskActors} will update the status
   * of their task and will stop themselves
   * @param reason reason (usually a reference to the failed task)
   */
 case class PersistAndSuicide(reason : String) extends WorkerMessagesTrait
 
 /**
-  * Asks a {@link de.oth.clustering.scala.vm#VMProxyActor VMProxyActor} if it is still alive
+  * Asks a {@link de.oth.de.oth.clustering.java.clustering.scala.vm#VMProxyActor VMProxyActor} if it is still alive
   */
 case object StillAlive extends WorkerMessagesTrait
 
 /* DEPLOYMENT */
 /**
   * Request message that asks for deploy information.
-  * Results in responding with a {@link de.oth.clustering.scala.worker.messages#DeployInfo DeployInfo} or
-  * {@link de.oth.clustering.scala.worker.messages#NoDeployInfo NoDeployInfo} message.
+  * Results in responding with a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#DeployInfo DeployInfo} or
+  * {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#NoDeployInfo NoDeployInfo} message.
   */
 case object GetDeployInfo extends WorkerMessagesTrait
 
 /**
   * Container message for deploy info
-  * Reply of a {@link de.oth.clustering.scala.worker.messages#GetDeployInfo GetDeployInfo} message.
+  * Reply of a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#GetDeployInfo GetDeployInfo} message.
   * @param vagrantEnvironmentConfig the actual deploy info
   */
 case class DeployInfo[T >: DeployInfoInterface](vagrantEnvironmentConfig : T) extends WorkerMessagesTrait
 
 /**
   * Indicates that there is no deploy info available currently
-  * Reply of a {@link de.oth.clustering.scala.worker.messages#GetDeployInfo GetDeployInfo} message.
+  * Reply of a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#GetDeployInfo GetDeployInfo} message.
   */
 case object NoDeployInfo extends WorkerMessagesTrait
 

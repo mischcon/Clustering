@@ -9,35 +9,35 @@
 
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
-                <expression>de.oth.clustering.scala.exceptions.TestSuccessException.class.isInstance(throwable)</expression>
+                <expression>de.oth.de.oth.clustering.java.clustering.scala.exceptions.TestSuccessException.class.isInstance(throwable)</expression>
             </evaluator>
             <onMatch>DENY</onMatch>
         </filter>
 
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
-                <expression>de.oth.clustering.scala.exceptions.TestFailException.class.isInstance(throwable)</expression>
+                <expression>de.oth.de.oth.clustering.java.clustering.scala.exceptions.TestFailException.class.isInstance(throwable)</expression>
             </evaluator>
             <onMatch>DENY</onMatch>
         </filter>
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>log/clustering.log</file>
+        <file>log/de.oth.clustering.java.clustering.log</file>
         <append>false</append>
         <encoder>
             <pattern>%date{yyyy-MM-dd} %X{akkaTimestamp} %-5level[%thread] %logger{1} - %msg%n</pattern>
         </encoder>
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
-                <expression>de.oth.clustering.scala.exceptions.TestSuccessException.class.isInstance(throwable)</expression>
+                <expression>de.oth.de.oth.clustering.java.clustering.scala.exceptions.TestSuccessException.class.isInstance(throwable)</expression>
             </evaluator>
             <onMatch>DENY</onMatch>
         </filter>
 
         <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
             <evaluator>
-                <expression>de.oth.clustering.scala.exceptions.TestFailException.class.isInstance(throwable)</expression>
+                <expression>de.oth.de.oth.clustering.java.clustering.scala.exceptions.TestFailException.class.isInstance(throwable)</expression>
             </evaluator>
             <onMatch>DENY</onMatch>
         </filter>

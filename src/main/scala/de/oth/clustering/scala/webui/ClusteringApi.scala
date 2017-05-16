@@ -14,7 +14,7 @@ import akka.pattern.ask
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Source}
 import akka.util.{ByteString, Timeout}
-import clustering.{ClusterType, TrafficLoad}
+import de.oth.clustering.java.clustering.{ClusterType, TrafficLoad}
 import de.oth.clustering.java._
 import spray.json.DefaultJsonProtocol._
 import de.oth.clustering.scala.utils.PrivateMethodExposer
@@ -316,12 +316,12 @@ class ClusteringApi(ip : String) extends Actor with ActorLogging with Directives
     } ~
     path("images" / "details_open.png") {
       get {
-        getFromFile("src/main/resources/de.oth.clustering.scala.webui/images/details_open.png")
+        getFromFile("src/main/resources/de.oth.de.oth.clustering.java.clustering.scala.webui/images/details_open.png")
       }
     } ~
     path("images" / "details_close.png") {
       get {
-        getFromFile("src/main/resources/de.oth.clustering.scala.webui/images/details_close.png")
+        getFromFile("src/main/resources/de.oth.de.oth.clustering.java.clustering.scala.webui/images/details_close.png")
       }
     } ~
     path("api") {

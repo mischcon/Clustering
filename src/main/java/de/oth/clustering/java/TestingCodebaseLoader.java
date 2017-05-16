@@ -1,6 +1,6 @@
 package de.oth.clustering.java;
 
-import clustering.Clustering;
+import de.oth.clustering.java.clustering.Clustering;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;

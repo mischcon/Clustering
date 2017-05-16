@@ -17,10 +17,10 @@ import scala.util.{Failure, Random, Success}
 
 /**
   * There is one actor of this kind for every task. If it is free (its task is currently to being executed)
-  * it will offer itsself if it receives a GetTask request from a {@link de.oth.clustering.scala.vm#VMProxyActor VMProxyActor}. If the sender is happy with
-  * this task than the {@link de.oth.clustering.scala.worker.TaskActor TaskActor} will request the address of a physical node from the {@link de.oth.clustering.scala.utils.ExecutorDirectoryServiceActor ExecutorDirectoryServiceActor}
-  * in order to create a new remote {@link de.oth.clustering.scala.worker.TaskExecutorActor TaskExecutorActor}. After that the task is passed to the {@link de.oth.clustering.scala.worker.TaskExecutorActor TaskExecutorActor} which
-  * itsself executes the task against the target {@link de.oth.clustering.scala.vm#VMProxyActor VMProxyActor}.
+  * it will offer itsself if it receives a GetTask request from a {@link de.oth.de.oth.clustering.java.clustering.scala.vm#VMProxyActor VMProxyActor}. If the sender is happy with
+  * this task than the {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskActor TaskActor} will request the address of a physical node from the {@link de.oth.de.oth.clustering.java.clustering.scala.utils.ExecutorDirectoryServiceActor ExecutorDirectoryServiceActor}
+  * in order to create a new remote {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskExecutorActor TaskExecutorActor}. After that the task is passed to the {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskExecutorActor TaskExecutorActor} which
+  * itsself executes the task against the target {@link de.oth.de.oth.clustering.java.clustering.scala.vm#VMProxyActor VMProxyActor}.
   *
   * @param task The actual task
   * @param tablename The corresponding tablename / run id
@@ -47,9 +47,9 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
   }
 
   /**
-    * Whether or not a task was successful an exception ({@link de.oth.clustering.scala.Exceptions#TestSuccessException TestSuccessException}
-    * or {@link de.oth.clustering.scala.Exceptions#TestFailException TestFailException})
-    * will be thrown by the {@link de.oth.clustering.scala.worker.TaskExecutorActor TaskExecutorActor}.
+    * Whether or not a task was successful an exception ({@link de.oth.de.oth.clustering.java.clustering.scala.Exceptions#TestSuccessException TestSuccessException}
+    * or {@link de.oth.de.oth.clustering.java.clustering.scala.Exceptions#TestFailException TestFailException})
+    * will be thrown by the {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskExecutorActor TaskExecutorActor}.
     * In case the task was successful the 'taskDone' flag is set to true.
     * In case the task was unsuccessful the 'taskDone' flag also set to true.
     * Only in case of an unexpected exception the 'taskDone' flag is set to false, resulting
@@ -74,7 +74,7 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
   override def supervisorStrategy: SupervisorStrategy = OneForOneStrategy(){
     case _ if !isTaken => {
       /* There is only one condition under which this could happen:
-      *   The de.oth.clustering.scala.vm died (isTaken = false) and the executor has been stopped (context.stop()), but the
+      *   The de.oth.de.oth.clustering.java.clustering.scala.vm died (isTaken = false) and the executor has been stopped (context.stop()), but the
       *   Exception is already in the mailbox - in this case it is irrelevant what directive you choose,
       *   since the executor already died. To be on the safe side we chose 'Stop' */
       log.debug("racy racy race-condition - received an exception from a (hopefully) dead executor... how scary oO")
@@ -88,12 +88,12 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
     case t : TestFailException => {
       log.debug("received TestFailException!")
 
-      //ask the de.oth.clustering.scala.vm if it is still alive
+      //ask the de.oth.de.oth.clustering.java.clustering.scala.vm if it is still alive
       val stillAliveFuture = targetVm.ask(StillAlive)(timeout = 11 seconds, self)
       val alive = Await.result(stillAliveFuture, 10 seconds)
       alive match {
-        case true => log.debug("de.oth.clustering.scala.vm is still alive - escalating..."); taskDone = true; Escalate
-        case a => log.debug(s"de.oth.clustering.scala.vm is NOT alive anymore (received: ${a}) - the TestFailException seems to be caused by this - resetting the task..."); taskDone = false; Stop
+        case true => log.debug("de.oth.de.oth.clustering.java.clustering.scala.vm is still alive - escalating..."); taskDone = true; Escalate
+        case a => log.debug(s"de.oth.de.oth.clustering.java.clustering.scala.vm is NOT alive anymore (received: ${a}) - the TestFailException seems to be caused by this - resetting the task..."); taskDone = false; Stop
       }
     }
     case a => {
@@ -114,12 +114,12 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
   }
 
   /**
-    * If the {@link de.oth.clustering.scala.worker.TaskActor TaskActor} receives a 'Terminated' message from the actor system than this means
-    * that either the {@link de.oth.clustering.scala.vm#VMActor VMActor} or the {@link de.oth.clustering.scala.worker.TaskExecutorActor TaskExecutorActor} died / has been disconnected from the cluster.
-    * In case the 'taskDone' flag is set to true this is the desired behaviour since the {@link de.oth.clustering.scala.worker.TaskExecutorActor TaskExecutorActor}
+    * If the {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskActor TaskActor} receives a 'Terminated' message from the actor system than this means
+    * that either the {@link de.oth.de.oth.clustering.java.clustering.scala.vm#VMActor VMActor} or the {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskExecutorActor TaskExecutorActor} died / has been disconnected from the cluster.
+    * In case the 'taskDone' flag is set to true this is the desired behaviour since the {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskExecutorActor TaskExecutorActor}
     * is stopped after the execution of a task.
-    * In case the 'taskDone' flag is set to false this means that either the {@link de.oth.clustering.scala.vm#VMActor VMActor} or the {@link de.oth.clustering.scala.worker.TaskExecutorActor TaskExecutorActor} died, which
-    * results in removing the connection to the {@link de.oth.clustering.scala.vm#VMActor VMActor} / {@link de.oth.clustering.scala.worker.TaskExecutorActor TaskExecutorActor} and resetting the task so that it can
+    * In case the 'taskDone' flag is set to false this means that either the {@link de.oth.de.oth.clustering.java.clustering.scala.vm#VMActor VMActor} or the {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskExecutorActor TaskExecutorActor} died, which
+    * results in removing the connection to the {@link de.oth.de.oth.clustering.java.clustering.scala.vm#VMActor VMActor} / {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskExecutorActor TaskExecutorActor} and resetting the task so that it can
     * be executed again.
     * @param t The Terminated message - used for identifying the terminated actor.
     */
@@ -133,7 +133,7 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
 
       // check what crashed - the targetVM or the executor
       if(t.actor == targetVm){
-        // de.oth.clustering.scala.vm died - kill the executor, but unwatch it first
+        // de.oth.de.oth.clustering.java.clustering.scala.vm died - kill the executor, but unwatch it first
         context.unwatch(executorActor)
         //executorActor ! Kill
         context.stop(executorActor)
@@ -149,19 +149,19 @@ class TaskActor(task : Task, tablename : String) extends WorkerTrait{
   }
 
   /**
-    * If a new task is requested and the task has not been taken / reserved yet than the {@link de.oth.clustering.scala.worker.TaskActor TaskActor}
-    * will offer itself ({@link de.oth.clustering.scala.worker.messages#SendTask SendTask} to requester). To avoid being executed twice the 'isTaken' flag is set to true -
+    * If a new task is requested and the task has not been taken / reserved yet than the {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskActor TaskActor}
+    * will offer itself ({@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#SendTask SendTask} to requester). To avoid being executed twice the 'isTaken' flag is set to true -
     * in case the requester has chosen a different task the 'isTaken' flag is set to false, resulting in the task
     * to be available again.
     *
-    * In case the requester chose this task the {@link de.oth.clustering.scala.worker.TaskActor TaskActor} will watch / supervise the requester (in order to
-    * reset the task in case of a failure of the requester) and will request an executor from the {@link de.oth.clustering.scala.utils.ExecutorDirectoryServiceActor ExecutorDirectoryServiceActor}.
+    * In case the requester chose this task the {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskActor TaskActor} will watch / supervise the requester (in order to
+    * reset the task in case of a failure of the requester) and will request an executor from the {@link de.oth.de.oth.clustering.java.clustering.scala.utils.ExecutorDirectoryServiceActor ExecutorDirectoryServiceActor}.
     *
     * If no executor is available the requester is informed about that and the task is being resetted.
-    * If an executor is available the {@link de.oth.clustering.scala.worker.TaskActor TaskActor} will watch / supervise the executor (in order to reset the task and
+    * If an executor is available the {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskActor TaskActor} will watch / supervise the executor (in order to reset the task and
     * the requester in case of a failure of the executor) and will send the reference of the executor to the requester.
     *
-    * If the connection between requester (targetVM), executor and {@link de.oth.clustering.scala.worker.TaskActor TaskActor} has been established the task is sent
+    * If the connection between requester (targetVM), executor and {@link de.oth.de.oth.clustering.java.clustering.scala.worker.TaskActor TaskActor} has been established the task is sent
     * to the executor for its execution.
     */
   def handleGetTask() = {

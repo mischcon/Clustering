@@ -31,7 +31,7 @@ require 'json/common'
 #
 # == Generating JSON
 #
-# Creating a JSON string for communication or serialization is
+# Creating a JSON string for de.oth.clustering.java.communication or serialization is
 # just as simple.
 #
 #   require 'json'

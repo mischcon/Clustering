@@ -36,7 +36,7 @@ public class VagrantEnvironmentConfigBuilder implements Serializable {
 
     public VagrantEnvironmentConfig build() {
         if (vmConfigs.isEmpty()) {
-            throw new VagrantBuilderException("No de.oth.clustering.scala.vm defined");
+            throw new VagrantBuilderException("No de.oth.de.oth.clustering.java.clustering.scala.vm defined");
         }
         return new VagrantEnvironmentConfig(vmConfigs, path);
     }

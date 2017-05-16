@@ -1,4 +1,4 @@
-package clustering;
+package de.oth.clustering.java.clustering;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 
 /**
- * <strong>Main clustering annotation</strong><br><br>
+ * <strong>Main de.oth.clustering.java.clustering annotation</strong><br><br>
  * Parameter description:
  * <ul>
  *     <li>

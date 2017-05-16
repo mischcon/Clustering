@@ -1,8 +1,8 @@
 package de.oth.clustering.scala.worker
 
 import de.oth.clustering.scala.exceptions.{TestFailException, TestSuccessException}
-import clustering.ClusteringTask
-import communication.ProxyRequest
+import de.oth.clustering.java.clustering.ClusteringTask
+import de.oth.clustering.java.communication.ProxyRequest
 import de.oth.clustering.java.TestingCodebaseLoader
 import org.junit.Test
 import org.junit.runner.{JUnitCore, Request, Result}
@@ -63,7 +63,7 @@ class TaskExecutorActor extends WorkerTrait{
                   case "vmProxy" =>
                     field.setAccessible(true)
                     field.set(proxyRequest, msg.targetVM)
-                    assert(field.get(proxyRequest) eq msg.targetVM, "de.oth.clustering.scala.vm proxy injection failed.")
+                    assert(field.get(proxyRequest) eq msg.targetVM, "de.oth.de.oth.clustering.java.clustering.scala.vm proxy injection failed.")
                   case _ =>
                 }
               }

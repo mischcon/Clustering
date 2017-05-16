@@ -1,28 +1,28 @@
-package communication.util;
+package de.oth.clustering.java.communication.util;
 
-import communication.RequestMethod;
+import de.oth.clustering.java.communication.RequestMethod;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import java.net.URI;
 
 /**
- * <strong>HTTP POST request w/ body</strong><br><br>
+ * <strong>HTTP PUT request w/ body</strong><br><br>
  * This class is made only for aesthetics.
  */
-public class HttpPostWithBody extends HttpEntityEnclosingRequestBase {
-    private static final RequestMethod METHOD_NAME = RequestMethod.POST;
+public class HttpPutWithBody extends HttpEntityEnclosingRequestBase {
+    private static final RequestMethod METHOD_NAME = RequestMethod.PUT;
     private URI uri;
 
-    public HttpPostWithBody() {
+    public HttpPutWithBody() {
         super();
     }
 
-    public HttpPostWithBody(final String url) {
+    public HttpPutWithBody(final String url) {
         super();
         setURI(URI.create(url));
     }
 
-    public HttpPostWithBody(final URI uri) {
+    public HttpPutWithBody(final URI uri) {
         super();
         setURI(uri);
     }

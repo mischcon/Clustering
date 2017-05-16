@@ -9,7 +9,7 @@ import akka.pattern._
 import akka.cluster.Cluster
 import akka.event.Logging
 import akka.util.Timeout
-import clustering.{ClusterType, TrafficLoad}
+import de.oth.clustering.java.clustering.{ClusterType, TrafficLoad}
 import com.typesafe.config.ConfigFactory
 
 import scala.collection.JavaConverters._

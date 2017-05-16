@@ -1,6 +1,6 @@
-package communication.util;
+package de.oth.clustering.java.communication.util;
 
-import communication.RequestMethod;
+import de.oth.clustering.java.communication.RequestMethod;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import java.net.URI;

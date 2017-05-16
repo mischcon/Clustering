@@ -77,7 +77,7 @@ class GlobalStatusActor extends Actor with ActorLogging {
         nodeVms += address -> countVms
         log.debug(s"vmActor ${address} decreased")
       } else {
-        log.debug("can not decrease de.oth.clustering.scala.vm Counter!!!")
+        log.debug("can not decrease de.oth.de.oth.clustering.java.clustering.scala.vm Counter!!!")
         log.debug(s"vmActor ${address} countVm: $countVms")
       }
     }

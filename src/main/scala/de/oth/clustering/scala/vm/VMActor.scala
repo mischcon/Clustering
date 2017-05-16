@@ -205,12 +205,12 @@ class VMActor extends Actor with ActorLogging {
 
   private def finishProvisionVm(x: (VagrantEnvironment, String, VagrantEnvironmentConfig, Iterator[(String, de.oth.clustering.scala.vm.vagrant.model.VmStatus.Value)])) = {
     if (x._4.exists(_._2 != de.oth.clustering.scala.vm.vagrant.model.VmStatus.running)) {
-      log.info("de.oth.clustering.scala.vm not provisioned")
+      log.info("de.oth.de.oth.clustering.java.clustering.scala.vm not provisioned")
       log.info(x._2)
       vmProvisioned = false
       prepareProvisionVm
     } else {
-      log.info("de.oth.clustering.scala.vm provisioned")
+      log.info("de.oth.de.oth.clustering.java.clustering.scala.vm provisioned")
       log.info(x._2)
       vmProvisioned = true
       nodeActor ! VmProvisioned

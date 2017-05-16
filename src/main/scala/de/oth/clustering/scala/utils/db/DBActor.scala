@@ -8,7 +8,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 /**
   * = Actor-based interface between cluster actors & database =
   *{{{
-  * Current database scheme (clustering):
+  * Current database scheme (de.oth.clustering.java.clustering):
   *
   * 0 .. * tasks_[...]:
   * +-----+--------+--------+-------------+-----------+-------------+------------+-------------+------------+
@@ -71,7 +71,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
 
   /**
     * = Performs database query =
- *
+    *
     * @param query requested query of type [[de.oth.clustering.scala.utils.db.DBQuery]]
     */
   def performQuery(query : DBQuery): Unit = {
@@ -125,7 +125,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
 
   /**
     * = Answers w/ [[de.oth.clustering.scala.utils.db.CountedTaskStatus]] =
- *
+    *
     * @param tableName table name
     */
   def countTaskStatus(tableName : String): Unit = {
@@ -135,7 +135,7 @@ class DBActor(config : Config = ConfigFactory.load("db.conf"))
 
   /**
     * = Answers w/ [[de.oth.clustering.scala.utils.db.CountedEndState]] =
- *
+    *
     * @param tableName table name
     */
   def countEndState(tableName : String): Unit = {

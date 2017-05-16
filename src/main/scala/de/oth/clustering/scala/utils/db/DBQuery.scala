@@ -12,7 +12,7 @@ trait DBQuery {
 class DBGetTables extends DBQuery {
   override val table: String = ""
   override def perform(connection: Connection): Tables = {
-    val sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='clustering' ORDER BY table_name DESC;"
+    val sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='de.oth.clustering.java.clustering' ORDER BY table_name DESC;"
     val statement : PreparedStatement = connection.prepareStatement(sql)
     val resultSet = statement.executeQuery()
     var tables = List[String]()
@@ -45,7 +45,7 @@ class DBCreateTasksTable(tableName : String) extends DBQuery {
     sql =
       s"CREATE OR REPLACE TRIGGER ${tableName}_update_timestamps " +
        "BEFORE UPDATE " +
-        s"ON clustering.$tableName FOR EACH ROW " +
+        s"ON de.oth.clustering.java.clustering.$tableName FOR EACH ROW " +
          "BEGIN " +
            "IF NEW.task_status = 'RUNNING' THEN " +
              "SET NEW.started_at = CURRENT_TIMESTAMP; " +

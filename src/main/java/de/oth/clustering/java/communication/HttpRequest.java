@@ -1,4 +1,4 @@
-package communication;
+package de.oth.clustering.java.communication;
 
 import com.google.gson.JsonObject;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;

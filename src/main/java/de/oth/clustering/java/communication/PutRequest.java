@@ -1,7 +1,7 @@
-package communication;
+package de.oth.clustering.java.communication;
 
 import com.google.gson.JsonObject;
-import communication.util.HttpPutWithBody;
+import de.oth.clustering.java.communication.util.HttpPutWithBody;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;

@@ -1,4 +1,4 @@
-package communication;
+package de.oth.clustering.java.communication;
 
 import akka.actor.ActorRef;
 import akka.pattern.Patterns;
@@ -14,7 +14,7 @@ import java.io.IOException;
 
 /**
  * <strong>Java & Scala marriage happens w/ help of this class</strong>
- * @param <T> request type - Object in {@link clustering.ClusteringTask}
+ * @param <T> request type - Object in {@link de.oth.clustering.java.clustering.ClusteringTask}
  */
 public class ProxyRequest<T> {
     /**
@@ -30,7 +30,7 @@ public class ProxyRequest<T> {
 
     /**
      * Local execution (on VM) of the incoming requests.
-     * @param http request (in this case {@link communication.HttpRequest})
+     * @param http request (in this case {@link de.oth.clustering.java.communication.HttpRequest})
      */
     private void execute(HttpRequest http) {
         CloseableHttpClient client = HttpClientBuilder.create().build();

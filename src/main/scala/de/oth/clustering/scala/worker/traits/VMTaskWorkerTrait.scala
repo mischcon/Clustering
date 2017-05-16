@@ -9,10 +9,10 @@ import de.oth.clustering.scala.worker.messages.{StillAlive, Task}
 trait VMTaskWorkerTrait {
 
   /**
-    * Response of a {@link de.oth.clustering.scala.worker.messages#GetTask GetTask} message.
-    * A task is offered via a {@link de.oth.clustering.scala.worker.messages#SendTask SendTask} message.
+    * Response of a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#GetTask GetTask} message.
+    * A task is offered via a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#SendTask SendTask} message.
     *
-    * In case the offer gets accepted: Respond with a {@link de.oth.clustering.scala.worker.messages#AcquireExecutor AcquireExecutor} message
+    * In case the offer gets accepted: Respond with a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#AcquireExecutor AcquireExecutor} message
     * In case the offer gets rejected: Respond with a {@link akka.actor#Failure Failure} that contains an exception (e.g. new Exception("no more tasks!"))
     *
     * See wiki for more details about the workflow.
@@ -21,7 +21,7 @@ trait VMTaskWorkerTrait {
   def handlerSendTask(task : Task)
 
   /**
-    * Response of a {@link de.oth.clustering.scala.worker.messages#GetTask GetTask} message.
+    * Response of a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#GetTask GetTask} message.
     * This means that there are currently no more tasks available.
     *
     * See wiki for more details about the workflow.
@@ -29,7 +29,7 @@ trait VMTaskWorkerTrait {
   def handlerNoMoreTasks()
 
   /**
-    * Response of a {@link de.oth.clustering.scala.worker.messages#AcquireExecutor AcquireExecutor} message.
+    * Response of a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#AcquireExecutor AcquireExecutor} message.
     * After a task offer gets accepted a new executor is being created. The ref of this
     * executor is passed to the target through this message.
     *
@@ -39,7 +39,7 @@ trait VMTaskWorkerTrait {
   def handlerExecutor(executor : ActorRef)
 
   /**
-    * Response of a {@link de.oth.clustering.scala.worker.messages#AcquireExecutor AcquireExecutor} message.
+    * Response of a {@link de.oth.de.oth.clustering.java.clustering.scala.worker.messages#AcquireExecutor AcquireExecutor} message.
     * After a task offer gets accepted a new executor should be created - in case something goes wrong /
     * no executor could be created the target is informed about that through this message.
     *

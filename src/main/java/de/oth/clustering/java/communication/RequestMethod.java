@@ -1,4 +1,4 @@
-package communication;
+package de.oth.clustering.java.communication;
 
 /**
  * <strong>HTTP request methods (CRUD)</strong>

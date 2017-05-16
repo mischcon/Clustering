@@ -1,11 +1,11 @@
-package clustering;
+package de.oth.clustering.java.clustering;
 
-import communication.ProxyRequest;
+import de.oth.clustering.java.communication.ProxyRequest;
 
 /**
- * <strong>Main clustering interface</strong><br><br>
- * Every test class (w/ network communication) must implement it.<br>
- * Establishes the communication between task & proxy (cluster¹ or local VM²).<br>
+ * <strong>Main de.oth.clustering.java.clustering interface</strong><br><br>
+ * Every test class (w/ network de.oth.clustering.java.communication) must implement it.<br>
+ * Establishes the de.oth.clustering.java.communication between task & proxy (cluster¹ or local VM²).<br>
  * <p>e.g. scenario for HTTP requests</p>
  * <ul>
  *     <li><pre>cluster¹  : Java <-----> Scala <-----> VM <-----> Internet</pre></li>

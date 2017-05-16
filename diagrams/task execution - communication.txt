@@ -1,4 +1,4 @@
-title task execution - communication
+title task execution - de.oth.clustering.java.communication
 
 User->Master: task
 Master->Router: forward task

@@ -33,7 +33,7 @@ object VagrantConfigurationUtilities {
 
   private def createVmInMultiEnvConfig(vmConfig: VagrantVmConfig) = {
     val builder = new StringBuilder
-    builder.append(s"""  config.de.oth.clustering.scala.vm.define "${vmConfig.name}" do |de.oth.clustering.scala.vm|""").append("\n")
+    builder.append(s"""  config.de.oth.de.oth.clustering.java.clustering.scala.vm.define "${vmConfig.name}" do |de.oth.de.oth.clustering.java.clustering.scala.vm|""").append("\n")
     if (vmConfig.boxName != 300)builder.append(createVmBootTimeoutConfig(vmConfig.bootTimeout))
     if (vmConfig.boxName != null) builder.append(createVmBoxNameConfig(vmConfig.boxName))
     if (!vmConfig.boxCheckUpdate) builder.append(createVmBoxCheckUpdateConfig(vmConfig.boxCheckUpdate))
@@ -62,109 +62,109 @@ object VagrantConfigurationUtilities {
 
   private def createVmBootTimeoutConfig(value: Int) = {
     val builder = new StringBuilder
-    builder.append(s"    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.boot_timeout = ${value}").append("\n")
+    builder.append(s"    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.boot_timeout = ${value}").append("\n")
     builder.toString
   }
 
   private def createVmBoxNameConfig(value: String) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box = "$value"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box = "$value"""").append("\n")
     builder.toString
   }
 
   private def createVmBoxCheckUpdateConfig(value: Boolean) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box_check_update = $value""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box_check_update = $value""").append("\n")
     builder.toString
   }
 
   private def createVmBoxDownloadChecksumConfig(value: String) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box_download_checksum = "$value"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box_download_checksum = "$value"""").append("\n")
     builder.toString
   }
 
   private def createVmBoxDownloadChecksumTypeConfig(value: ChecksumType) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box_download_checksum_type = "${value.toString}"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box_download_checksum_type = "${value.toString}"""").append("\n")
     builder.toString
   }
 
   private def createVmBoxDownloadClientCertConfig(value: File) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box_download_client_cert = "${value.getAbsolutePath}"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box_download_client_cert = "${value.getAbsolutePath}"""").append("\n")
     builder.toString
   }
 
   private def createVmBoxDownloadCaCertConfig(value: File) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box_download_ca_cert = "${value.getAbsolutePath}"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box_download_ca_cert = "${value.getAbsolutePath}"""").append("\n")
     builder.toString
   }
 
   private def createVmBoxDownloadCaPathConfig(value: File) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box_download_ca_path = "${value.getAbsolutePath}"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box_download_ca_path = "${value.getAbsolutePath}"""").append("\n")
     builder.toString
   }
 
   private def createVmBoxDownloadInsecureConfig(value: Boolean) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box_download_insecure = $value""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box_download_insecure = $value""").append("\n")
     builder.toString
   }
 
   private def createVmBoxDownloadLocationTrustedConfig(value: Boolean) = {
     val builder = new StringBuilder
-    builder.append(s"    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box_download_location_trusted = ${value}").append("\n")
+    builder.append(s"    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box_download_location_trusted = ${value}").append("\n")
     builder.toString
   }
 
   private def createVmBoxUrlConfig(value: URL) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box_url = "$value"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box_url = "$value"""").append("\n")
     builder.toString
   }
 
   private def createVmBoxVersionConfig(value: String) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.box_version = "$value"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.box_version = "$value"""").append("\n")
     builder.toString
   }
 
   private def createVmCommunicatorConfig(value: String) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.communicator = "$value"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.communicator = "$value"""").append("\n")
     builder.toString
   }
 
   private def createVmGracefulHaltTimeoutConfig(value: Int) = {
     val builder = new StringBuilder
-    builder.append(s"    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.graceful_halt_timeout = $value").append("\n")
+    builder.append(s"    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.graceful_halt_timeout = $value").append("\n")
     builder.toString
   }
 
   private def createVmGuestConfig(value: String) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.guest = "$value"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.guest = "$value"""").append("\n")
     builder.toString
   }
 
   private def createVmHostNameConfig(value: String) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.hostname = "$value"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.hostname = "$value"""").append("\n")
     builder.toString
   }
 
   private def createVmPostUpMessageConfig(value: String) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.post_up_message = "$value"""").append("\n")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.post_up_message = "$value"""").append("\n")
     builder.toString
   }
 
   private def createVmUsablePortRangeConfig(value: String) = {
     val builder = new StringBuilder
-    builder.append(s"    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.usable_port_range = $value").append("\n")
+    builder.append(s"    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.usable_port_range = $value").append("\n")
     builder.toString
   }
 
@@ -179,7 +179,7 @@ object VagrantConfigurationUtilities {
 
   private def createVmNetworkPrivateNetworkConfig(privateNetwork: VagrantPrivateNetworkConfig) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.network "${privateNetwork.mode}"""")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.network "${privateNetwork.mode}"""")
     if (privateNetwork.dhcp) builder.append(s""", type: "dhcp" """)
     if (privateNetwork.ip != null && !privateNetwork.ip.isEmpty) builder.append(s""", ip: "${privateNetwork.ip}" """)
     if (privateNetwork.netmask != null && !privateNetwork.netmask.isEmpty) builder.append(s""", netmask: "${privateNetwork.netmask}" """)
@@ -190,7 +190,7 @@ object VagrantConfigurationUtilities {
 
   private def createVmNetworkPortForwardingConfig(portForwarding: VagrantPortForwardingConfig) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.network "${portForwarding.mode}", guest: ${portForwarding.guestPort}, host: ${portForwarding.hostPort}""")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.network "${portForwarding.mode}", guest: ${portForwarding.guestPort}, host: ${portForwarding.hostPort}""")
     if (portForwarding.name != null && !portForwarding.name.isEmpty) builder.append(s""", id: "${portForwarding.name}"""")
     if (portForwarding.protocol != Protocol.TCP) builder.append(s""", protocol: "${portForwarding.protocol.toString}"""")
     if (portForwarding.autoCorrect) builder.append(s", auto_correct: ${portForwarding.autoCorrect}")
@@ -202,7 +202,7 @@ object VagrantConfigurationUtilities {
 
   private def createVmNetworkPublicNetworkConfig(publicNetwork: VagrantPublicNetworkConfig) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.network "${publicNetwork.mode}"""")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.network "${publicNetwork.mode}"""")
     if (publicNetwork.useDhcpAssignedDefaultRoute) builder.append(s", use_dhcp_assigned_default_route: ${publicNetwork.useDhcpAssignedDefaultRoute.toString}")
     if (publicNetwork.ip != null && !publicNetwork.ip.isEmpty) builder.append(s""", ip: "${publicNetwork.ip}"""")
     if (publicNetwork.bridges != null && publicNetwork.bridges().size() > 0) {
@@ -219,7 +219,7 @@ object VagrantConfigurationUtilities {
 
   private def createVmSyncFolderConfig(syncFolder: VagrantSyncedFolderConfig) = {
     var builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.synced_folder "${syncFolder.hostPath}", "${syncFolder.guestPath}", type: "${syncFolder.mode}" """)
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.synced_folder "${syncFolder.hostPath}", "${syncFolder.guestPath}", type: "${syncFolder.mode}" """)
     if (syncFolder.create) builder.append(s", create: ${syncFolder.create.toString}")
     if (syncFolder.disabled) builder.append(s", disabled: ${syncFolder.disabled.toString}")
     if (syncFolder.group != null && !syncFolder.group.isEmpty) builder.append(s""", group: "${syncFolder.group}" """)
@@ -246,7 +246,7 @@ object VagrantConfigurationUtilities {
   private def createVmProviderConfig(provider: VagrantProviderConfig) = {
     val builder = new StringBuilder
     if (provider.name != null && !provider.name.isEmpty) {
-      builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.provider "${provider.name}" do |provider|""").append("\n")
+      builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.provider "${provider.name}" do |provider|""").append("\n")
       if (provider.guiMode) builder.append(s"      provider.gui = ${provider.guiMode}").append("\n")
       if (provider.memory > 0 ) builder.append(s"""      provider.memory = "${provider.memory.toString}"""").append("\n")
       if (provider.cpus > 0 ) builder.append(s"""      provider.cpus = ${provider.cpus.toString}""").append("\n")
@@ -259,7 +259,7 @@ object VagrantConfigurationUtilities {
 
   private def createVmProvisionerConfig(provisioner: VagrantProvisionerConfig) = {
     val builder = new StringBuilder
-    builder.append(s"""    de.oth.clustering.scala.vm.de.oth.clustering.scala.vm.provision "${provisioner.mode}"""")
+    builder.append(s"""    de.oth.de.oth.clustering.java.clustering.scala.vm.de.oth.de.oth.clustering.java.clustering.scala.vm.provision "${provisioner.mode}"""")
     if (provisioner.run != Run.ONCE) builder.append(s""", run: "${provisioner.run.toString}"""")
     if (provisioner.preserveOrder) builder.append(s", preserve_order: ${provisioner.preserveOrder}")
     provisioner match {
