@@ -1,7 +1,7 @@
-import de.oth.clustering.scala.vm.VmEnvironment;
-import de.oth.clustering.scala.vm.vagrant.configuration.VagrantEnvironmentConfig;
-import de.oth.clustering.scala.vm.vagrant.configuration.VagrantVmConfig;
-import de.oth.clustering.scala.vm.vagrant.util.Protocol;
+import de.oth.clustering.java.vm.VmEnvironment;
+import de.oth.clustering.java.vm.vagrant.configuration.*;
+import de.oth.clustering.java.vm.vagrant.configuration.builder.*;
+import de.oth.clustering.java.vm.vagrant.util.Protocol;
 
 public class TestConfig implements VmEnvironment {
 
