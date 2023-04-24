@@ -1,3 +1,5 @@
+![](https://github.com/mischcon/Clustering/actions/workflows/build.yml/badge.svg)
+
 # Testing Cluster
 ### WHAT IS THIS?
 We are proud to present our *Scala-Java-based Testing Cluster* to you!
