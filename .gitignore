@@ -12,3 +12,4 @@ src/main/resources/reports/
 .sonar/
 sonar-project.properties
 db.conf
+*.iml
